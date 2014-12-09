@@ -1,0 +1,20 @@
+## Interface: 60000
+## Author: bunjiboys (Jardo@US-Hyjal)
+## Version: 6.0.3
+## Title: DK Rot
+## Notes: Rotation assist, based on CLC DK
+## SavedVariablesPerCharacter: DKRot_Settings
+
+# Embeds
+#@no-lib-strip@
+Libs\LibStub\Libstub.lua
+#@end-no-lib-strip@
+
+# LUA code
+Localization\localization.lua
+
+# XML UI objects
+ui\Options.xml
+
+# Core addon functionality
+DKRot.lua
