@@ -3,7 +3,7 @@
 ## Version: 6.0.3
 ## Title: DK Rot
 ## Notes: Rotation assist, based on CLC DK
-## SavedVariablesPerCharacter: DKRot_Settings
+## SavedVariablesPerCharacter: DKROT_Settings
 
 # Embeds
 #@no-lib-strip@
