@@ -7,7 +7,7 @@
 
 # Embeds
 #@no-lib-strip@
-Libs\LibStub\Libstub.lua
+extlibs\LibStub\Libstub.lua
 #@end-no-lib-strip@
 
 # LUA code
