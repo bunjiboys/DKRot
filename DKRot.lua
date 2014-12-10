@@ -2125,6 +2125,16 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             end
          end
 
+         --Soul Reaper
+         if lblood <= 2 and GetSpellTexture(spells["Soul Reaper"]) ~= nil
+            and UnitHealth("target")/UnitHealthMax("target") < 0.35
+         then
+            start, dur = GetSpellCooldown(spells["Soul Reaper"])
+            if isOffCD(start, dur) then
+               return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
+            end
+         end
+
          --Diseases
          local disease, move = DKROT:GetDisease(icon)
          if disease then return move end
@@ -2160,16 +2170,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          --Death Coil
          if UnitPower("player") >= 40 then
             return DKROT:GetRangeandIcon(icon, spells["Death Coil"])
-         end
-
-         --Soul Reaper
-         if lblood <= 2 and GetSpellTexture(spells["Soul Reaper"]) ~= nil
-            and UnitHealth("target")/UnitHealthMax("target") < 0.35
-         then
-            start, dur = GetSpellCooldown(spells["Soul Reaper"])
-            if isOffCD(start, dur) then
-               return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
-            end
          end
 
          --Crimson Scourge BB
