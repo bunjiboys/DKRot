@@ -6,7 +6,9 @@
 ## SavedVariablesPerCharacter: DKRot_Settings
 
 # Embeds
+#@no-lib-strip@
 extlibs\LibStub\Libstub.lua
+#@no-lib-strip@
 
 # LUA code
 Localization\localization.lua
