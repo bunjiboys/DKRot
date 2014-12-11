@@ -1,4 +1,4 @@
-﻿if (select(2, UnitClass("player")) == "DEATHKNIGHT" and GetLocale() == "zhCN" ) then
+if (select(2, UnitClass("player")) == "DEATHKNIGHT" and GetLocale() == "zhCN" ) then
 	CLCDK_ADDONNAME = "CLC DK"
 	CLCDK_NAMEFONT = 'fonts\\ZYKai_T.TTF'	
 	
