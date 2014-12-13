@@ -20,7 +20,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local IS_BUFF = 2
    local ITEM_LOAD_THRESHOLD = .5
    local RUNE_COLOUR = {{1, 0, 0},{0, 0.95, 0},{0, 1, 1},{0.8, 0.1, 1}} --Blood,  Unholy,  Frost,  Death
-   local RuneTextue = {
+   local RuneTexture = {
       "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Blood",
       "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Unholy",
       "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Frost",
@@ -58,6 +58,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if spells ~= nil then wipe(spells) end
       spells = {}
       spells = {
+         ["Global Cooldown"] = GetSpellInfo(61304), -- GCD
          ["Anti-Magic Shell"] = GetSpellInfo(48707), --lvl68
          ["Army of the Dead"] = GetSpellInfo(42650), --lvl80
          ["Blood Boil"] = GetSpellInfo(50842), --lvl56
@@ -498,8 +499,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    --In: start- when the spell cd started  dur- duration of the cd
    --Out: returns if the spell is or will be off cd in the next GCD
-   local function isOffCD(start, dur)
+   local function isOffCD(spell)
+      local start, dur = GetSpellCooldown(spell)
       return (dur + start - curtime - GCD <= 0)
+   end
+
+   local function isRuneOffCD(rune)
+      local start, dur, cool = GetRuneCooldown(i)
+      return cool or (dur + start - curtime - GCD <= 0)
    end
 
    --In:tabl - table to check if key is in it  key- key you are looking for
@@ -827,8 +834,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             icon = GetSpellTexture(DKROT_Settings.CD[Current_Spec][location][1])
             if icon ~= nil then
                --Check if move is off CD
-               start, dur = GetSpellCooldown(DKROT_Settings.CD[Current_Spec][location][1])
-               if isOffCD(start, dur) and IsUsableSpell(DKROT_Settings.CD[Current_Spec][location][1]) then
+               if isOffCD(DKROT_Settings.CD[Current_Spec][location][1]) and IsUsableSpell(DKROT_Settings.CD[Current_Spec][location][1]) then
                   icon = DKROT:GetRangeandIcon(frame.Icon, DKROT_Settings.CD[Current_Spec][location][1])
                else
                   icon = nil
@@ -971,6 +977,15 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if debugg then print("DKROT:UpdatePosition")end
    end
 
+   function DKRot:GetGCD()
+      local start, dur = GetSpellCooldown(spells["Global Cooldown"])
+      if dur ~= 0 and start ~= nil then
+         return dur - (curtime - start), start, dur
+      else
+         return 0
+      end
+   end
+
    --Main function for updating all information
    function DKROT:UpdateUI()
       if (UnitCanAttack("player", "target") and (not UnitIsDead("target"))) then
@@ -980,14 +995,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       --GCD
-      local start, dur = GetSpellCooldown(spells["Death Coil"])
-      if dur ~= 0 and start ~= nil then
-         GCD =  dur - (curtime - start)
-         if DKROT_Settings.GCD then
-            DKROT.Move.c:SetCooldown(start, dur)
-         end
-      else
-         GCD = 0
+      local gcdStart, gcdDur
+      GCD, gcdStart, gcdDur = DKRot:GetGCD()
+      if DKROT_Settings.GCD and GCD ~= 0 then
+         DKROT.Move.c:SetCooldown(start, dur)
       end
 
       --Runes
@@ -1005,7 +1016,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                DKROT.RuneBars[place]:SetMinMaxValues(0, cooldown)
                DKROT.RuneBars[place]:SetValue(cdtime)
                DKROT.RuneBars[place].back:SetTexture(r, g, b, 0.2)
-               DKROT.RuneBars[place].Spark:SetTexture(RuneTextue[GetRuneType(i)])
+               DKROT.RuneBars[place].Spark:SetTexture(RuneTexture[GetRuneType(i)])
                DKROT.RuneBars[place].Spark:SetPoint("CENTER", DKROT.RuneBars[place], "BOTTOM", 0, (cdtime <= 0 and 0) or (cdtime < cooldown and (80*cdtime)/cooldown) or 80)
 
                if cdtime > 0 then
@@ -1097,8 +1108,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                local spell, notint = select(1, UnitCastingInfo("target")), select(9, UnitCastingInfo("target"))
                if spell == nil then spell, notint = select(1, UnitChannelInfo("target")), select(8, UnitChannelInfo("target")) end
                if spell ~= nil and not notint then
-                  start, dur = GetSpellCooldown(spells["Mind Freeze"])
-                  if isOffCD(start, dur) then
+                  if isOffCD(spells["Mind Freeze"]) then
                      DKROT.Move.Interrupt:SetAlpha(1)
                   end
                end
@@ -1116,14 +1126,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             DKROT:UpdateCD(CDDisplayList[i], DKROT.CD[CDDisplayList[i]])
          else
             DKROT.CD[ceil(i/2)]:SetAlpha(0)
-         end
-      end
-
-      --GCD
-      if DKROT_Settings.GCD then
-         local start, dur = GetSpellCooldown(spells["Death Coil"])
-         if dur ~= 0 and start ~= nil then
-            DKROT.Move.c:SetCooldown(start, dur)
          end
       end
 
@@ -1392,14 +1394,30 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
       end
 
-      --Returns the total number of Death runes off CD
+      -- Returns the number of available runes of a specific type
+      -- in: runeType: The type of rune to fetch information for, allowDeathRunes: Whether or not to count deathrunes
+      -- out: availableRunes: number of available runes
+      function DKRot:RuneIsAvailable(runeType, allowDeathRunes)
+         allowDeathRunes = allowDeathRunes or false
+
+         local availableRunes = 0
+         for i = 1,6 do
+            local rt = GetRuneType(i)
+            if rt == runeType or (allowDeathRunes == true and rt == 4) then
+               availableRunes = availableRunes + 1
+            end
+         end
+
+         return availableRunes
+      end
+
+      -- Returns the total number of Death runes off CD
       function DKROT:DeathRunes()
          local count = 0
          local start, dur, cool
          for i = 1, 6 do
             if GetRuneType(i) == 4 then
-               start, dur, cool = GetRuneCooldown(i)
-               if cool or isOffCD(start, dur) then
+               if isRuneOffCD(i) then
                   count = count + 1
                end
             end
@@ -1411,8 +1429,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       function DKROT:DepletedRunes()
          local count = 6
          for i = 1, 6 do
-            local start, dur, cool = GetRuneCooldown(i)
-            if cool or isOffCD(start, dur) then
+            if isRuneOffCD(i) then
                count = count - 1
             end
          end
@@ -1422,8 +1439,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       --Returns if move is off cooldown or not
       function DKROT:QuickAOESpellCheck(move)
          if DKROT_Settings.MoveAltAOE and GetSpellTexture(move) ~= nil then
-            local start, dur = GetSpellCooldown(move)
-            if isOffCD(start, dur) then
+            if isOffCD(move) then
                return true
             end
          end
@@ -1842,7 +1858,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          if GetSpellTexture(spells["Soul Reaper"]) ~= nil
-            and (death >= 1 or frost <= 0)
             and UnitHealth("target")/UnitHealthMax("target") < 0.35
          then
             start, dur = GetSpellCooldown(spells["Soul Reaper"])
