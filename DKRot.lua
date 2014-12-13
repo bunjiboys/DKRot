@@ -58,7 +58,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if spells ~= nil then wipe(spells) end
       spells = {}
       spells = {
-         ["Global Cooldown"] = GetSpellInfo(61304), -- GCD
          ["Anti-Magic Shell"] = GetSpellInfo(48707), --lvl68
          ["Army of the Dead"] = GetSpellInfo(42650), --lvl80
          ["Blood Boil"] = GetSpellInfo(50842), --lvl56
@@ -166,6 +165,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          NormCDs = {--CDs that all DKs get
             spells["Anti-Magic Shell"],
             spells["Army of the Dead"],
+            spells["Blood Charge"],
+            spells["Chilblains"],
             spells["Dark Simulacrum"],
             spells["Death and Decay"],
             spells["Death Grip"],
@@ -271,6 +272,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          },
       }
       if debugg then print("DKROT:Cooldowns Loaded")end
+      return Cooldowns
    end
 
    function DKROT:LoadTrinkets()
@@ -505,7 +507,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    end
 
    local function isRuneOffCD(rune)
-      local start, dur, cool = GetRuneCooldown(i)
+      local start, dur, cool = GetRuneCooldown(rune)
       return cool or (dur + start - curtime - GCD <= 0)
    end
 
@@ -977,12 +979,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if debugg then print("DKROT:UpdatePosition")end
    end
 
-   function DKRot:GetGCD()
-      local start, dur = GetSpellCooldown(spells["Global Cooldown"])
+   -- Return the duration and start/duration of the GCD or 0,nil,nil if GCD is ready
+   function DKROT:GetGCD()
+      local start, dur = GetSpellCooldown(61304)
       if dur ~= 0 and start ~= nil then
          return dur - (curtime - start), start, dur
       else
-         return 0
+         return 0, nil, nil
       end
    end
 
@@ -996,9 +999,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       --GCD
       local gcdStart, gcdDur
-      GCD, gcdStart, gcdDur = DKRot:GetGCD()
+      GCD, gcdStart, gcdDur = DKROT:GetGCD()
       if DKROT_Settings.GCD and GCD ~= 0 then
-         DKROT.Move.c:SetCooldown(start, dur)
+         DKROT.Move.c:SetCooldown(gcdStart, gcdDur)
       end
 
       --Runes
@@ -1397,7 +1400,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       -- Returns the number of available runes of a specific type
       -- in: runeType: The type of rune to fetch information for, allowDeathRunes: Whether or not to count deathrunes
       -- out: availableRunes: number of available runes
-      function DKRot:RuneIsAvailable(runeType, allowDeathRunes)
+      function DKROT:RuneIsAvailable(runeType, allowDeathRunes)
          allowDeathRunes = allowDeathRunes or false
 
          local availableRunes = 0
@@ -1461,16 +1464,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if expires ~= nil then NPexpires = expires - curtime end
 
          --Check if Outbreak is off CD, is known and Player wants to use it in rotation
-         local start, dur =  GetSpellCooldown(spells["Outbreak"])
-         local outbreak = DKROT_Settings.CD[Current_Spec].Outbreak and IsSpellKnown(77575) and isOffCD(start, dur)
+         local outbreak = DKROT_Settings.CD[Current_Spec].Outbreak and IsSpellKnown(77575) and isOffCD(spells["Outbreak"])
 
          --Check if Unholy Blight is up, is known and Player wants to use it in rotation
-         local start, dur =  GetSpellCooldown(spells["Unholy Blight"])
-         local unholyblight = DKROT_Settings.CD[Current_Spec].UB and IsSpellKnown(115989) and isOffCD(start, dur)
+         local unholyblight = DKROT_Settings.CD[Current_Spec].UB and IsSpellKnown(115989) and isOffCD(spells["Unholy Blight"])
 
          --Check if Plague Leech is up, is known and Player wants to use it in rotation
-         local start, dur =  GetSpellCooldown(spells["Plague Leech"])
-         local plagueleech = DKROT_Settings.CD[Current_Spec].PL and IsSpellKnown(123693) and isOffCD(start, dur)
+         local plagueleech = DKROT_Settings.CD[Current_Spec].PL and IsSpellKnown(123693) and isOffCD(spells["Plague Leech"])
 
 
          -- Apply Frost Fever
@@ -1536,8 +1536,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if GetSpellTexture(spells["Death Pact"]) ~= nil
             and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
          then
-            start, dur = GetSpellCooldown(spells["Death Pact"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Death Pact"]) then
                return GetSpellTexture(spells["Death Pact"])
             end
          end
@@ -1551,8 +1550,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                )
                or UnitHealth("target")/UnitHealthMax("target") < 0.35
             then
-               start, dur = GetSpellCooldown(spells["Soul Reaper"])
-               if isOffCD(start, dur) then
+               if isOffCD(spells["Soul Reaper"]) then
                   return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
                end
             end
@@ -1560,14 +1558,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Defile
          if GetSpellTexture(spells["Defile"]) ~= nil then
-            start, dur = GetSpellCooldown(spells["Defile"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Defile"]) then
                return DKROT:GetRangeandIcon(icon, spells["Defile"])
             end
          end
 
          -- Diseases
-         if disease then   return move   end
+         if disease then return move end
 
          -- Dark Transformation
          if GetSpellTexture(spells["Dark Transformation"]) ~= nil
@@ -1603,8 +1600,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             if DKROT_Settings.MoveAltDND then
                --Death and Decay
                if GetSpellTexture(spells["Death and Decay"]) ~= nil then
-                  start, dur = GetSpellCooldown(spells["Death and Decay"])
-                  if isOffCD(start, dur) then
+                  if isOffCD(spells["Death and Decay"]) then
                      DKROT.Move.AOE:SetAlpha(1)
                      DKROT.Move.AOE.Icon:SetTexture(GetSpellTexture(spells["Death and Decay"]))
                   end
@@ -1641,8 +1637,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             if DKROT_Settings.MoveAltDND then
                --Death and Decay
                if GetSpellTexture(spells["Death and Decay"]) ~= nil then
-                  start, dur = GetSpellCooldown(spells["Death and Decay"])
-                  if isOffCD(start, dur) then
+                  if isOffCD(spells["Death and Decay"]) then
                      DKROT.Move.AOE:SetAlpha(1)
                      DKROT.Move.AOE.Icon:SetTexture(GetSpellTexture(spells["Death and Decay"]))
                   end
@@ -1669,17 +1664,16 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          --Blood Tap with >= 5 Charges
          if GetSpellTexture(spells["Blood Tap"])
-         and DKROT_Settings.CD[Current_Spec].BT
-         and select(4,UnitBuff("player", spells["Blood Charge"])) ~= nil
-         and select(4,UnitBuff("player", spells["Blood Charge"])) >= 5
-         and (frost >= 0 or unholy >= 0 or blood >= 0) then
+            and DKROT_Settings.CD[Current_Spec].BT
+            and bloodCharges ~= nil and bloodCharges >= 5
+            and (frost >= 0 or unholy >= 0 or blood >= 0)
+         then
             return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
          end
 
          --Empower Rune Weapon
          if GetSpellTexture(spells["Empower Rune Weapon"]) ~= nil and DKROT_Settings.CD[Current_Spec].ERW then
-            start, dur = GetSpellCooldown(spells["Empower Rune Weapon"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Empower Rune Weapon"]) then
                return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
             end
          end
@@ -1702,8 +1696,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if GetSpellTexture(spells["Death Pact"]) ~= nil
             and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
          then
-            start, dur = GetSpellCooldown(spells["Death Pact"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Death Pact"]) then
                return GetSpellTexture(spells["Death Pact"])
             end
          end
@@ -1717,8 +1710,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                )
                or UnitHealth("target")/UnitHealthMax("target") < 0.35
             then
-               start, dur = GetSpellCooldown(spells["Soul Reaper"])
-               if isOffCD(start, dur) then
+               if isOffCD(spells["Soul Reaper"]) then
                   return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
                end
             end
@@ -1726,8 +1718,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Defile
          if GetSpellTexture(spells["Defile"]) ~= nil then
-            start, dur = GetSpellCooldown(spells["Defile"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Defile"]) then
                return DKROT:GetRangeandIcon(icon, spells["Defile"])
             end
          end
@@ -1769,8 +1760,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             if DKROT_Settings.MoveAltDND then
                --Death and Decay
                if GetSpellTexture(spells["Death and Decay"]) ~= nil then
-                  start, dur = GetSpellCooldown(spells["Death and Decay"])
-                  if isOffCD(start, dur) then
+                  if isOffCD(spells["Death and Decay"]) then
                      DKROT.Move.AOE:SetAlpha(1)
                      DKROT.Move.AOE.Icon:SetTexture(GetSpellTexture(spells["Death and Decay"]))
                   end
@@ -1825,8 +1815,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          --Empower Rune Weapon
          if GetSpellTexture(spells["Empower Rune Weapon"]) ~= nil
          and DKROT_Settings.CD[Current_Spec].ERW then
-            start, dur = GetSpellCooldown(spells["Empower Rune Weapon"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Empower Rune Weapon"]) then
                return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
             end
          end
@@ -1851,8 +1840,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if GetSpellTexture(spells["Death Pact"]) ~= nil
             and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
          then
-            start, dur = GetSpellCooldown(spells["Death Pact"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Death Pact"]) then
                return GetSpellTexture(spells["Death Pact"])
             end
          end
@@ -1860,16 +1848,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if GetSpellTexture(spells["Soul Reaper"]) ~= nil
             and UnitHealth("target")/UnitHealthMax("target") < 0.35
          then
-            start, dur = GetSpellCooldown(spells["Soul Reaper"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Soul Reaper"]) then
                return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
             end
          end
 
          -- Defile
          if GetSpellTexture(spells["Defile"]) ~= nil then
-            start, dur = GetSpellCooldown(spells["Defile"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Defile"]) then
                return DKROT:GetRangeandIcon(icon, spells["Defile"])
             end
          end
@@ -1881,8 +1867,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Breath of Sindragosa
          if GetSpellTexture(spells["Breath of Sindragosa"]) ~= nil and UnitPower("player") > 30 then
-            start, dur = GetSpellCooldown(spells["Breath of Sindragosa"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Breath of Sindragosa"]) then
                return DKROT:GetRangeandIcon(icon, spells["Breath of Sindragosa"])
             end
          end
@@ -1949,8 +1934,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          --Empower Rune Weapon
          if GetSpellTexture(spells["Empower Rune Weapon"]) ~= nil
          and DKROT_Settings.CD[Current_Spec].ERW then
-            start, dur = GetSpellCooldown(spells["Empower Rune Weapon"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Empower Rune Weapon"]) then
                return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
             end
          end
@@ -1973,8 +1957,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if GetSpellTexture(spells["Death Pact"]) ~= nil
             and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
          then
-            start, dur = GetSpellCooldown(spells["Death Pact"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Death Pact"]) then
                return GetSpellTexture(spells["Death Pact"])
             end
          end
@@ -1984,24 +1967,21 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             and (death >= 1 or frost <= 0)
             and UnitHealth("target")/UnitHealthMax("target") < 0.35
          then
-            start, dur = GetSpellCooldown(spells["Soul Reaper"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Soul Reaper"]) then
                return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
             end
          end
 
          -- Defile
          if GetSpellTexture(spells["Defile"]) ~= nil then
-            start, dur = GetSpellCooldown(spells["Defile"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Defile"]) then
                return DKROT:GetRangeandIcon(icon, spells["Defile"])
             end
          end
 
          -- Breath of Sindragosa
          if GetSpellTexture(spells["Breath of Sindragosa"]) ~= nil and UnitPower("player") > 30 then
-            start, dur = GetSpellCooldown(spells["Breath of Sindragosa"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Breath of Sindragosa"]) then
                return DKROT:GetRangeandIcon(icon, spells["Breath of Sindragosa"])
             end
          end
@@ -2036,8 +2016,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if GetSpellTexture(spells["Death and Decay"]) ~= nil
             and DKROT_Settings.MoveAltDND and lunholy <= 0
          then
-            start, dur = GetSpellCooldown(spells["Death and Decay"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Death and Decay"]) then
                return DKROT:GetRangeandIcon(icon, spells["Death and Decay"])
             end
          end
@@ -2094,8 +2073,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          --Empower Rune Weapon
          if GetSpellTexture(spells["Empower Rune Weapon"]) ~= nil
          and DKROT_Settings.CD[Current_Spec].ERW then
-            start, dur = GetSpellCooldown(spells["Empower Rune Weapon"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Empower Rune Weapon"]) then
                return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
             end
          end
@@ -2117,8 +2095,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if GetSpellTexture(spells["Death Pact"]) ~= nil
             and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
          then
-            start, dur = GetSpellCooldown(spells["Death Pact"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Death Pact"]) then
                return GetSpellTexture(spells["Death Pact"])
             end
          end
@@ -2126,16 +2103,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          --Bone Shield
          if GetSpellTexture(spells["Bone Shield"]) ~= nil
          and select(7, UnitBuff("player", spells["Bone Shield"])) == nil   then
-            start, dur = GetSpellCooldown(spells["Bone Shield"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Bone Shield"]) then
                return GetSpellTexture(spells["Bone Shield"])
             end
          end
 
          -- Defile
          if GetSpellTexture(spells["Defile"]) ~= nil then
-            start, dur = GetSpellCooldown(spells["Defile"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Defile"]) then
                return DKROT:GetRangeandIcon(icon, spells["Defile"])
             end
          end
@@ -2144,8 +2119,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if lblood <= 2 and GetSpellTexture(spells["Soul Reaper"]) ~= nil
             and UnitHealth("target")/UnitHealthMax("target") < 0.35
          then
-            start, dur = GetSpellCooldown(spells["Soul Reaper"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Soul Reaper"]) then
                return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
             end
          end
@@ -2162,8 +2136,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Breath of Sindragosa
          if GetSpellTexture(spells["Breath of Sindragosa"]) ~= nil and UnitPower("player") > 30 then
-            start, dur = GetSpellCooldown(spells["Breath of Sindragosa"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Breath of Sindragosa"]) then
                return DKROT:GetRangeandIcon(icon, spells["Breath of Sindragosa"])
             end
          end
@@ -2192,8 +2165,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             if DKROT_Settings.MoveAltDND then
                --Death and Decay
                if GetSpellTexture(spells["Death and Decay"]) ~= nil then
-                  start, dur = GetSpellCooldown(spells["Death and Decay"])
-                  if isOffCD(start, dur) then
+                  if isOffCD(spells["Death and Decay"]) then
                      DKROT.Move.AOE:SetAlpha(1)
                      DKROT.Move.AOE.Icon:SetTexture(GetSpellTexture(spells["Death and Decay"]))
                   end
@@ -2217,8 +2189,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             and (frost >= 0 or unholy >= 0 or blood >= 0)
             and UnitPower("player") < 80
          then
-            start, dur = GetSpellCooldown(spells["Empower Rune Weapon"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Empower Rune Weapon"]) then
                return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
             end
          end
@@ -2244,8 +2215,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if GetSpellTexture(spells["Death Pact"]) ~= nil
             and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
          then
-            start, dur = GetSpellCooldown(spells["Death Pact"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Death Pact"]) then
                return GetSpellTexture(spells["Death Pact"])
             end
          end
@@ -2298,8 +2268,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          --Empower Rune Weapon
          if GetSpellTexture(spells["Empower Rune Weapon"]) ~= nil
          and DKROT_Settings.CD[Current_Spec].ERW then
-            start, dur = GetSpellCooldown(spells["Empower Rune Weapon"])
-            if isOffCD(start, dur) then
+            if isOffCD(spells["Empower Rune Weapon"]) then
                return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
             end
          end
@@ -2421,8 +2390,17 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT:OptionsRefresh()
    end
 
+   local delayedInit = false
    function DKROT:Initialize()
       if debugg then print("DKROT:Initialize")end
+      if InCombatLockdown() then
+         if delayedInit == false then
+            delayedInit = true
+            print('DKROT:Delaying initialization due to combat lockdown')
+         end
+
+         return
+      end
       mutex = true
 
       DKROT:LoadSpells()
@@ -2507,6 +2485,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    --Function to be called when events triggered
    local slottimer = 0
    DKROT:SetScript("OnEvent", function(_, e, ...)
+      -- Delayed addon initialization due to combat lockdown
       if loaded then
          --if debugg then print("DKROT:Event "..e)end
          if e == "COMBAT_LOG_EVENT_UNFILTERED" then
@@ -2555,6 +2534,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    --Main function to run addon
    local DTupdatetimer = 0
    local DTchecktimer = 0
+   local scheduledInit = false
    DKROT:SetScript("OnUpdate", function()
       curtime = GetTime()
       --Make sure it only updates at max, once every 0.15 sec
