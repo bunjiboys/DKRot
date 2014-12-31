@@ -44,7 +44,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    --If User has Button Facade, then set up skinning function
    local LBF = LibStub("LibButtonFacade", true)
-   if LBF then
+   local MSQ = LibStub("Masque", true)
+   if LBF or MSQ then
+      print("Masque or ButtonFacade detected")
       function DKROT:OnSkin(skin, gloss, backdrop, _, _, colours)
          DKROT_Settings.lbf[1] = skin
          DKROT_Settings.lbf[2] = gloss
@@ -2443,6 +2445,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             LBF:Group("DKROT"):AddButton(DKROT.CD[CDDisplayList[i]])
          end
          LBF:RegisterSkinCallback('DKROT', self.OnSkin, self)
+      end
+
+      -- Setup Masque if enabled
+      if MSQ then
+         local mgrp = MSQ:Group("DKROT", "DKRot")
+         mgrp:AddButton(DKROT.Diseases.FF)
+         mgrp:AddButton(DKROT.Diseases.BP)
+         mgrp:AddButton(DKROT.Move)
+         mgrp:AddButton(DKROT.Move.AOE)
+         mgrp:AddButton(DKROT.Move.Interrupt)
+         for i = 1, #CDDisplayList do
+            mgrp:AddButton(DKROT.CD[CDDisplayList[i]])
+         end
       end
 
       InterfaceOptions_AddCategory(DKROT_Options)
