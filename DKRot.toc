@@ -16,5 +16,13 @@ Localization\localization.lua
 # XML UI objects
 ui\Options.xml
 
+# Initialize variables we need everywhere
+init.lua
+
+# Rotation files
+rotations\blood.lua
+rotations\frost.lua
+rotations\unholy.lua
+
 # Core addon functionality
-DKRot.lua
+core.lua

@@ -1,18 +1,17 @@
 local debugg = false
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    if debugg then print("DKROT:Starting")end
-   DKROT_VERSION = GetAddOnMetadata("DKRot", "Version")
+   local _, DKROT = ...
 
    -----Create Main Frame-----
-   local DKROT = CreateFrame("Button", "DKROT", UIParent)
-   DKROT:SetWidth(94)
-   DKROT:SetHeight(68)
-   DKROT:SetFrameStrata("BACKGROUND")
+   DKROT.MainFrame = CreateFrame("Button", "DKROT", UIParent)
+   DKROT.MainFrame:SetWidth(94)
+   DKROT.MainFrame:SetHeight(68)
+   DKROT.MainFrame:SetFrameStrata("BACKGROUND")
 
    -----Locals-----
-   --Constants
+   -- Constants
    local PLAYER_NAME, PLAYER_RACE, PLAYER_PRESENCE = UnitName("player"), select(2, UnitRace("player")), 0
-   local SPEC_UNKNOWN, SPEC_BLOOD, SPEC_FROST, SPEC_UNHOLY = 0, 1, 2, 3
    local BBUUFF, BBFFUU, UUBBFF, UUFFBB, FFUUBB, FFBBUU = 1, 2, 3, 4, 5, 6
    local DISEASE_BOTH, DISEASE_ONE, DISEASE_NONE = 2, 1, 0
    local THREAT_OFF, THREAT_HEALTH, THREAT_ANALOG, THREAT_DIGITAL = 0, 0.1, 1, 99
@@ -28,7 +27,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    }
 
    --Variables
-   local DTspells
    local loaded, mutex = false, false
    local mousex, mousey
    local font = 'Interface\\AddOns\\DKRot\\Font.ttf'
@@ -37,7 +35,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local simtime = 0
    local bsamount = 0
    local GCD, curtime, launchtime = 0, 0, 0
-   local Current_Spec = SPEC_UNKNOWN
    local updatetimer = 0
 
    if debugg then print("DKROT:Locals Done")end
@@ -46,7 +43,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local LBF = LibStub("LibButtonFacade", true)
    local MSQ = LibStub("Masque", true)
    if LBF or MSQ then
-      print("Masque or ButtonFacade detected")
       function DKROT:OnSkin(skin, gloss, backdrop, _, _, colours)
          DKROT_Settings.lbf[1] = skin
          DKROT_Settings.lbf[2] = gloss
@@ -55,11 +51,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
    end
 
-   local spells
    function DKROT:LoadSpells()
-      if spells ~= nil then wipe(spells) end
-      spells = {}
-      spells = {
+      if DKROT.spells ~= nil then wipe(DKROT.spells) end
+      DKROT.spells = {}
+      DKROT.spells = {
          ["Anti-Magic Shell"] = GetSpellInfo(48707), --lvl68
          ["Army of the Dead"] = GetSpellInfo(42650), --lvl80
          ["Blood Boil"] = GetSpellInfo(50842), --lvl56
@@ -148,133 +143,132 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          ["BloodElf"] = GetSpellInfo(28730),--Arcane Torrent
          ["Goblin"] = GetSpellInfo(69070),--Rocket Jump
       }
-      DTspells = { -- ID, Duration, Effected by talent
-         [spells["Frost Fever"]] = {55095, 30},
-         [spells["Blood Plague"]] = {55078, 30},
-         [spells["Death and Decay"]] = {43265, 10},
-         [spells["Defile"]] = {152280, 10},
-         [spells["Necrotic Plague"]] = {152281, 30},
-         [spells["Chilblains"]] = {50435, 10},
+      DKROT.DTspells = { -- ID, Duration, Effected by talent
+         [DKROT.spells["Frost Fever"]] = {55095, 30},
+         [DKROT.spells["Blood Plague"]] = {55078, 30},
+         [DKROT.spells["Death and Decay"]] = {43265, 10},
+         [DKROT.spells["Defile"]] = {152280, 10},
+         [DKROT.spells["Necrotic Plague"]] = {152281, 30},
+         [DKROT.spells["Chilblains"]] = {50435, 10},
       }
       if debugg then print("DKROT:Spells Loaded")end
    end
 
-   local Cooldowns
    function DKROT:LoadCooldowns()
-      if Cooldowns~= nil then wipe(Cooldowns) end
-      Cooldowns = {}
-      Cooldowns = {
+      if DKROT.Cooldowns~= nil then wipe(DKROT.Cooldowns) end
+      DKROT.Cooldowns = {}
+      DKROT.Cooldowns = {
          NormCDs = {--CDs that all DKs get
-            spells["Anti-Magic Shell"],
-            spells["Army of the Dead"],
-            spells["Blood Charge"],
-            spells["Chilblains"],
-            spells["Dark Simulacrum"],
-            spells["Death and Decay"],
-            spells["Death Grip"],
-            spells["Empower Rune Weapon"],
-            spells["Horn of Winter"],
-            spells["Icebound Fortitude"],
-            spells["Mind Freeze"],
-            spells["Outbreak"],
-            spells["Raise Ally"],
-            spells["Raise Dead"],
-            spells["Strangulate"],
-            spells["Unholy Blight"],
-            spells["Unholy Strength"],
+            DKROT.spells["Anti-Magic Shell"],
+            DKROT.spells["Army of the Dead"],
+            DKROT.spells["Blood Charge"],
+            DKROT.spells["Chilblains"],
+            DKROT.spells["Dark Simulacrum"],
+            DKROT.spells["Death and Decay"],
+            DKROT.spells["Death Grip"],
+            DKROT.spells["Empower Rune Weapon"],
+            DKROT.spells["Horn of Winter"],
+            DKROT.spells["Icebound Fortitude"],
+            DKROT.spells["Mind Freeze"],
+            DKROT.spells["Outbreak"],
+            DKROT.spells["Raise Ally"],
+            DKROT.spells["Raise Dead"],
+            DKROT.spells["Strangulate"],
+            DKROT.spells["Unholy Blight"],
+            DKROT.spells["Unholy Strength"],
          },
          TalentCDs ={
-            spells["Anti-Magic Zone"],
-            spells["Asphyxiate"],
-            spells["Conversion"],
-            spells["Death's Advance"],
-            spells["Death Pact"],
-            spells["Desecrated Ground"],
-            spells["Gorefiend's Grasp"],
-            spells["Lichborne"],
-            spells["Plague Leech"],
-            spells["Remorseless Winter"],
-            spells["Runic Corruption"],
+            DKROT.spells["Anti-Magic Zone"],
+            DKROT.spells["Asphyxiate"],
+            DKROT.spells["Conversion"],
+            DKROT.spells["Death's Advance"],
+            DKROT.spells["Death Pact"],
+            DKROT.spells["Desecrated Ground"],
+            DKROT.spells["Gorefiend's Grasp"],
+            DKROT.spells["Lichborne"],
+            DKROT.spells["Plague Leech"],
+            DKROT.spells["Remorseless Winter"],
+            DKROT.spells["Runic Corruption"],
          },
          BloodCDs = {
-            spells["Blood Shield"],
-            spells["Bone Shield"],
-            spells["Crimson Scourge"],
-            spells["Dancing Rune Weapon"],
-            spells["Dark Command"],
-            spells["Rune Tap"],
-            spells["Scent of Blood"],
-            spells["Vampiric Blood"],
-            spells["Will of the Necropolis"],
+            DKROT.spells["Blood Shield"],
+            DKROT.spells["Bone Shield"],
+            DKROT.spells["Crimson Scourge"],
+            DKROT.spells["Dancing Rune Weapon"],
+            DKROT.spells["Dark Command"],
+            DKROT.spells["Rune Tap"],
+            DKROT.spells["Scent of Blood"],
+            DKROT.spells["Vampiric Blood"],
+            DKROT.spells["Will of the Necropolis"],
          },
          FrostCDs = {
-            spells["Freezing Fog"],
-            spells["Killing Machine"],
-            spells["Pillar of Frost"],
+            DKROT.spells["Freezing Fog"],
+            DKROT.spells["Killing Machine"],
+            DKROT.spells["Pillar of Frost"],
          },
          UnholyCDs = {
-            spells["Dark Transformation"],
-            spells["Gnaw"],
-            spells["Shadow Infusion"],
-            spells["Sudden Doom"],
-            spells["Summon Gargoyle"],
+            DKROT.spells["Dark Transformation"],
+            DKROT.spells["Gnaw"],
+            DKROT.spells["Shadow Infusion"],
+            DKROT.spells["Sudden Doom"],
+            DKROT.spells["Summon Gargoyle"],
          },
          Buffs = {--List of Buffs {Who gets buff?, Is it also a CD?}
             --normal
-            [spells["Anti-Magic Shell"]] = {"player", true},
-            [spells["Asphyxiate"]] = {"target", true},
-            [spells["Blood Charge"]] = {"player", false},
-            [spells["Chilblains"]] = {"target", false},
-            [spells["Conversion"]] = {"player", false},
-            [spells["Dark Simulacrum"]] = {"target", true},
-            [spells["Death's Advance"]] = {"player", true},
-            [spells["Horn of Winter"]] = {"player", true},
-            [spells["Icebound Fortitude"]] = {"player", true},
-            [spells["Lichborne"]] = {"player", true},
-            [spells["Remorseless Winter"]] = {"player", true},
-            [spells["Remorseless Winter"]] = {"target", true},
-            [spells["Runic Corruption"]] = {"player", false},
-            [spells["Soul Reaper"]] = {"target", false},
-            [spells["Strangulate"]] = {"target", true},
-            [spells["Unholy Blight"]] = {"player", true},
-            [spells["Unholy Strength"]] = {"player", false},
+            [DKROT.spells["Anti-Magic Shell"]] = {"player", true},
+            [DKROT.spells["Asphyxiate"]] = {"target", true},
+            [DKROT.spells["Blood Charge"]] = {"player", false},
+            [DKROT.spells["Chilblains"]] = {"target", false},
+            [DKROT.spells["Conversion"]] = {"player", false},
+            [DKROT.spells["Dark Simulacrum"]] = {"target", true},
+            [DKROT.spells["Death's Advance"]] = {"player", true},
+            [DKROT.spells["Horn of Winter"]] = {"player", true},
+            [DKROT.spells["Icebound Fortitude"]] = {"player", true},
+            [DKROT.spells["Lichborne"]] = {"player", true},
+            [DKROT.spells["Remorseless Winter"]] = {"player", true},
+            [DKROT.spells["Remorseless Winter"]] = {"target", true},
+            [DKROT.spells["Runic Corruption"]] = {"player", false},
+            [DKROT.spells["Soul Reaper"]] = {"target", false},
+            [DKROT.spells["Strangulate"]] = {"target", true},
+            [DKROT.spells["Unholy Blight"]] = {"player", true},
+            [DKROT.spells["Unholy Strength"]] = {"player", false},
 
             --blood
-            [spells["Blood Shield"]] = {"player", false},
-            [spells["Bone Shield"]] = {"player", true},
-            [spells["Crimson Scourge"]] = {"player", false},
-            [spells["Dancing Rune Weapon"]] = {"player", true},
-            [spells["Scent of Blood"]] = {"player", false},
-            [spells["Vampiric Blood"]] = {"player", true},
-            [spells["Will of the Necropolis"]] = {"player", false},
+            [DKROT.spells["Blood Shield"]] = {"player", false},
+            [DKROT.spells["Bone Shield"]] = {"player", true},
+            [DKROT.spells["Crimson Scourge"]] = {"player", false},
+            [DKROT.spells["Dancing Rune Weapon"]] = {"player", true},
+            [DKROT.spells["Scent of Blood"]] = {"player", false},
+            [DKROT.spells["Vampiric Blood"]] = {"player", true},
+            [DKROT.spells["Will of the Necropolis"]] = {"player", false},
 
             --frost
-            [spells["Pillar of Frost"]] = {"player", true},
-            [spells["Freezing Fog"]] = {"player", false},
-            [spells["Killing Machine"]] = {"player", false},
+            [DKROT.spells["Pillar of Frost"]] = {"player", true},
+            [DKROT.spells["Freezing Fog"]] = {"player", false},
+            [DKROT.spells["Killing Machine"]] = {"player", false},
 
             --unholy
-            [spells["Dark Transformation"]] = {"pet", false},
-            [spells["Shadow Infusion"]] = {"pet", false},
-            [spells["Sudden Doom"]] = {"player", false},
+            [DKROT.spells["Dark Transformation"]] = {"pet", false},
+            [DKROT.spells["Shadow Infusion"]] = {"pet", false},
+            [DKROT.spells["Sudden Doom"]] = {"player", false},
          },
          Moves = {--List of Moves that can be watched when availible
-            spells["Blood Boil"],
-            spells["Death Coil"],
-            spells["Death Siphon"],
-            spells["Death Strike"],
-            spells["Festering Strike"],
-            spells["Frost Strike"],
-            spells["Howling Blast"],
-            spells["Icy Touch"],
-            spells["Obliterate"],
-            spells["Plague Strike"],
-            spells["Scourge Strike"],
-            spells["Soul Reaper"],
+            DKROT.spells["Blood Boil"],
+            DKROT.spells["Death Coil"],
+            DKROT.spells["Death Siphon"],
+            DKROT.spells["Death Strike"],
+            DKROT.spells["Festering Strike"],
+            DKROT.spells["Frost Strike"],
+            DKROT.spells["Howling Blast"],
+            DKROT.spells["Icy Touch"],
+            DKROT.spells["Obliterate"],
+            DKROT.spells["Plague Strike"],
+            DKROT.spells["Scourge Strike"],
+            DKROT.spells["Soul Reaper"],
          },
       }
       if debugg then print("DKROT:Cooldowns Loaded")end
-      return Cooldowns
+      return DKROT.Cooldowns
    end
 
    function DKROT:LoadTrinkets()
@@ -285,204 +279,204 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             loaded = false
             if debugg then print("DKROT:Trinket Not Found - Buff: "..info[1])end
          else
-            Cooldowns.Trinkets[name] = info
+            DKROT.Cooldowns.Trinkets[name] = info
          end
       end
-      Cooldowns.Trinkets = {}
+      DKROT.Cooldowns.Trinkets = {}
 
       --Test trinket that doesn't exist
       --AddTrinket(select(1, GetItemInfo(1)), {"Test Trinket"})
 
       --On-Use
       --Impatience of Youth
-      spells["Thrill of Victory"] = GetSpellInfo(91828)
-      AddTrinket(select(1, GetItemInfo(62469)), {spells["Thrill of Victory"], true, 62469})
+      DKROT.spells["Thrill of Victory"] = GetSpellInfo(91828)
+      AddTrinket(select(1, GetItemInfo(62469)), {DKROT.spells["Thrill of Victory"], true, 62469})
 
       --Vial of Stolen Memories
-      spells["Memory of Invincibility"] = GetSpellInfo(92213)
-      AddTrinket(select(1, GetItemInfo(59515)), {spells["Memory of Invincibility"], true, 59515})
+      DKROT.spells["Memory of Invincibility"] = GetSpellInfo(92213)
+      AddTrinket(select(1, GetItemInfo(59515)), {DKROT.spells["Memory of Invincibility"], true, 59515})
 
       --Figurine - King of Boars
-      spells["King of Boars"] = GetSpellInfo(73522)
-      AddTrinket(select(1, GetItemInfo(52351)), {spells["King of Boars"], true, 52351})
+      DKROT.spells["King of Boars"] = GetSpellInfo(73522)
+      AddTrinket(select(1, GetItemInfo(52351)), {DKROT.spells["King of Boars"], true, 52351})
 
       --Figurine - Earthen Guardian
-      spells["Earthen Guardian"] = GetSpellInfo(73550)
-      AddTrinket(select(1, GetItemInfo(52352)), {spells["Earthen Guardian"], true, 52352})
+      DKROT.spells["Earthen Guardian"] = GetSpellInfo(73550)
+      AddTrinket(select(1, GetItemInfo(52352)), {DKROT.spells["Earthen Guardian"], true, 52352})
 
       --Might of the Ocean
-      spells["Typhoon"] = GetSpellInfo(91340)
-      AddTrinket(select(1, GetItemInfo(56285)), {spells["Typhoon"], true, 56285})
+      DKROT.spells["Typhoon"] = GetSpellInfo(91340)
+      AddTrinket(select(1, GetItemInfo(56285)), {DKROT.spells["Typhoon"], true, 56285})
 
       --Magnetite Mirror
-      spells["Polarization"] = GetSpellInfo(91351)
-      AddTrinket(select(1, GetItemInfo(55814)), {spells["Polarization"], true, 55814})
+      DKROT.spells["Polarization"] = GetSpellInfo(91351)
+      AddTrinket(select(1, GetItemInfo(55814)), {DKROT.spells["Polarization"], true, 55814})
 
       --Mirror of Broken Images
-      spells["Image of Immortality"] = GetSpellInfo(92222)
-      AddTrinket(select(1, GetItemInfo(62466)), {spells["Image of Immortality"], true, 62466})
+      DKROT.spells["Image of Immortality"] = GetSpellInfo(92222)
+      AddTrinket(select(1, GetItemInfo(62466)), {DKROT.spells["Image of Immortality"], true, 62466})
 
       --Essence of the Eternal Flame
-      spells["Essence of the Eternal Flame"] = GetSpellInfo(97010)
-      AddTrinket(select(1, GetItemInfo(69002)), {spells["Essence of the Eternal Flame"], true, 69002})
+      DKROT.spells["Essence of the Eternal Flame"] = GetSpellInfo(97010)
+      AddTrinket(select(1, GetItemInfo(69002)), {DKROT.spells["Essence of the Eternal Flame"], true, 69002})
 
       --Moonwell Phial
-      spells["Summon Splashing Waters"] = GetSpellInfo(101492)
-      AddTrinket(select(1, GetItemInfo(70143)), {spells["Summon Splashing Waters"], true, 70143})
+      DKROT.spells["Summon Splashing Waters"] = GetSpellInfo(101492)
+      AddTrinket(select(1, GetItemInfo(70143)), {DKROT.spells["Summon Splashing Waters"], true, 70143})
 
       --Scales of Life
-      spells["Weight of a Feather"] = GetSpellInfo(97117)
-      AddTrinket(select(1, GetItemInfo(69109)), {spells["Weight of a Feather"], true, 69109})
+      DKROT.spells["Weight of a Feather"] = GetSpellInfo(97117)
+      AddTrinket(select(1, GetItemInfo(69109)), {DKROT.spells["Weight of a Feather"], true, 69109})
 
       --Fire of the Deep
-      spells["Elusive"] = GetSpellInfo(109779)
-      AddTrinket(select(1, GetItemInfo(78008)), {spells["Elusive"], true, 78008})
+      DKROT.spells["Elusive"] = GetSpellInfo(109779)
+      AddTrinket(select(1, GetItemInfo(78008)), {DKROT.spells["Elusive"], true, 78008})
 
       --Rotting Skull
-      spells["Titanic Strength"] = GetSpellInfo(109746)
-      AddTrinket(select(1, GetItemInfo(77116)), {spells["Titanic Strength"], true, 77116})
+      DKROT.spells["Titanic Strength"] = GetSpellInfo(109746)
+      AddTrinket(select(1, GetItemInfo(77116)), {DKROT.spells["Titanic Strength"], true, 77116})
 
       --Soul Barrier
-      spells["Soul Barrier"] = GetSpellInfo(138979)
-      AddTrinket(select(1, GetItemInfo(94528)), {spells["Soul Barrier"], true, 94528})
+      DKROT.spells["Soul Barrier"] = GetSpellInfo(138979)
+      AddTrinket(select(1, GetItemInfo(94528)), {DKROT.spells["Soul Barrier"], true, 94528})
 
       --Badge of Victory
-      spells["Call of Victory"] = GetSpellInfo(92224)
-      AddTrinket(select(1, GetItemInfo(64689)), {spells["Call of Victory"], true, 64689})--Bloodthirsty Gladiator's
-      AddTrinket(select(1, GetItemInfo(61034)), {spells["Call of Victory"], true, 61034})--Vicious Gladiator's s9
-      AddTrinket(select(1, GetItemInfo(70519)), {spells["Call of Victory"], true, 70519})--Vicious Gladiator's s10
-      AddTrinket(select(1, GetItemInfo(70400)), {spells["Call of Victory"], true, 70400})--Ruthless Gladiator's s10
-      AddTrinket(select(1, GetItemInfo(72450)), {spells["Call of Victory"], true, 72450})--Ruthless Gladiator's s11
-      AddTrinket(select(1, GetItemInfo(73496)), {spells["Call of Victory"], true, 73496})--Cataclysmic Gladiator's s11
-      AddTrinket(select(1, GetItemInfo(91410)), {spells["Call of Victory"], true, 126679})--Tyrannical Gladiator's s13
-      AddTrinket(select(1, GetItemInfo(94349)), {spells["Call of Victory"], true, 126679})--Tyrannical Gladiator's s13
+      DKROT.spells["Call of Victory"] = GetSpellInfo(92224)
+      AddTrinket(select(1, GetItemInfo(64689)), {DKROT.spells["Call of Victory"], true, 64689})--Bloodthirsty Gladiator's
+      AddTrinket(select(1, GetItemInfo(61034)), {DKROT.spells["Call of Victory"], true, 61034})--Vicious Gladiator's s9
+      AddTrinket(select(1, GetItemInfo(70519)), {DKROT.spells["Call of Victory"], true, 70519})--Vicious Gladiator's s10
+      AddTrinket(select(1, GetItemInfo(70400)), {DKROT.spells["Call of Victory"], true, 70400})--Ruthless Gladiator's s10
+      AddTrinket(select(1, GetItemInfo(72450)), {DKROT.spells["Call of Victory"], true, 72450})--Ruthless Gladiator's s11
+      AddTrinket(select(1, GetItemInfo(73496)), {DKROT.spells["Call of Victory"], true, 73496})--Cataclysmic Gladiator's s11
+      AddTrinket(select(1, GetItemInfo(91410)), {DKROT.spells["Call of Victory"], true, 126679})--Tyrannical Gladiator's s13
+      AddTrinket(select(1, GetItemInfo(94349)), {DKROT.spells["Call of Victory"], true, 126679})--Tyrannical Gladiator's s13
 
       --PvP Trinkets
-      spells["PvP Trinket"] = GetSpellInfo(42292)
-      AddTrinket(select(1, GetItemInfo(64794)), {spells["PvP Trinket"], true, 64794})--Bloodthirsty
-      AddTrinket(select(1, GetItemInfo(60807)), {spells["PvP Trinket"], true, 60807})--Vicious s9
-      AddTrinket(select(1, GetItemInfo(70607)), {spells["PvP Trinket"], true, 70607})--Vicious s10
-      AddTrinket(select(1, GetItemInfo(70395)), {spells["PvP Trinket"], true, 70395})--Ruthless s10
-      AddTrinket(select(1, GetItemInfo(72413)), {spells["PvP Trinket"], true, 72413})--Ruthless s11
-      AddTrinket(select(1, GetItemInfo(73537)), {spells["PvP Trinket"], true, 73537})--Cataclysmic s11
+      DKROT.spells["PvP Trinket"] = GetSpellInfo(42292)
+      AddTrinket(select(1, GetItemInfo(64794)), {DKROT.spells["PvP Trinket"], true, 64794})--Bloodthirsty
+      AddTrinket(select(1, GetItemInfo(60807)), {DKROT.spells["PvP Trinket"], true, 60807})--Vicious s9
+      AddTrinket(select(1, GetItemInfo(70607)), {DKROT.spells["PvP Trinket"], true, 70607})--Vicious s10
+      AddTrinket(select(1, GetItemInfo(70395)), {DKROT.spells["PvP Trinket"], true, 70395})--Ruthless s10
+      AddTrinket(select(1, GetItemInfo(72413)), {DKROT.spells["PvP Trinket"], true, 72413})--Ruthless s11
+      AddTrinket(select(1, GetItemInfo(73537)), {DKROT.spells["PvP Trinket"], true, 73537})--Cataclysmic s11
 
-      AddTrinket(select(1, GetItemInfo(91329)), {spells["PvP Trinket"], true, 91329})--Tyrannical s13
-      AddTrinket(select(1, GetItemInfo(91330)), {spells["PvP Trinket"], true, 91330})
-      AddTrinket(select(1, GetItemInfo(91331)), {spells["PvP Trinket"], true, 91331})
-      AddTrinket(select(1, GetItemInfo(91332)), {spells["PvP Trinket"], true, 91332})
+      AddTrinket(select(1, GetItemInfo(91329)), {DKROT.spells["PvP Trinket"], true, 91329})--Tyrannical s13
+      AddTrinket(select(1, GetItemInfo(91330)), {DKROT.spells["PvP Trinket"], true, 91330})
+      AddTrinket(select(1, GetItemInfo(91331)), {DKROT.spells["PvP Trinket"], true, 91331})
+      AddTrinket(select(1, GetItemInfo(91332)), {DKROT.spells["PvP Trinket"], true, 91332})
 
-      AddTrinket(select(1, GetItemInfo(91683)), {spells["PvP Trinket"], true, 91683})--Malev s13
+      AddTrinket(select(1, GetItemInfo(91683)), {DKROT.spells["PvP Trinket"], true, 91683})--Malev s13
 
-      AddTrinket(select(1, GetItemInfo(51378)), {spells["PvP Trinket"], true, 51378})
-      AddTrinket(select(1, GetItemInfo(51377)), {spells["PvP Trinket"], true, 51377})
+      AddTrinket(select(1, GetItemInfo(51378)), {DKROT.spells["PvP Trinket"], true, 51378})
+      AddTrinket(select(1, GetItemInfo(51377)), {DKROT.spells["PvP Trinket"], true, 51377})
 
       --Stacking Buff
       --License to Slay
-      spells["Slayer"] = GetSpellInfo(91810)
-      AddTrinket(select(1, GetItemInfo(58180)), {spells["Slayer"], false, 0, 0, false})
+      DKROT.spells["Slayer"] = GetSpellInfo(91810)
+      AddTrinket(select(1, GetItemInfo(58180)), {DKROT.spells["Slayer"], false, 0, 0, false})
 
       --Fury of Angerforge
-      spells["Forged Fury"] = GetSpellInfo(91836)
-      spells["Raw Fury"] = GetSpellInfo(91832)
-      AddTrinket(select(1, GetItemInfo(59461)), {spells["Forged Fury"], false, 120, 0, false, spells["Raw Fury"]})
+      DKROT.spells["Forged Fury"] = GetSpellInfo(91836)
+      DKROT.spells["Raw Fury"] = GetSpellInfo(91832)
+      AddTrinket(select(1, GetItemInfo(59461)), {DKROT.spells["Forged Fury"], false, 120, 0, false, DKROT.spells["Raw Fury"]})
 
       --Apparatus of Khaz'goroth
-      spells["Titanic Power"] = GetSpellInfo(96923)
-      spells["Blessing of Khaz'goroth"] = GetSpellInfo(97127)
-      AddTrinket(select(1, GetItemInfo(69113)), {spells["Blessing of Khaz'goroth"], false, 120, 0, false, spells["Titanic Power"]})
+      DKROT.spells["Titanic Power"] = GetSpellInfo(96923)
+      DKROT.spells["Blessing of Khaz'goroth"] = GetSpellInfo(97127)
+      AddTrinket(select(1, GetItemInfo(69113)), {DKROT.spells["Blessing of Khaz'goroth"], false, 120, 0, false, DKROT.spells["Titanic Power"]})
 
       --Vessel of Acceleration
-      spells["Accelerated"] = GetSpellInfo(96980)
-      AddTrinket(select(1, GetItemInfo(68995)), {spells["Accelerated"], false, 0, 0, false})
+      DKROT.spells["Accelerated"] = GetSpellInfo(96980)
+      AddTrinket(select(1, GetItemInfo(68995)), {DKROT.spells["Accelerated"], false, 0, 0, false})
 
       --Eye of Unmaking
-      spells["Titanic Strength"] = GetSpellInfo(107966)
-      AddTrinket(select(1, GetItemInfo(77200)), {spells["Titanic Strength"], false, 0, 0, false})
+      DKROT.spells["Titanic Strength"] = GetSpellInfo(107966)
+      AddTrinket(select(1, GetItemInfo(77200)), {DKROT.spells["Titanic Strength"], false, 0, 0, false})
 
       --Resolve of Undying
-      spells["Preternatural Evasion"] = GetSpellInfo(109782)
-      AddTrinket(select(1, GetItemInfo(77998)), {spells["Preternatural Evasion"], false, 0, 0, false})
+      DKROT.spells["Preternatural Evasion"] = GetSpellInfo(109782)
+      AddTrinket(select(1, GetItemInfo(77998)), {DKROT.spells["Preternatural Evasion"], false, 0, 0, false})
 
       --Spark of Zandalar
-      spells["Spark of Zandalar"] = GetSpellInfo(138958)
-      AddTrinket(select(1, GetItemInfo(94526)), {spells["Spark of Zandalar"], false, 0, 0, false})
+      DKROT.spells["Spark of Zandalar"] = GetSpellInfo(138958)
+      AddTrinket(select(1, GetItemInfo(94526)), {DKROT.spells["Spark of Zandalar"], false, 0, 0, false})
 
       --Gaze of the Twins
-      spells["Eye of Brutality"] = GetSpellInfo(139170)
-      AddTrinket(select(1, GetItemInfo(94529)), {spells["Eye of Brutality"], false, 0, 0, false})
+      DKROT.spells["Eye of Brutality"] = GetSpellInfo(139170)
+      AddTrinket(select(1, GetItemInfo(94529)), {DKROT.spells["Eye of Brutality"], false, 0, 0, false})
 
       --ICD
       --Heart of Rage
-      spells["Rageheart"] = GetSpellInfo(92345)
-      AddTrinket(select(1, GetItemInfo(65072)), {spells["Rageheart"], false, 20*5, 0, false})
+      DKROT.spells["Rageheart"] = GetSpellInfo(92345)
+      AddTrinket(select(1, GetItemInfo(65072)), {DKROT.spells["Rageheart"], false, 20*5, 0, false})
 
       --Heart of Solace
-      spells["Heartened"] = GetSpellInfo(91363)
-      AddTrinket(select(1, GetItemInfo(55868)), {spells["Heartened"], false, 20*5, 0, false})
+      DKROT.spells["Heartened"] = GetSpellInfo(91363)
+      AddTrinket(select(1, GetItemInfo(55868)), {DKROT.spells["Heartened"], false, 20*5, 0, false})
 
       --Crushing Weight
-      spells["Race Against Death"] = GetSpellInfo(92342)
-      AddTrinket(select(1, GetItemInfo(59506)), {spells["Race Against Death"], false, 15*5, 0, false})
+      DKROT.spells["Race Against Death"] = GetSpellInfo(92342)
+      AddTrinket(select(1, GetItemInfo(59506)), {DKROT.spells["Race Against Death"], false, 15*5, 0, false})
 
       --Symbiotic Worm
-      spells["Turn of the Worm"] = GetSpellInfo(92235)
-      AddTrinket(select(1, GetItemInfo(59332)), {spells["Turn of the Worm"], false, 30, 0, false})
+      DKROT.spells["Turn of the Worm"] = GetSpellInfo(92235)
+      AddTrinket(select(1, GetItemInfo(59332)), {DKROT.spells["Turn of the Worm"], false, 30, 0, false})
 
       --Bedrock Talisman
-      spells["Tectonic Shift"] = GetSpellInfo(92233)
-      AddTrinket(select(1, GetItemInfo(58182)), {spells["Tectonic Shift"], false, 30, 0, false})
+      DKROT.spells["Tectonic Shift"] = GetSpellInfo(92233)
+      AddTrinket(select(1, GetItemInfo(58182)), {DKROT.spells["Tectonic Shift"], false, 30, 0, false})
 
       --Porcelain Crab
-      spells["Hardened Shell"] = GetSpellInfo(92174)
-      AddTrinket(select(1, GetItemInfo(56280)), {spells["Hardened Shell"], false, 20*5, 0, false})
+      DKROT.spells["Hardened Shell"] = GetSpellInfo(92174)
+      AddTrinket(select(1, GetItemInfo(56280)), {DKROT.spells["Hardened Shell"], false, 20*5, 0, false})
 
       --Right Eye of Rajh
-      spells["Eye of Doom"] = GetSpellInfo(91368)
-      AddTrinket(select(1, GetItemInfo(56431)), {spells["Eye of Doom"], false, 10*5, 0, false})
+      DKROT.spells["Eye of Doom"] = GetSpellInfo(91368)
+      AddTrinket(select(1, GetItemInfo(56431)), {DKROT.spells["Eye of Doom"], false, 10*5, 0, false})
 
       --Rosary of Light
-      spells["Rosary of Light"] = GetSpellInfo(102660)
-      AddTrinket(select(1, GetItemInfo(72901)), {spells["Rosary of Light"], false, 20*5, 0, false})
+      DKROT.spells["Rosary of Light"] = GetSpellInfo(102660)
+      AddTrinket(select(1, GetItemInfo(72901)), {DKROT.spells["Rosary of Light"], false, 20*5, 0, false})
 
       --Creche of the Final Dragon
-      spells["Find Weakness"] = GetSpellInfo(109744)
-      AddTrinket(select(1, GetItemInfo(77992)), {spells["Find Weakness"], false, 20*5, 0, false})
+      DKROT.spells["Find Weakness"] = GetSpellInfo(109744)
+      AddTrinket(select(1, GetItemInfo(77992)), {DKROT.spells["Find Weakness"], false, 20*5, 0, false})
 
       --Indomitable Pride
-      spells["Indomitable"] = GetSpellInfo(109786)
-      AddTrinket(select(1, GetItemInfo(78003)), {spells["Indomitable"], false, 60, 0, false})
+      DKROT.spells["Indomitable"] = GetSpellInfo(109786)
+      AddTrinket(select(1, GetItemInfo(78003)), {DKROT.spells["Indomitable"], false, 60, 0, false})
 
       --Soulshifter Vortex
-      spells["Haste"] = GetSpellInfo(109777)
-      AddTrinket(select(1, GetItemInfo(77990)), {spells["Haste"], false, 20*5, 0, false})
+      DKROT.spells["Haste"] = GetSpellInfo(109777)
+      AddTrinket(select(1, GetItemInfo(77990)), {DKROT.spells["Haste"], false, 20*5, 0, false})
 
       --Veil of Lies
-      spells["Veil of Lies"] = GetSpellInfo(102666)
-      AddTrinket(select(1, GetItemInfo(72900)), {spells["Veil of Lies"], false, 20*5, 0, false})
+      DKROT.spells["Veil of Lies"] = GetSpellInfo(102666)
+      AddTrinket(select(1, GetItemInfo(72900)), {DKROT.spells["Veil of Lies"], false, 20*5, 0, false})
 
       --Spidersilk Spindle
-      spells["Loom of Fate"] = GetSpellInfo(97130)
-      AddTrinket(select(1, GetItemInfo(69138)), {spells["Loom of Fate"], false, 60, 0, false})
+      DKROT.spells["Loom of Fate"] = GetSpellInfo(97130)
+      AddTrinket(select(1, GetItemInfo(69138)), {DKROT.spells["Loom of Fate"], false, 60, 0, false})
 
       --Master Pit Fighter
-      spells["Master Pit Fighter"] = GetSpellInfo(109996)
-      AddTrinket(select(1, GetItemInfo(74035)), {spells["Master Pit Fighter"], false, 20*5, 0, false})
+      DKROT.spells["Master Pit Fighter"] = GetSpellInfo(109996)
+      AddTrinket(select(1, GetItemInfo(74035)), {DKROT.spells["Master Pit Fighter"], false, 20*5, 0, false})
 
        --Varo'then's Brooch
-       spells["Varo'then's Brooch"] = GetSpellInfo(102664)
-       AddTrinket(select(1, GetItemInfo(72899)), {spells["Varo'then's Brooch"], false, 20*5, 0, false})
+       DKROT.spells["Varo'then's Brooch"] = GetSpellInfo(102664)
+       AddTrinket(select(1, GetItemInfo(72899)), {DKROT.spells["Varo'then's Brooch"], false, 20*5, 0, false})
 
       --Luckydo Coin
-      spells["Luckydo Coin"] = GetSpellInfo(120175)
-      AddTrinket(select(1, GetItemInfo(82578)), {spells["Luckydo Coin"], false, 20*5, 0, false})
+      DKROT.spells["Luckydo Coin"] = GetSpellInfo(120175)
+      AddTrinket(select(1, GetItemInfo(82578)), {DKROT.spells["Luckydo Coin"], false, 20*5, 0, false})
 
       --Brutal Talisman of the Shado-Pan Assault
-      spells["Surge of Strength"] = GetSpellInfo(138702)
-      AddTrinket(select(1, GetItemInfo(94508)), {spells["Surge of Strength"], false, 20*5, 0, false})
+      DKROT.spells["Surge of Strength"] = GetSpellInfo(138702)
+      AddTrinket(select(1, GetItemInfo(94508)), {DKROT.spells["Surge of Strength"], false, 20*5, 0, false})
 
       --Fabled Feather of Ji-Kun
-      spells["Feathers of Fury"] = GetSpellInfo(138759)
-      AddTrinket(select(1, GetItemInfo(94515)), {spells["Feathers of Fury"], false, 20*5, 0, false})
+      DKROT.spells["Feathers of Fury"] = GetSpellInfo(138759)
+      AddTrinket(select(1, GetItemInfo(94515)), {DKROT.spells["Feathers of Fury"], false, 20*5, 0, false})
 
       if debugg then print("DKROT:Trinkets Loaded")end
       return loaded
@@ -503,7 +497,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    --In: start- when the spell cd started  dur- duration of the cd
    --Out: returns if the spell is or will be off cd in the next GCD
-   local function isOffCD(spell)
+   function DKROT:isOffCD(spell)
       local start, dur = GetSpellCooldown(spell)
       return (dur + start - curtime - GCD <= 0)
    end
@@ -602,9 +596,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    function DKROT:CreateCDs()
       DKROT.CD = {}
 
-      --Create two frames in which 2 icons will placed in each
+      -- Create two frames in which 2 icons will placed in each
       for i = 1, 4 do
-         DKROT.CD[i] = CreateFrame("Button", "DKROT.CD"..i, DKROT)
+         DKROT.CD[i] = CreateFrame("Button", "DKROT.CD"..i, DKROT.MainFrame)
          DKROT.CD[i]:SetWidth(34)
          DKROT.CD[i]:SetHeight(68)
          DKROT.CD[i]:SetFrameStrata("BACKGROUND")
@@ -627,7 +621,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       --Create the Icons with desired paramaters
       for i = 1, #CDDisplayList do
-         DKROT.CD[CDDisplayList[i]] = DKROT:CreateIcon(CDDisplayList[i].."Butt", DKROT, spells["Army of the Dead"], 32)
+         DKROT.CD[CDDisplayList[i]] = DKROT:CreateIcon(CDDisplayList[i].."Butt", DKROT.MainFrame, DKROT.spells["Army of the Dead"], 32)
          DKROT.CD[CDDisplayList[i]].Time:SetFont(font, 11, "OUTLINE")
          DKROT.CD[CDDisplayList[i]]:SetParent(DKROT.CD[ceil(i/2)])
          DKROT.CD[CDDisplayList[i]]:EnableMouse(false)
@@ -646,10 +640,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    end
 
    function DKROT:CreateUI()
-      DKROT:SetupMoveFunction(DKROT)
+      DKROT:SetupMoveFunction(DKROT.MainFrame)
 
       --Create Rune bar frame
-      DKROT.RuneBar = CreateFrame("Button", "DKROT.RuneBar", DKROT)
+      DKROT.RuneBar = CreateFrame("Button", "DKROT.RuneBar", DKROT.MainFrame)
       DKROT.RuneBar:SetHeight(23)
       DKROT.RuneBar:SetWidth(94)
       DKROT.RuneBar:SetBackdrop{bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background', tile = false, insets = {left = 0, right = 0, top = 0, bottom = 0},}
@@ -683,7 +677,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          frame.Spark.c.lock = false
          return frame
       end
-      DKROT.RuneBarHolder = CreateFrame("Button", "DKROT.RuneBarHolder", DKROT)
+      DKROT.RuneBarHolder = CreateFrame("Button", "DKROT.RuneBarHolder", DKROT.MainFrame)
       DKROT.RuneBarHolder:SetHeight(100)
       DKROT.RuneBarHolder:SetWidth(110)
       DKROT.RuneBarHolder:SetFrameStrata("BACKGROUND")
@@ -699,7 +693,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT:SetupMoveFunction(DKROT.RuneBarHolder)
 
       --Create Runic Power frame
-      DKROT.RunicPower = CreateFrame("Button", "DKROT.RunicPower", DKROT)
+      DKROT.RunicPower = CreateFrame("Button", "DKROT.RunicPower", DKROT.MainFrame)
       DKROT.RunicPower:SetHeight(23)
       DKROT.RunicPower:SetWidth(47)
       DKROT.RunicPower:SetBackdrop{bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background', tile = false, insets = {left = 0, right = 0, top = 0, bottom = 0},}
@@ -711,30 +705,30 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT:SetupMoveFunction(DKROT.RunicPower)
 
       --Create frame for Diseases with 2 icons for their respective disease
-      DKROT.Diseases = CreateFrame("Button", "DKROT.Diseases", DKROT)
+      DKROT.Diseases = CreateFrame("Button", "DKROT.Diseases", DKROT.MainFrame)
       DKROT.Diseases:SetHeight(24)
       DKROT.Diseases:SetWidth(47)
       DKROT.Diseases:SetFrameStrata("BACKGROUND")
       DKROT.Diseases:SetBackdrop{bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background', tile = false, insets = {left = 0, right = 0, top = 0, bottom = 0},}
       DKROT.Diseases:SetBackdropColor(0, 0, 0, 0.5)
-      DKROT.Diseases.BP = DKROT:CreateIcon("DKROT.Diseases.BP", DKROT.Diseases, spells["Blood Plague"], 21)
+      DKROT.Diseases.BP = DKROT:CreateIcon("DKROT.Diseases.BP", DKROT.Diseases, DKROT.spells["Blood Plague"], 21)
       DKROT.Diseases.BP:SetParent(DKROT.Diseases)
       DKROT.Diseases.BP:SetPoint("TOPRIGHT", DKROT.Diseases, "TOPRIGHT", -1, -1)
       DKROT.Diseases.BP:SetBackdropColor(0, 0, 0, 0)
-      DKROT.Diseases.FF = DKROT:CreateIcon("DKROT.Diseases.FF", DKROT.Diseases, spells["Frost Fever"], 21)
+      DKROT.Diseases.FF = DKROT:CreateIcon("DKROT.Diseases.FF", DKROT.Diseases, DKROT.spells["Frost Fever"], 21)
       DKROT.Diseases.FF:SetParent(DKROT.Diseases)
       DKROT.Diseases.FF:SetPoint("RIGHT", DKROT.Diseases.BP, "LEFT", -3, 0)
       DKROT.Diseases.FF:SetBackdropColor(0, 0, 0, 0)
       DKROT:SetupMoveFunction(DKROT.Diseases)
 
       --Create the Frame and Icon for the large main Priority Icon
-      DKROT.Move = DKROT:CreateIcon('DKROT.Move', DKROT, spells["Death Coil"], 47)
+      DKROT.Move = DKROT:CreateIcon('DKROT.Move', DKROT.MainFrame, DKROT.spells["Death Coil"], 47)
       DKROT.Move.Time:SetFont(font, 16, "OUTLINE")
       DKROT.Move.Stack:SetFont(font, 15, "OUTLINE")
       DKROT:SetupMoveFunction(DKROT.Move)
 
       --Create backdrop for move
-      DKROT.MoveBackdrop = CreateFrame('Frame', nil, DKROT)
+      DKROT.MoveBackdrop = CreateFrame('Frame', nil, DKROT.MainFrame)
       DKROT.MoveBackdrop:SetHeight(47)
       DKROT.MoveBackdrop:SetWidth(47)
       DKROT.MoveBackdrop:SetFrameStrata("BACKGROUND")
@@ -743,11 +737,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT.MoveBackdrop:SetAllPoints(DKROT.Move)
 
       --Mini AOE icon to be placed in the Priority Icon
-      DKROT.Move.AOE = DKROT:CreateIcon('DKROT.AOE', DKROT.Move, spells["Death Coil"], 18)
+      DKROT.Move.AOE = DKROT:CreateIcon('DKROT.AOE', DKROT.Move, DKROT.spells["Death Coil"], 18)
       DKROT.Move.AOE:SetPoint("BOTTOMLEFT", DKROT.Move, "BOTTOMLEFT", 2, 2)
 
       --Mini Interrupt icon to be placed in the Priority Icon
-      DKROT.Move.Interrupt = DKROT:CreateIcon('DKROT.Interrupt', DKROT.Move, spells["Mind Freeze"], 18)
+      DKROT.Move.Interrupt = DKROT:CreateIcon('DKROT.Interrupt', DKROT.Move, DKROT.spells["Mind Freeze"], 18)
       DKROT.Move.Interrupt:SetPoint("TOPRIGHT", DKROT.Move, "TOPRIGHT", -2, -2)
       if debugg then print("DKROT:UI Created")end
 
@@ -777,11 +771,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       frame.Stack:SetText("")
 
       --If the option is not set to nothing
-      if DKROT_Settings.CD[Current_Spec][location] ~= nil and DKROT_Settings.CD[Current_Spec][location][1] ~= nil and
-         DKROT_Settings.CD[Current_Spec][location][1] ~= DKROT_OPTIONS_FRAME_VIEW_NONE then
+      if DKROT_Settings.CD[DKROT.Current_Spec][location] ~= nil and DKROT_Settings.CD[DKROT.Current_Spec][location][1] ~= nil and
+         DKROT_Settings.CD[DKROT.Current_Spec][location][1] ~= DKROT_OPTIONS_FRAME_VIEW_NONE then
          frame:SetAlpha(1)
          frame.Icon:SetVertexColor(1, 1, 1, 1)
-         if DKROT_Settings.CD[Current_Spec][location][1] == DKROT_OPTIONS_CDR_CD_PRIORITY then --Priority
+         if DKROT_Settings.CD[DKROT.Current_Spec][location][1] == DKROT_OPTIONS_CDR_CD_PRIORITY then --Priority
             --If targeting something that you can attack and is not dead
             if (UnitCanAttack("player", "target") and (not UnitIsDead("target"))) then
                --Get Icon from Priority Rotation
@@ -789,15 +783,15 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             else
                frame.Icon:SetTexture(nil)
             end
-         elseif DKROT_Settings.CD[Current_Spec][location][1] == DKROT_OPTIONS_CDR_CD_PRESENCE then --Presence
+         elseif DKROT_Settings.CD[DKROT.Current_Spec][location][1] == DKROT_OPTIONS_CDR_CD_PRESENCE then --Presence
             frame.Icon:SetTexture(nil)
             if PLAYER_PRESENCE > 0 then
                frame.Icon:SetTexture(select(1, GetShapeshiftFormInfo(PLAYER_PRESENCE)))
             end
-         elseif DKROT_Settings.CD[Current_Spec][location][IS_BUFF] then --Buff/DeBuff
+         elseif DKROT_Settings.CD[DKROT.Current_Spec][location][IS_BUFF] then --Buff/DeBuff
             local icon, count, dur, expirationTime
 
-            if DKROT_Settings.CD[Current_Spec][location][1] == spells["Dark Simulacrum"] then
+            if DKROT_Settings.CD[DKROT.Current_Spec][location][1] == DKROT.spells["Dark Simulacrum"] then
                local id
                if (curtime - simtime) >= 5 then
                   simtime = curtime
@@ -817,10 +811,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             end
 
             --if its on a target then its a debuff, otherwise its a buff
-            if Cooldowns.Buffs[DKROT_Settings.CD[Current_Spec][location][1]][1] == "target" then
-               _, _, icon, count, _, dur, expirationTime = UnitDebuff("target", DKROT_Settings.CD[Current_Spec][location][1])
+            if DKROT.Cooldowns.Buffs[DKROT_Settings.CD[DKROT.Current_Spec][location][1]][1] == "target" then
+               _, _, icon, count, _, dur, expirationTime = UnitDebuff("target", DKROT_Settings.CD[DKROT.Current_Spec][location][1])
             else
-               _, _, icon, count, _, dur, expirationTime = UnitBuff(Cooldowns.Buffs[DKROT_Settings.CD[Current_Spec][location][1]][1], DKROT_Settings.CD[Current_Spec][location][1])
+               _, _, icon, count, _, dur, expirationTime = UnitBuff(DKROT.Cooldowns.Buffs[DKROT_Settings.CD[DKROT.Current_Spec][location][1]][1], DKROT_Settings.CD[DKROT.Current_Spec][location][1])
             end
             frame.Icon:SetTexture(icon)
 
@@ -828,35 +822,35 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             if icon ~= nil and ceil(expirationTime - curtime) > 0 then
                frame.Icon:SetVertexColor(0.5, 0.5, 0.5, 1)
                frame.Time:SetText(formatTime(ceil(expirationTime - curtime)))
-               if DKROT_Settings.CD[Current_Spec][location][1] == spells["Blood Shield"] then count = bsamount end
+               if DKROT_Settings.CD[DKROT.Current_Spec][location][1] == DKROT.spells["Blood Shield"] then count = bsamount end
                if count > 1 then frame.Stack:SetText(count) end
             end
 
 
 
-         elseif inTable(Cooldowns.Moves, DKROT_Settings.CD[Current_Spec][location][1]) then --Move
-            icon = GetSpellTexture(DKROT_Settings.CD[Current_Spec][location][1])
+         elseif inTable(DKROT.Cooldowns.Moves, DKROT_Settings.CD[DKROT.Current_Spec][location][1]) then --Move
+            icon = GetSpellTexture(DKROT_Settings.CD[DKROT.Current_Spec][location][1])
             if icon ~= nil then
                --Check if move is off CD
-               if isOffCD(DKROT_Settings.CD[Current_Spec][location][1]) and IsUsableSpell(DKROT_Settings.CD[Current_Spec][location][1]) then
-                  icon = DKROT:GetRangeandIcon(frame.Icon, DKROT_Settings.CD[Current_Spec][location][1])
+               if DKROT:isOffCD(DKROT_Settings.CD[DKROT.Current_Spec][location][1]) and IsUsableSpell(DKROT_Settings.CD[DKROT.Current_Spec][location][1]) then
+                  icon = DKROT:GetRangeandIcon(frame.Icon, DKROT_Settings.CD[DKROT.Current_Spec][location][1])
                else
                   icon = nil
                end
             end
             frame.Icon:SetTexture(icon)
-         elseif DKROT_Settings.CD[Current_Spec][location][1] == DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1 or
-            DKROT_Settings.CD[Current_Spec][location][1] == DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2 then --Trinkets
+         elseif DKROT_Settings.CD[DKROT.Current_Spec][location][1] == DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1 or
+            DKROT_Settings.CD[DKROT.Current_Spec][location][1] == DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2 then --Trinkets
 
             local id
-            if DKROT_Settings.CD[Current_Spec][location][1] == DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1 then
+            if DKROT_Settings.CD[DKROT.Current_Spec][location][1] == DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1 then
                id = GetInventoryItemID("player", 13)
             else
                id = GetInventoryItemID("player", 14)
             end
             local trink
             if id ~= nil then
-               trink = Cooldowns.Trinkets[select(1,GetItemInfo(id))]
+               trink = DKROT.Cooldowns.Trinkets[select(1,GetItemInfo(id))]
             end
 
             if trink ~= nil then
@@ -896,11 +890,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             else
                frame.Icon:SetTexture(nil)
             end
-         elseif  DKROT_Settings.CD[Current_Spec][location][1] == DKROT_OPTIONS_CDR_RACIAL then
-            icon = DKROT:GetRangeandIcon(frame.Icon, spells[PLAYER_RACE])
+         elseif  DKROT_Settings.CD[DKROT.Current_Spec][location][1] == DKROT_OPTIONS_CDR_RACIAL then
+            icon = DKROT:GetRangeandIcon(frame.Icon, DKROT.spells[PLAYER_RACE])
             frame.Icon:SetTexture(icon)
             if icon ~= nil then
-               start, dur, active =  GetSpellCooldown(spells[PLAYER_RACE])
+               start, dur, active =  GetSpellCooldown(DKROT.spells[PLAYER_RACE])
                t = ceil(start + dur - curtime)
                if active == 1 and dur > 7 then
                   frame.Icon:SetVertexColor(0.5, 0.5, 0.5, 1)
@@ -910,10 +904,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             end
 
          else --Cooldown
-            icon = DKROT:GetRangeandIcon(frame.Icon, DKROT_Settings.CD[Current_Spec][location][1])
+            icon = DKROT:GetRangeandIcon(frame.Icon, DKROT_Settings.CD[DKROT.Current_Spec][location][1])
             frame.Icon:SetTexture(icon)
             if icon ~= nil then
-               start, dur, active =  GetSpellCooldown(DKROT_Settings.CD[Current_Spec][location][1])
+               start, dur, active =  GetSpellCooldown(DKROT_Settings.CD[DKROT.Current_Spec][location][1])
                t = ceil(start + dur - curtime)
                if active == 1 and dur > 7 then
                   frame.Icon:SetVertexColor(0.5, 0.5, 0.5, 1)
@@ -927,7 +921,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             frame:SetAlpha(0)
          end
       else
-         DKROT_Settings.CD[Current_Spec][location][1] = DKROT_OPTIONS_FRAME_VIEW_NONE
+         DKROT_Settings.CD[DKROT.Current_Spec][location][1] = DKROT_OPTIONS_FRAME_VIEW_NONE
          frame:SetAlpha(0)
       end
    end
@@ -955,7 +949,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    --Called to update all the frames positions and scales
    function DKROT:UpdatePosition()
-      DKROT:MoveFrame(DKROT)
+      DKROT:MoveFrame(DKROT.MainFrame)
       DKROT:MoveFrame(DKROT.CD[1])
       DKROT:MoveFrame(DKROT.CD[2])
       DKROT:MoveFrame(DKROT.CD[3])
@@ -977,7 +971,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT.DT:EnableMouse(true)
       end
 
-      DKROT:SetScale(DKROT_Settings.Scale)
+      DKROT.MainFrame:SetScale(DKROT_Settings.Scale)
       if debugg then print("DKROT:UpdatePosition")end
    end
 
@@ -994,9 +988,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    --Main function for updating all information
    function DKROT:UpdateUI()
       if (UnitCanAttack("player", "target") and (not UnitIsDead("target"))) then
-         DKROT:SetAlpha(DKROT_Settings.NormTrans)
+         DKROT.MainFrame:SetAlpha(DKROT_Settings.NormTrans)
       else
-         DKROT:SetAlpha(DKROT_Settings.CombatTrans)
+         DKROT.MainFrame:SetAlpha(DKROT_Settings.CombatTrans)
       end
 
       --GCD
@@ -1083,13 +1077,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT.Diseases.FF.Time:SetText("")
          DKROT.Diseases.BP.Time:SetText("")
          if UnitCanAttack("player", "target") and (not UnitIsDead("target")) then
-            local expires = select(7,UnitDebuff("TARGET", spells["Frost Fever"], nil, "PLAYER"))
+            local expires = select(7,UnitDebuff("TARGET", DKROT.spells["Frost Fever"], nil, "PLAYER"))
             if  expires ~= nil and (expires - curtime) > 0 then
                DKROT.Diseases.FF.Icon:SetVertexColor(.5, .5, .5, 1)
                DKROT.Diseases.FF.Time:SetText(string.format("|cffffffff%.2d|r", expires - curtime))
             end
 
-            expires = select(7,UnitDebuff("TARGET", spells["Blood Plague"], nil, "PLAYER"))
+            expires = select(7,UnitDebuff("TARGET", DKROT.spells["Blood Plague"], nil, "PLAYER"))
             if expires ~= nil and (expires - curtime) > 0 then
                DKROT.Diseases.BP.Icon:SetVertexColor(.5, .5, .5, 1)
                DKROT.Diseases.BP.Time:SetText(string.format("|cffffffff%.2d|r", expires - curtime))
@@ -1102,18 +1096,18 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       --Priority Icon
       DKROT.Move.AOE:SetAlpha(0)
       DKROT.Move.Interrupt:SetAlpha(0)
-      if DKROT_Settings.CD[Current_Spec]["DKROT_CDRPanel_DD_Priority"][1] ~= DKROT_OPTIONS_FRAME_VIEW_NONE then
+      if DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][1] ~= DKROT_OPTIONS_FRAME_VIEW_NONE then
          DKROT.Move:SetAlpha(1)
          DKROT.MoveBackdrop:SetAlpha(1)
          DKROT:UpdateCD("DKROT_CDRPanel_DD_Priority", DKROT.Move)
 
          --If Priority on Main Icon
-         if DKROT_Settings.CD[Current_Spec]["DKROT_CDRPanel_DD_Priority"][1] == DKROT_OPTIONS_CDR_CD_PRIORITY then
+         if DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][1] == DKROT_OPTIONS_CDR_CD_PRIORITY then
             if DKROT_Settings.MoveAltInterrupt then --Show Interrupt
                local spell, notint = select(1, UnitCastingInfo("target")), select(9, UnitCastingInfo("target"))
                if spell == nil then spell, notint = select(1, UnitChannelInfo("target")), select(8, UnitChannelInfo("target")) end
                if spell ~= nil and not notint then
-                  if isOffCD(spells["Mind Freeze"]) then
+                  if DKROT:isOffCD(DKROT.spells["Mind Freeze"]) then
                      DKROT.Move.Interrupt:SetAlpha(1)
                   end
                end
@@ -1126,7 +1120,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       --CDs
       for i = 1, #CDDisplayList do
-         if DKROT_Settings.CD[Current_Spec][ceil(i/2)] then
+         if DKROT_Settings.CD[DKROT.Current_Spec][ceil(i/2)] then
             DKROT.CD[ceil(i/2)]:SetAlpha(1)
             DKROT:UpdateCD(CDDisplayList[i], DKROT.CD[CDDisplayList[i]])
          else
@@ -1137,7 +1131,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local temp
       for i = 1, 40 do
          if select(1, UnitBuff("player", i)) ~= nil then
-            if UnitBuff("player", i) == spells["Blood Shield"] then
+            if UnitBuff("player", i) == DKROT.spells["Blood Shield"] then
                BloodShieldTooltip:SetUnitBuff("player", i)
                temp = string.gsub(_G["BloodShieldTooltipTextLeft"..2]:GetText(), "[^%d]", "")
 
@@ -1220,7 +1214,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                info.Frame.Icons[j] = DKROT:CreateIcon("DKROT.DT."..j, info.Frame, j, 20)
                info.Frame.Icons[j].Time:SetFont(font, 11, "OUTLINE")
                info.Frame.Icons[j]:SetPoint("RIGHT", -(count*22)-1, 0)
-               info.Frame.Icons[j].Icon:SetTexture(GetSpellTexture(DTspells[j][1]))
+               info.Frame.Icons[j].Icon:SetTexture(GetSpellTexture(DTDKROT.spells[j][1]))
                count = count + 1
             end
          end
@@ -1238,12 +1232,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                   else
                      info.NumDots = info.NumDots - 1
                      info.Frame.Icons[j]:SetAlpha(0)
-                     info.Spells[j] = nil
+                     info.DKROT.spells[j] = nil
                   end
                else
                   info.NumDots = info.NumDots - 1
                   if info.Frame.Icons[j]~= nil then info.Frame.Icons[j]:SetAlpha(0) end
-                  info.Spells[j] = nil
+                  info.DKROT.spells[j] = nil
                end
             end
          else
@@ -1310,13 +1304,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
                         updatedGUIDs[guid] = true
 
-                        if DKROT.DT.Unit[guid].Spells[name] == nil then
+                        if DKROT.DT.Unit[guid].DKROT.spells[name] == nil then
                            DKROT.DT.Unit[guid].NumDots = DKROT.DT.Unit[guid].NumDots + 1
                         end
-                        if name == spells["Death and Decay"] then
-                           DKROT.DT.Unit[guid].Spells[name] = select(1, GetSpellCooldown(name)) + 10
+                        if name == DKROT.spells["Death and Decay"] then
+                           DKROT.DT.Unit[guid].DKROT.spells[name] = select(1, GetSpellCooldown(name)) + 10
                         else
-                           DKROT.DT.Unit[guid].Spells[name] = expt
+                           DKROT.DT.Unit[guid].DKROT.spells[name] = expt
                         end
 
                         if DKROT_Settings.DT.Threat ~= THREAT_OFF then
@@ -1343,13 +1337,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       --Called to update a priority icon with next move
       function DKROT:GetNextMove(icon)
          --Call correct function based on spec
-         if (Current_Spec == SPEC_UNHOLY) then
+         if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
             if DKROT_Settings.MoveAltAOE then DKROT.Move.AOE:SetAlpha(1); DKROT.Move.AOE.Icon:SetTexture(DKROT:UnholyAOEMove(DKROT.Move.AOE.Icon)) end
             return DKROT:UnholyMove(icon)
-         elseif (Current_Spec == SPEC_FROST) then
+         elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
             if DKROT_Settings.MoveAltAOE then DKROT.Move.AOE:SetAlpha(1); DKROT.Move.AOE.Icon:SetTexture(DKROT:FrostAOEMove(DKROT.Move.AOE.Icon)) end
             return DKROT:FrostMove(icon)
-         elseif (Current_Spec == SPEC_BLOOD) then
+         elseif (DKROT.Current_Spec == DKROT.SPECS.BLOOD) then
             if DKROT_Settings.MoveAltAOE then DKROT.Move.AOE:SetAlpha(1); DKROT.Move.AOE.Icon:SetTexture(DKROT:BloodAOEMove(DKROT.Move.AOE.Icon)) end
             return DKROT:BloodMove(icon)
          else
@@ -1378,9 +1372,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       function DKROT:RuneCDs(r)
          --Get individual rune numbers
          local a, b
-         if r == SPEC_UNHOLY then a, b = 3, 4
-         elseif r == SPEC_FROST then a, b = 5, 6
-         elseif r == SPEC_BLOOD then a, b = 1, 2
+         if r == DKROT.SPECS.UNHOLY then a, b = 3, 4
+         elseif r == DKROT.SPECS.FROST then a, b = 5, 6
+         elseif r == DKROT.SPECS.BLOOD then a, b = 1, 2
          end
 
          --Get CD of first rune
@@ -1444,7 +1438,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       --Returns if move is off cooldown or not
       function DKROT:QuickAOESpellCheck(move)
          if DKROT_Settings.MoveAltAOE and GetSpellTexture(move) ~= nil then
-            if isOffCD(move) then
+            if DKROT:isOffCD(move) then
                return true
             end
          end
@@ -1454,44 +1448,44 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       --Determines if Diseases need to be refreshed or applied
       function DKROT:GetDisease(icon)
          --If settings not to worry about diseases, then break
-         if DKROT_Settings.CD[Current_Spec].DiseaseOption == DISEASE_NONE then return false end
+         if DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption == DISEASE_NONE then return false end
 
          --Get Duration left on diseases
          local FFexpires, BPexpires, NPexpires
-         local expires = select(7,UnitDebuff("TARGET", spells["Frost Fever"], nil, "PLAYER"))
+         local expires = select(7,UnitDebuff("TARGET", DKROT.spells["Frost Fever"], nil, "PLAYER"))
          if  expires ~= nil then   FFexpires = expires - curtime end
-         expires = select(7,UnitDebuff("TARGET", spells["Blood Plague"], nil, "PLAYER"))
+         expires = select(7,UnitDebuff("TARGET", DKROT.spells["Blood Plague"], nil, "PLAYER"))
          if expires ~= nil then BPexpires = expires - curtime end
-         expires = select(7, UnitDebuff("TARGET", spells["Necrotic Plague"], nil, "PLAYER"))
+         expires = select(7, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"], nil, "PLAYER"))
          if expires ~= nil then NPexpires = expires - curtime end
 
          --Check if Outbreak is off CD, is known and Player wants to use it in rotation
-         local outbreak = DKROT_Settings.CD[Current_Spec].Outbreak and IsSpellKnown(77575) and isOffCD(spells["Outbreak"])
+         local outbreak = DKROT_Settings.CD[DKROT.Current_Spec].Outbreak and IsSpellKnown(77575) and DKROT:isOffCD(DKROT.spells["Outbreak"])
 
          --Check if Unholy Blight is up, is known and Player wants to use it in rotation
-         local unholyblight = DKROT_Settings.CD[Current_Spec].UB and IsSpellKnown(115989) and isOffCD(spells["Unholy Blight"])
+         local unholyblight = DKROT_Settings.CD[DKROT.Current_Spec].UB and IsSpellKnown(115989) and DKROT:isOffCD(DKROT.spells["Unholy Blight"])
 
          --Check if Plague Leech is up, is known and Player wants to use it in rotation
-         local plagueleech = DKROT_Settings.CD[Current_Spec].PL and IsSpellKnown(123693) and isOffCD(spells["Plague Leech"])
+         local plagueleech = DKROT_Settings.CD[DKROT.Current_Spec].PL and IsSpellKnown(123693) and DKROT:isOffCD(DKROT.spells["Plague Leech"])
 
 
          -- Apply Frost Fever
          if (FFexpires == nil or FFexpires < 2) and NPexpires == nil then
             if outbreak then --if can use outbreak, then do it
-               return true, DKROT:GetRangeandIcon(icon, spells["Outbreak"])
+               return true, DKROT:GetRangeandIcon(icon, DKROT.spells["Outbreak"])
             elseif unholyblight then --if can use Unholy Blight, then do it
-               return true, DKROT:GetRangeandIcon(icon, spells["Unholy Blight"])
-            elseif (Current_Spec == SPEC_UNHOLY) and ((DKROT:RuneCDs(SPEC_UNHOLY) <= 0) or DKROT:DeathRunes() >= 1) then --Unholy: Plague Strike
-               return true, DKROT:GetRangeandIcon(icon, spells["Plague Strike"])
-            elseif (Current_Spec == SPEC_FROST) and ((DKROT:RuneCDs(SPEC_FROST) <= 0) or DKROT:DeathRunes() >= 1) then --Frost: Howling Blast
-               return true, DKROT:GetRangeandIcon(icon, spells["Howling Blast"])
-            elseif ((DKROT:RuneCDs(SPEC_FROST) <= 0) or DKROT:DeathRunes() >= 1) then --Other: Icy Touch
-               return true, DKROT:GetRangeandIcon(icon, spells["Icy Touch"])
+               return true, DKROT:GetRangeandIcon(icon, DKROT.spells["Unholy Blight"])
+            elseif (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) and ((DKROT:RuneCDs(DKROT.SPECS.UNHOLY) <= 0) or DKROT:DeathRunes() >= 1) then --Unholy: Plague Strike
+               return true, DKROT:GetRangeandIcon(icon, DKROT.spells["Plague Strike"])
+            elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) and ((DKROT:RuneCDs(DKROT.SPECS.FROST) <= 0) or DKROT:DeathRunes() >= 1) then --Frost: Howling Blast
+               return true, DKROT:GetRangeandIcon(icon, DKROT.spells["Howling Blast"])
+            elseif ((DKROT:RuneCDs(DKROT.SPECS.FROST) <= 0) or DKROT:DeathRunes() >= 1) then --Other: Icy Touch
+               return true, DKROT:GetRangeandIcon(icon, DKROT.spells["Icy Touch"])
             end
          end
 
          --Apply Blood Plague
-         if (DKROT_Settings.CD[Current_Spec].DiseaseOption ~= DISEASE_ONE or outbreak) then
+         if (DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption ~= DISEASE_ONE or outbreak) then
             if (BPexpires == nil or BPexpires < 3) then
                -- Necrotic plague acts as both frost fever and blood plague
                if NPexpires ~= nil and NPexpires > 3 then
@@ -1499,779 +1493,99 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                end
 
                -- Add Death Grip as first priority until PS is in range
-               if DKROT_Settings.DG and (IsSpellInRange(spells["Plague Strike"], "target")) == 0 and IsUsableSpell(spells["Death Grip"]) then
-                  return true, (DKROT:GetRangeandIcon(icon, spells["Death Grip"]))
+               if DKROT_Settings.DG and (IsSpellInRange(DKROT.spells["Plague Strike"], "target")) == 0 and IsUsableSpell(DKROT.spells["Death Grip"]) then
+                  return true, (DKROT:GetRangeandIcon(icon, DKROT.spells["Death Grip"]))
                end
 
                if plagueleech and (BPexpires ~= nil or NPexpires ~= nil) and DKROT:DepletedRunes() > 0 then
-                  return true, DKROT:GetRangeandIcon(icon, spells["Plague Leech"])
+                  return true, DKROT:GetRangeandIcon(icon, DKROT.spells["Plague Leech"])
 
                elseif outbreak then --if can use outbreak, then do it
-                  return true, DKROT:GetRangeandIcon(icon, spells["Outbreak"])
+                  return true, DKROT:GetRangeandIcon(icon, DKROT.spells["Outbreak"])
 
                elseif unholyblight then --if can use Unholy Blight, then do it
-                  return true, DKROT:GetRangeandIcon(icon, spells["Unholy Blight"])
+                  return true, DKROT:GetRangeandIcon(icon, DKROT.spells["Unholy Blight"])
 
-               elseif ((DKROT:RuneCDs(SPEC_UNHOLY) <= 0) or DKROT:DeathRunes() >= 1) then --if rune availible, then use Plague Strike
-                  return true, DKROT:GetRangeandIcon(icon, spells["Plague Strike"])
+               elseif ((DKROT:RuneCDs(DKROT.SPECS.UNHOLY) <= 0) or DKROT:DeathRunes() >= 1) then --if rune availible, then use Plague Strike
+                  return true, DKROT:GetRangeandIcon(icon, DKROT.spells["Plague Strike"])
                end
             end
          end
          return false
       end
 
-      --Function to determine rotation for Unholy Spec
-      function DKROT:UnholyMove(icon)
-         if DKROT_Settings.CD[Current_Spec].AltRot then
-            return DKROT:UnholyMoveAlt(icon)
-         end
-
-         --Rune Info
-         local frost, lfrost, fd, lfd = DKROT:RuneCDs(SPEC_FROST)
-         local unholy, lunholy = DKROT:RuneCDs(SPEC_UNHOLY)
-         local blood, lblood, bd, lbd = DKROT:RuneCDs(SPEC_BLOOD)
-         local death = DKROT:DeathRunes()
-         local disease, move = DKROT:GetDisease(icon)
-         local bloodCharges = select(4, UnitBuff("player", spells["Blood Charge"]))
-
-         -- Death Pact
-         if GetSpellTexture(spells["Death Pact"]) ~= nil
-            and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
-         then
-            if isOffCD(spells["Death Pact"]) then
-               return GetSpellTexture(spells["Death Pact"])
-            end
-         end
-
-         -- Soul Reaper
-         if GetSpellTexture(spells["Soul Reaper"]) ~= nil and (death >= 1 or unholy <= 0)
-         then
-            if (
-                  GetSpellTexture(spells["Improved Soul Reaper"]) ~= nil
-                  and UnitHealth("target")/UnitHealthMax("target") < 0.45
-               )
-               or UnitHealth("target")/UnitHealthMax("target") < 0.35
-            then
-               if isOffCD(spells["Soul Reaper"]) then
-                  return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
-               end
-            end
-         end
-
-         -- Defile
-         if GetSpellTexture(spells["Defile"]) ~= nil then
-            if isOffCD(spells["Defile"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Defile"])
-            end
-         end
-
-         -- Diseases
-         if disease then return move end
-
-         -- Dark Transformation
-         if GetSpellTexture(spells["Dark Transformation"]) ~= nil
-            and select(4, UnitBuff("PET",spells["Shadow Infusion"])) == 5
-            and (unholy <= 0 or death >= 1)
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Dark Transformation"])
-         end
-
-         -- Blood Tap with >= 11 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-            and DKROT_Settings.CD[Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 11
-            and (frost >= 0 or unholy >= 0 or blood >= 0)
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
-         end
-
-         -- Death Coil if ghoul is not transformed or have 5 stacks
-         if DKROT_Settings.CD[Current_Spec].RP
-            and (
-               UnitPower("player") >= 30
-               or select(7, UnitBuff("PLAYER",spells["Sudden Doom"]))~= nil
-            )
-            and select(4, UnitBuff("PET",spells["Shadow Infusion"])) ~= 5
-            and UnitBuff("PET",spells["Dark Transformation"]) == nil
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Death Coil"])
-         end
-
-         --Scourge Strike (UU are up or FF or BB are up as Deathrunes)
-         if lunholy <= 0 or (lfrost <= 0 and (fd or lfd)) or (lblood <= 0 and (bd or lbd)) then
-            if DKROT_Settings.MoveAltDND then
-               --Death and Decay
-               if GetSpellTexture(spells["Death and Decay"]) ~= nil then
-                  if isOffCD(spells["Death and Decay"]) then
-                     DKROT.Move.AOE:SetAlpha(1)
-                     DKROT.Move.AOE.Icon:SetTexture(GetSpellTexture(spells["Death and Decay"]))
-                  end
-               end
-            end
-            if GetSpellTexture(spells["Scourge Strike"]) ~= nil then
-               return DKROT:GetRangeandIcon(icon, spells["Scourge Strike"])
-            else
-               return DKROT:GetRangeandIcon(icon, spells["Plague Strike"])
-            end
-         end
-
-         -- Festering Strike (BB and FF are up)
-         if GetSpellTexture(spells["Festering Strike"]) ~= nil then
-            if lfrost <= 0 and lblood <= 0 then
-               return DKROT:GetRangeandIcon(icon, spells["Festering Strike"])
-            end
-         else
-            -- Icy Touch
-            if lfrost <= 0 then
-               return DKROT:GetRangeandIcon(icon, spells["Icy Touch"])
-            end
-         end
-
-         -- Death Coil (Sudden Doom, high RP)
-         if DKROT_Settings.CD[Current_Spec].RP
-         and (UnitPower("player") > 80
-            or select(7, UnitBuff("PLAYER",spells["Sudden Doom"])) ~= nil) then
-            return DKROT:GetRangeandIcon(icon, spells["Death Coil"])
-         end
-
-         -- Scourge Strike
-         if unholy <= 0 or death >= 1 then
-            if DKROT_Settings.MoveAltDND then
-               --Death and Decay
-               if GetSpellTexture(spells["Death and Decay"]) ~= nil then
-                  if isOffCD(spells["Death and Decay"]) then
-                     DKROT.Move.AOE:SetAlpha(1)
-                     DKROT.Move.AOE.Icon:SetTexture(GetSpellTexture(spells["Death and Decay"]))
-                  end
-               end
-            end
-            if GetSpellTexture(spells["Scourge Strike"]) ~= nil then
-               return DKROT:GetRangeandIcon(icon, spells["Scourge Strike"])
-            else
-               return DKROT:GetRangeandIcon(icon, spells["Plague Strike"])
-            end
-         end
-
-         -- Festering Strike
-         if GetSpellTexture(spells["Festering Strike"]) ~= nil then
-            if frost <= 0 and blood <= 0 then
-               return DKROT:GetRangeandIcon(icon, spells["Festering Strike"])
-            end
-         else
-            --Icy Touch
-            if frost <= 0 then
-               return DKROT:GetRangeandIcon(icon, spells["Icy Touch"])
-            end
-         end
-
-         --Blood Tap with >= 5 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-            and DKROT_Settings.CD[Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 5
-            and (frost >= 0 or unholy >= 0 or blood >= 0)
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
-         end
-
-         --Empower Rune Weapon
-         if GetSpellTexture(spells["Empower Rune Weapon"]) ~= nil and DKROT_Settings.CD[Current_Spec].ERW then
-            if isOffCD(spells["Empower Rune Weapon"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
-            end
-         end
-
-         -- If nothing else can be done
-         return nil
-      end
-
-      --Festerblight, apply diseases one time and then just extend them with festering strike
-      function DKROT:UnholyMoveAlt(icon)
-
-         --Rune Info
-         local frost, lfrost, fd, lfd = DKROT:RuneCDs(SPEC_FROST)
-         local unholy, lunholy = DKROT:RuneCDs(SPEC_UNHOLY)
-         local blood, lblood, bd, lbd = DKROT:RuneCDs(SPEC_BLOOD)
-         local death = DKROT:DeathRunes()
-         local bloodCharges = select(4, UnitBuff("player", spells["Blood Charge"]))
-
-         -- Death Pact
-         if GetSpellTexture(spells["Death Pact"]) ~= nil
-            and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
-         then
-            if isOffCD(spells["Death Pact"]) then
-               return GetSpellTexture(spells["Death Pact"])
-            end
-         end
-
-         -- Soul Reaper
-         if GetSpellTexture(spells["Soul Reaper"]) ~= nil and (death >= 1 or unholy <= 0)
-         then
-            if (
-                  GetSpellTexture(spells["Improved Soul Reaper"]) ~= nil
-                  and UnitHealth("target")/UnitHealthMax("target") < 0.45
-               )
-               or UnitHealth("target")/UnitHealthMax("target") < 0.35
-            then
-               if isOffCD(spells["Soul Reaper"]) then
-                  return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
-               end
-            end
-         end
-
-         -- Defile
-         if GetSpellTexture(spells["Defile"]) ~= nil then
-            if isOffCD(spells["Defile"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Defile"])
-            end
-         end
-
-         -- Diseases
-         local disease, move = DKROT:GetDisease(icon)
-         if disease then   return move   end
-
-         -- Dark Transformation
-         if GetSpellTexture(spells["Dark Transformation"]) ~= nil
-         and select(4, UnitBuff("PET",spells["Shadow Infusion"])) == 5
-         and (unholy <= 0 or death >= 1) then
-            return DKROT:GetRangeandIcon(icon, spells["Dark Transformation"])
-         end
-
-         -- Blood Tap with >= 11 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-            and DKROT_Settings.CD[Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 11
-            and (frost >= 0 or unholy >= 0 or blood >= 0)
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
-         end
-
-         -- Death Coil if ghoul is not transformed or have 5 stacks
-         if DKROT_Settings.CD[Current_Spec].RP
-            and (
-               UnitPower("player") >= 30
-               or select(7, UnitBuff("PLAYER",spells["Sudden Doom"]))~= nil
-            )
-            and select(4, UnitBuff("PET",spells["Shadow Infusion"])) ~= 5
-            and UnitBuff("PET",spells["Dark Transformation"]) == nil
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Death Coil"])
-         end
-
-         -- Scourge Strike  (UU are up)
-         if (lunholy <= 0) then
-            if DKROT_Settings.MoveAltDND then
-               --Death and Decay
-               if GetSpellTexture(spells["Death and Decay"]) ~= nil then
-                  if isOffCD(spells["Death and Decay"]) then
-                     DKROT.Move.AOE:SetAlpha(1)
-                     DKROT.Move.AOE.Icon:SetTexture(GetSpellTexture(spells["Death and Decay"]))
-                  end
-               end
-            end
-            if GetSpellTexture(spells["Scourge Strike"]) ~= nil then
-               return DKROT:GetRangeandIcon(icon, spells["Scourge Strike"])
-            else return DKROT:GetRangeandIcon(icon, spells["Plague Strike"])
-            end
-         end
-
-         --Festering Strike (BB and FF are up)
-         if GetSpellTexture(spells["Festering Strike"]) ~= nil then
-            if lfrost <= 0 and lblood <= 0 then
-               return DKROT:GetRangeandIcon(icon, spells["Festering Strike"])
-            end
-         else
-            --Icy Touch
-            if lfrost <= 0 then
-               return DKROT:GetRangeandIcon(icon, spells["Icy Touch"])
-            end
-         end
-
-         --Death Coil (Sudden Doom, high RP)
-         if DKROT_Settings.CD[Current_Spec].RP
-         and (UnitPower("player") > 80
-            or select(7, UnitBuff("PLAYER",spells["Sudden Doom"])) ~= nil) then
-            return DKROT:GetRangeandIcon(icon, spells["Death Coil"])
-         end
-
-         --Festering Strike
-         if GetSpellTexture(spells["Festering Strike"]) ~= nil then
-            if frost <= 0 and blood <= 0 then
-               return DKROT:GetRangeandIcon(icon, spells["Festering Strike"])
-            end
-         else
-            --Icy Touch
-            if frost <= 0 then
-               return DKROT:GetRangeandIcon(icon, spells["Icy Touch"])
-            end
-         end
-
-         --Blood Tap with >= 5 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-         and DKROT_Settings.CD[Current_Spec].BT
-         and select(4,UnitBuff("player", spells["Blood Charge"])) ~= nil
-         and select(4,UnitBuff("player", spells["Blood Charge"])) >= 5
-         and (frost >= 0 or unholy >= 0 or blood >= 0) then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
-         end
-
-         --Empower Rune Weapon
-         if GetSpellTexture(spells["Empower Rune Weapon"]) ~= nil
-         and DKROT_Settings.CD[Current_Spec].ERW then
-            if isOffCD(spells["Empower Rune Weapon"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
-            end
-         end
-
-         -- If nothing else can be done
-         return nil
-      end
-
-      --Function to determine rotation for Frost Spec
-      function DKROT:FrostMove(icon)
-         if DKROT_Settings.CD[Current_Spec].AltRot then
-            return DKROT:FrostMoveAlt(icon)
-         end
-
-         --Rune Info
-         local frost, lfrost, fd = DKROT:RuneCDs(SPEC_FROST)
-         local unholy, lunholy, ud = DKROT:RuneCDs(SPEC_UNHOLY)
-         local blood, lblood, bd, lbd = DKROT:RuneCDs(SPEC_BLOOD)
-         local death = DKROT:DeathRunes()
-
-         -- Death Pact
-         if GetSpellTexture(spells["Death Pact"]) ~= nil
-            and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
-         then
-            if isOffCD(spells["Death Pact"]) then
-               return GetSpellTexture(spells["Death Pact"])
-            end
-         end
-
-         if GetSpellTexture(spells["Soul Reaper"]) ~= nil
-            and UnitHealth("target")/UnitHealthMax("target") < 0.35
-         then
-            if isOffCD(spells["Soul Reaper"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
-            end
-         end
-
-         -- Defile
-         if GetSpellTexture(spells["Defile"]) ~= nil then
-            if isOffCD(spells["Defile"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Defile"])
-            end
-         end
-
-         --Diseases
-         local disease, move = DKROT:GetDisease(icon)
-         if disease then return move end
-         local bloodCharges = select(4, UnitBuff("player", spells["Blood Charge"]))
-
-         -- Breath of Sindragosa
-         if GetSpellTexture(spells["Breath of Sindragosa"]) ~= nil and UnitPower("player") > 30 then
-            if isOffCD(spells["Breath of Sindragosa"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Breath of Sindragosa"])
-            end
-         end
-
-         --Obliterate with killing machine or runes overcaped
-         if GetSpellTexture(spells["Obliterate"]) ~= nil
-            and select(1,IsUsableSpell(spells["Obliterate"]))
-            and (select(7,UnitBuff("player", spells["Killing Machine"])) ~= nil
-            or (lfrost <= 0 or lunholy <= 0 or (lblood <= 0 and lbd)))
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Obliterate"])
-         end
-
-         --Blood Tap with >= 11 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-            and DKROT_Settings.CD[Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 11
-            and (frost >= 0 or unholy >= 0 or blood >= 0)
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
-         end
-
-         --Frost Strike if rp overcaped
-         if DKROT_Settings.CD[Current_Spec].RP and UnitPower("player") > 76 then
-            return DKROT:GetRangeandIcon(icon, spells["Frost Strike"])
-         end
-
-         --Obliterate
-         if GetSpellTexture(spells["Obliterate"]) ~= nil then
-            if select(1,IsUsableSpell(spells["Obliterate"])) then
-               return DKROT:GetRangeandIcon(icon, spells["Obliterate"])
-            end
-         else
-            --Howling Blast
-            if frost <= 0 then
-               return DKROT:GetRangeandIcon(icon, spells["Howling Blast"])
-            end
-
-            --Plague Strike
-            if unholy <= 0 then
-               return DKROT:GetRangeandIcon(icon, spells["Plague Strike"])
-            end
-         end
-
-         --Rime Howling Blast
-         if select(7,UnitBuff("player", spells["Freezing Fog"])) ~= nil then
-            return DKROT:GetRangeandIcon(icon, spells["Howling Blast"])
-         end
-
-         --Frost Strike
-         if DKROT_Settings.CD[Current_Spec].RP and UnitPower("player") >= 25 then
-            return DKROT:GetRangeandIcon(icon, spells["Frost Strike"])
-         end
-
-         --Blood Tap with >= 5 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-            and DKROT_Settings.CD[Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 5
-            and (frost >= 0 or unholy >= 0 or blood >= 0)
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
-         end
-
-         --Empower Rune Weapon
-         if GetSpellTexture(spells["Empower Rune Weapon"]) ~= nil
-         and DKROT_Settings.CD[Current_Spec].ERW then
-            if isOffCD(spells["Empower Rune Weapon"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
-            end
-         end
-
-         -- If nothing else can be done
-         return nil
-      end
-
-      --Dual-Wield rotaton
-      function DKROT:FrostMoveAlt(icon)
-
-         --Rune Info
-         local frost, lfrost = DKROT:RuneCDs(SPEC_FROST)
-         local unholy, lunholy, ud = DKROT:RuneCDs(SPEC_UNHOLY)
-         local blood, lblood = DKROT:RuneCDs(SPEC_BLOOD)
-         local death = DKROT:DeathRunes()
-         local bloodCharges = select(4, UnitBuff("player", spells["Blood Charge"]))
-
-         -- Death Pact
-         if GetSpellTexture(spells["Death Pact"]) ~= nil
-            and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
-         then
-            if isOffCD(spells["Death Pact"]) then
-               return GetSpellTexture(spells["Death Pact"])
-            end
-         end
-
-         --Soul Reaper
-         if GetSpellTexture(spells["Soul Reaper"]) ~= nil
-            and (death >= 1 or frost <= 0)
-            and UnitHealth("target")/UnitHealthMax("target") < 0.35
-         then
-            if isOffCD(spells["Soul Reaper"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
-            end
-         end
-
-         -- Defile
-         if GetSpellTexture(spells["Defile"]) ~= nil then
-            if isOffCD(spells["Defile"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Defile"])
-            end
-         end
-
-         -- Breath of Sindragosa
-         if GetSpellTexture(spells["Breath of Sindragosa"]) ~= nil and UnitPower("player") > 30 then
-            if isOffCD(spells["Breath of Sindragosa"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Breath of Sindragosa"])
-            end
-         end
-
-         --Blood Tap with >= 11 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-            and DKROT_Settings.CD[Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 11
-            and (frost >= 0 or unholy >= 0 or blood >= 0)
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
-         end
-
-         --Frost Strike if Killing Machine is procced
-         if DKROT_Settings.CD[Current_Spec].RP
-            and UnitPower("player") >= 25
-            and select(7,UnitBuff("player", spells["Killing Machine"])) ~= nil
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Frost Strike"])
-         end
-
-         --Frost Strike if RP capped
-         if DKROT_Settings.CD[Current_Spec].RP and UnitPower("player") > 88 then
-            return DKROT:GetRangeandIcon(icon, spells["Frost Strike"])
-         end
-
-         --Diseases
-         local disease, move = DKROT:GetDisease(icon)
-         if disease then return move end
-
-         --Death and Decay
-         if GetSpellTexture(spells["Death and Decay"]) ~= nil
-            and DKROT_Settings.MoveAltDND and lunholy <= 0
-         then
-            if isOffCD(spells["Death and Decay"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Death and Decay"])
-            end
-         end
-
-         --Howling Blast with both frost or both death off cooldown
-         if lblood <= 0 or lfrost <= 0 then
-            return DKROT:GetRangeandIcon(icon, spells["Howling Blast"])
-         end
-
-         --Obliterate when Killing Machine is procced and both Unholy Runes are off cooldown
-         if GetSpellTexture(spells["Obliterate"])~=nil
-            and select(1,IsUsableSpell(spells["Obliterate"]))
-            and lunholy <= 0
-            and select(7,UnitBuff("player", spells["Killing Machine"])) ~= nil
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Obliterate"])
-         end
-
-         --Howling Blast if Rime procced
-         if select(7,UnitBuff("player", spells["Freezing Fog"])) ~= nil then
-            return DKROT:GetRangeandIcon(icon, spells["Howling Blast"])
-         end
-
-         --Obliterate when second Unholy Rune is nearly off cooldown
-         if GetSpellTexture(spells["Obliterate"])~=nil then
-            if lunholy <= 2 and not ud and (frost <= 0 or blood <= 0) then
-               return DKROT:GetRangeandIcon(icon, spells["Obliterate"])
-            end
-         else --Plague Strike
-            if unholy <= 0 then
-               return DKROT:GetRangeandIcon(icon, spells["Plague Strike"])
-            end
-         end
-
-         --Howling Blast
-         if death >= 1 or frost <= 0 then
-            return DKROT:GetRangeandIcon(icon, spells["Howling Blast"])
-         end
-
-         --Blood Tap with >= 5 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-            and DKROT_Settings.CD[Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 5
-            and (frost >= 0 or unholy >= 0 or blood >= 0)
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
-         end
-
-         --Frost Strike
-         if DKROT_Settings.CD[Current_Spec].RP and UnitPower("player") > 39 then
-            return DKROT:GetRangeandIcon(icon, spells["Frost Strike"])
-         end
-
-         --Empower Rune Weapon
-         if GetSpellTexture(spells["Empower Rune Weapon"]) ~= nil
-         and DKROT_Settings.CD[Current_Spec].ERW then
-            if isOffCD(spells["Empower Rune Weapon"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
-            end
-         end
-
-         --If nothing else can be done
-         return nil
-      end
-
-      --Function to determine rotation for Blood Spec
-      function DKROT:BloodMove(icon)
-         --Rune Info
-         local frost, lfrost, fd = DKROT:RuneCDs(SPEC_FROST)
-         local unholy, lunholy, ud = DKROT:RuneCDs(SPEC_UNHOLY)
-         local blood, lblood = DKROT:RuneCDs(SPEC_BLOOD)
-         local death = DKROT:DeathRunes()
-         local bloodCharges = select(4,UnitBuff("player", spells["Blood Charge"]))
-
-         -- Death Pact
-         if GetSpellTexture(spells["Death Pact"]) ~= nil
-            and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
-         then
-            if isOffCD(spells["Death Pact"]) then
-               return GetSpellTexture(spells["Death Pact"])
-            end
-         end
-
-         --Bone Shield
-         if GetSpellTexture(spells["Bone Shield"]) ~= nil
-         and select(7, UnitBuff("player", spells["Bone Shield"])) == nil   then
-            if isOffCD(spells["Bone Shield"]) then
-               return GetSpellTexture(spells["Bone Shield"])
-            end
-         end
-
-         -- Defile
-         if GetSpellTexture(spells["Defile"]) ~= nil then
-            if isOffCD(spells["Defile"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Defile"])
-            end
-         end
-
-         --Soul Reaper
-         if lblood <= 2 and GetSpellTexture(spells["Soul Reaper"]) ~= nil
-            and UnitHealth("target")/UnitHealthMax("target") < 0.35
-         then
-            if isOffCD(spells["Soul Reaper"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Soul Reaper"])
-            end
-         end
-
-         --Diseases
-         local disease, move = DKROT:GetDisease(icon)
-         if disease then return move end
-
-         --Death Strike
-         if GetSpellTexture(spells["Death Strike"]) ~= nil
-         and select(1,IsUsableSpell(spells["Death Strike"])) then
-            return DKROT:GetRangeandIcon(icon, spells["Death Strike"])
-         end
-
-         -- Breath of Sindragosa
-         if GetSpellTexture(spells["Breath of Sindragosa"]) ~= nil and UnitPower("player") > 30 then
-            if isOffCD(spells["Breath of Sindragosa"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Breath of Sindragosa"])
-            end
-         end
-
-         --Blood Tap with >= 11 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-            and DKROT_Settings.CD[Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 11
-            and (frost >= 0 or unholy >= 0 or blood >= 0)
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
-         end
-
-         --Blood Boil if we have a blood rune
-         if GetSpellTexture(spells["Blood Boil"]) and blood <= 0 then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Boil"])
-         end
-
-         --Death Coil
-         if UnitPower("player") >= 40 then
-            return DKROT:GetRangeandIcon(icon, spells["Death Coil"])
-         end
-
-         --Crimson Scourge BB
-         if select(7,UnitBuff("player", spells["Crimson Scourge"])) ~= nil then
-            if DKROT_Settings.MoveAltDND then
-               --Death and Decay
-               if GetSpellTexture(spells["Death and Decay"]) ~= nil then
-                  if isOffCD(spells["Death and Decay"]) then
-                     DKROT.Move.AOE:SetAlpha(1)
-                     DKROT.Move.AOE.Icon:SetTexture(GetSpellTexture(spells["Death and Decay"]))
-                  end
-               end
-            end
-            return DKROT:GetRangeandIcon(icon, spells["Blood Boil"])
-         end
-
-         --Blood Tap with >= 5 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-            and DKROT_Settings.CD[Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 5
-            and (frost >= 0 or unholy >= 0 or blood >= 0)
-         then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
-         end
-
-         --Empower Rune Weapon if we have runes to activate and we're not RP capped
-         if GetSpellTexture(spells["Empower Rune Weapon"]) ~= nil
-            and DKROT_Settings.CD[Current_Spec].ERW
-            and (frost >= 0 or unholy >= 0 or blood >= 0)
-            and UnitPower("player") < 80
-         then
-            if isOffCD(spells["Empower Rune Weapon"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
-            end
-         end
-
-         --If nothing else can be done
-         return nil
-      end
-
       --Function to determine rotation for No Spec
       function DKROT:BlankMove(icon)
          --Rune Info
-         local frost = DKROT:RuneCDs(SPEC_FROST)
-         local unholy = DKROT:RuneCDs(SPEC_UNHOLY)
-         local blood = DKROT:RuneCDs(SPEC_BLOOD)
+         local frost = DKROT:RuneCDs(DKROT.SPECS.FROST)
+         local unholy = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+         local blood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
          local death = DKROT:DeathRunes()
-         local bloodCharges = select(4, UnitBuff("player", spells["Blood Charge"]))
+         local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
 
          --Diseases
          local disease, move = DKROT:GetDisease(icon)
          if disease then   return move   end
 
          -- Death Pact
-         if GetSpellTexture(spells["Death Pact"]) ~= nil
+         if GetSpellTexture(DKROT.spells["Death Pact"]) ~= nil
             and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
          then
-            if isOffCD(spells["Death Pact"]) then
-               return GetSpellTexture(spells["Death Pact"])
+            if DKROT:isOffCD(DKROT.spells["Death Pact"]) then
+               return GetSpellTexture(DKROT.spells["Death Pact"])
             end
          end
 
          --Blood Tap with >= 11 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-            and DKROT_Settings.CD[Current_Spec].BT
+         if GetSpellTexture(DKROT.spells["Blood Tap"])
+            and DKROT_Settings.CD[DKROT.Current_Spec].BT
             and bloodCharges ~= nil and bloodCharges >= 11
             and (frost >= 0 or unholy >= 0 or blood >= 0)
          then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Blood Tap"])
          end
 
          --Death Coil if overcaped RP
-         if DKROT_Settings.CD[Current_Spec].RP
+         if DKROT_Settings.CD[DKROT.Current_Spec].RP
          and UnitPower("player") > 80 then
-            return DKROT:GetRangeandIcon(icon, spells["Death Coil"])
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Death Coil"])
          end
 
          --Death Strike
-         if GetSpellTexture(spells["Death Strike"]) then
-            if select(1,IsUsableSpell(spells["Death Strike"])) then
-               return DKROT:GetRangeandIcon(icon, spells["Death Strike"])
+         if GetSpellTexture(DKROT.spells["Death Strike"]) then
+            if select(1,IsUsableSpell(DKROT.spells["Death Strike"])) then
+               return DKROT:GetRangeandIcon(icon, DKROT.spells["Death Strike"])
             end
-         elseif select(1,IsUsableSpell(spells["Icy Touch"])) then
-            return DKROT:GetRangeandIcon(icon, spells["Icy Touch"])
-         elseif select(1,IsUsableSpell(spells["Plague Strike"])) then
-            return DKROT:GetRangeandIcon(icon, spells["Plague Strike"])
+         elseif select(1,IsUsableSpell(DKROT.spells["Icy Touch"])) then
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Icy Touch"])
+         elseif select(1,IsUsableSpell(DKROT.spells["Plague Strike"])) then
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Plague Strike"])
          end
 
          --Blood Boil
-         if select(1,IsUsableSpell(spells["Blood Boil"])) then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Boil"])
+         if select(1,IsUsableSpell(DKROT.spells["Blood Boil"])) then
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Blood Boil"])
          end
 
          --Death Coil
-         if DKROT_Settings.CD[Current_Spec].RP and UnitPower("player") >= 40 then
-            return DKROT:GetRangeandIcon(icon, spells["Death Coil"])
+         if DKROT_Settings.CD[DKROT.Current_Spec].RP and UnitPower("player") >= 40 then
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Death Coil"])
          end
 
          --Blood Tap with >= 5 Charges
-         if GetSpellTexture(spells["Blood Tap"])
-            and DKROT_Settings.CD[Current_Spec].BT
+         if GetSpellTexture(DKROT.spells["Blood Tap"])
+            and DKROT_Settings.CD[DKROT.Current_Spec].BT
             and bloodCharges ~= nil and bloodCharges >= 5
             and (frost >= 0 or unholy >= 0 or blood >= 0)
          then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Tap"])
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Blood Tap"])
          end
 
          --Empower Rune Weapon
-         if GetSpellTexture(spells["Empower Rune Weapon"]) ~= nil
-         and DKROT_Settings.CD[Current_Spec].ERW then
-            if isOffCD(spells["Empower Rune Weapon"]) then
-               return DKROT:GetRangeandIcon(icon, spells["Empower Rune Weapon"])
+         if GetSpellTexture(DKROT.spells["Empower Rune Weapon"]) ~= nil
+         and DKROT_Settings.CD[DKROT.Current_Spec].ERW then
+            if DKROT:isOffCD(DKROT.spells["Empower Rune Weapon"]) then
+               return DKROT:GetRangeandIcon(icon, DKROT.spells["Empower Rune Weapon"])
             end
          end
 
@@ -2286,19 +1600,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          -- > SS > BB + IT
 
          --Rune Info
-         local frost, lfrost, fd, lfd = DKROT:RuneCDs(SPEC_FROST)
-         local unholy, lunholy = DKROT:RuneCDs(SPEC_UNHOLY)
-         local blood, lblood, bd, lbd = DKROT:RuneCDs(SPEC_BLOOD)
+         local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+         local unholy, lunholy = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+         local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
          local death = DKROT:DeathRunes()
 
          --AOE:Death and Decay
-         if DKROT:QuickAOESpellCheck(spells["Death and Decay"]) and (unholy <= 0 or death >= 1) then
-            return DKROT:GetRangeandIcon(icon, spells["Death and Decay"])
+         if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (unholy <= 0 or death >= 1) then
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Death and Decay"])
          end
 
          --AOE:Blood Boil
-         if DKROT:QuickAOESpellCheck(spells["Blood Boil"]) and (blood <= 0 or death >= 1) then
-            return DKROT:GetRangeandIcon(icon, spells["Blood Boil"])
+         if DKROT:QuickAOESpellCheck(DKROT.spells["Blood Boil"]) and (blood <= 0 or death >= 1) then
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Blood Boil"])
          end
 
          --Scourge Strike
@@ -2307,9 +1621,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          --AOE:Death Coil
-         if DKROT_Settings.CD[Current_Spec].RP
+         if DKROT_Settings.CD[DKROT.Current_Spec].RP
          and (UnitPower("player") >= 40
-            or select(7, UnitBuff("PLAYER",spells["Sudden Doom"])) ~= nil) then
+            or select(7, UnitBuff("PLAYER",DKROT.spells["Sudden Doom"])) ~= nil) then
             return DKROT:GetRangeandIcon(icon, nil)
          end
 
@@ -2320,44 +1634,44 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       function DKROT:FrostAOEMove(icon)
 
          --Rune Info
-         local frost, lfrost, fd, lfd = DKROT:RuneCDs(SPEC_FROST)
-         local unholy, lunholy, ud, lud = DKROT:RuneCDs(SPEC_UNHOLY)
-         local blood, lblood = DKROT:RuneCDs(SPEC_BLOOD)
+         local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+         local unholy, lunholy, ud, lud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+         local blood, lblood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
          local death = DKROT:DeathRunes()
 
          --AOE:Howling Blast if both Frost runes and/or both Death runes are up
-         if DKROT:QuickAOESpellCheck(spells["Howling Blast"]) and ((lfrost <= 0) or (lblood <= 0) or (lunholy <= 0 and lud)) then
-            return DKROT:GetRangeandIcon(icon, spells["Howling Blast"])
+         if DKROT:QuickAOESpellCheck(DKROT.spells["Howling Blast"]) and ((lfrost <= 0) or (lblood <= 0) or (lunholy <= 0 and lud)) then
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Howling Blast"])
          end
 
          --AOE:DnD if both Unholy Runes are up
-         if DKROT:QuickAOESpellCheck(spells["Death and Decay"]) and (lunholy <= 0) then
-            return DKROT:GetRangeandIcon(icon, spells["Death and Decay"])
+         if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (lunholy <= 0) then
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Death and Decay"])
          end
 
          --AOE:Frost Strike if RP capped
-         if DKROT:QuickAOESpellCheck(spells["Frost Strike"]) and (UnitPower("player") > 88) then
+         if DKROT:QuickAOESpellCheck(DKROT.spells["Frost Strike"]) and (UnitPower("player") > 88) then
             return DKROT:GetRangeandIcon(icon, nil)
          end
 
          --AOE:Howling Blast
-         if DKROT:QuickAOESpellCheck(spells["Howling Blast"]) and (frost <= 0 or death >= 1) then
-            return DKROT:GetRangeandIcon(icon, spells["Howling Blast"])
+         if DKROT:QuickAOESpellCheck(DKROT.spells["Howling Blast"]) and (frost <= 0 or death >= 1) then
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Howling Blast"])
          end
 
          --AOE:DnD
-         if DKROT:QuickAOESpellCheck(spells["Death and Decay"]) and (unholy <= 0) then
-            return DKROT:GetRangeandIcon(icon, spells["Death and Decay"])
+         if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (unholy <= 0) then
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Death and Decay"])
          end
 
          --AOE:Frost Strike
-         if DKROT:QuickAOESpellCheck(spells["Frost Strike"]) and UnitPower("player") >= 20 then
+         if DKROT:QuickAOESpellCheck(DKROT.spells["Frost Strike"]) and UnitPower("player") >= 20 then
             return DKROT:GetRangeandIcon(icon, nil)
          end
 
          --AOE:PS
-         if DKROT:QuickAOESpellCheck(spells["Plague Strike"]) and (unholy <= 0) then
-            return DKROT:GetRangeandIcon(icon, spells["Plague Strike"])
+         if DKROT:QuickAOESpellCheck(DKROT.spells["Plague Strike"]) and (unholy <= 0) then
+            return DKROT:GetRangeandIcon(icon, DKROT.spells["Plague Strike"])
          end
 
          return nil
@@ -2373,10 +1687,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    --Function to check spec and presence
    function DKROT:CheckSpec()
       --Set all settings to default
-      Current_Spec = SPEC_UNKNOWN
-      if GetSpecialization() == 1 then Current_Spec = SPEC_BLOOD
-      elseif GetSpecialization() == 2 then Current_Spec = SPEC_FROST
-      elseif GetSpecialization() == 3 then Current_Spec = SPEC_UNHOLY
+      DKROT.Current_Spec = DKROT.SPECS.UNKNOWN
+      if GetSpecialization() == 1 then DKROT.Current_Spec = DKROT.SPECS.BLOOD
+      elseif GetSpecialization() == 2 then DKROT.Current_Spec = DKROT.SPECS.FROST
+      elseif GetSpecialization() == 3 then DKROT.Current_Spec = DKROT.SPECS.UNHOLY
       end
 
       --Presence
@@ -2388,7 +1702,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
       end
 
-      if debugg then print("DKROT:Check Spec - "..Current_Spec)end
+      if debugg then print("DKROT:Check Spec - "..DKROT.Current_Spec)end
       DKROT:OptionsRefresh()
    end
 
@@ -2424,12 +1738,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if debugg then print("DKROT:Initialize - Version "..DKROT_Settings.Version)end
 
       if DKROT_Settings.DT.Combat or not DKROT_Settings.DT.Enable then
-         DKROT:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+         DKROT.MainFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
       else
-         DKROT:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+         DKROT.MainFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
       end
 
-      DKROT:SetAlpha(0)
+      DKROT.MainFrame:SetAlpha(0)
       DKROT:CreateCDs()
       DKROT:CreateUI()
 
@@ -2467,7 +1781,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       InterfaceOptions_AddCategory(DKROT_DTPanel)
       InterfaceOptions_AddCategory(DKROT_ABOUTPanel)
 
-      DKROT_CDRPanel_DG_Text:SetText(spells["Death Grip"])
+      DKROT_CDRPanel_DG_Text:SetText(DKROT.spells["Death Grip"])
 
       --Initalize all dropdowns
       UIDropDownMenu_Initialize(DKROT_FramePanel_Rune_DD, DKROT_Rune_DD_OnLoad)
@@ -2492,14 +1806,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    -----Events-----
    --Register Events
-   DKROT:RegisterEvent("PLAYER_TALENT_UPDATE")
-   DKROT:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+   DKROT.MainFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
+   DKROT.MainFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
    --DKROT:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
    --DKROT:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
    --Function to be called when events triggered
    local slottimer = 0
-   DKROT:SetScript("OnEvent", function(_, e, ...)
+   DKROT.MainFrame:SetScript("OnEvent", function(_, e, ...)
       -- Delayed addon initialization due to combat lockdown
       if loaded then
          --if debugg then print("DKROT:Event "..e)end
@@ -2523,19 +1837,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                      DKROT.DT.Unit[targetguid].Name = select(3, string.find(targetName, "(.-)-")) or targetName
                   end
 
-                  if DKROT.DT.Unit[targetguid].Spells[spellName] == nil then
+                  if DKROT.DT.Unit[targetguid].DKROT.spells[spellName] == nil then
                      DKROT.DT.Unit[targetguid].NumDots = DKROT.DT.Unit[targetguid].NumDots + 1
                   end
 
-                  if spellName == spells["Death and Decay"] then
-                     DKROT.DT.Unit[targetguid].Spells[spellName] = select(1, GetSpellCooldown(spellName)) + 10
+                  if spellName == DKROT.spells["Death and Decay"] then
+                     DKROT.DT.Unit[targetguid].DKROT.spells[spellName] = select(1, GetSpellCooldown(spellName)) + 10
                   else
-                     DKROT.DT.Unit[targetguid].Spells[spellName] = DTspells[spellName][2] + curtime
+                     DKROT.DT.Unit[targetguid].DKROT.spells[spellName] = DTDKROT.spells[spellName][2] + curtime
                   end
 
                elseif (event == "SPELL_AURA_REMOVED") then
                   if DKROT.DT.Unit[targetguid] ~= nil and  DKROT.DT.Unit[targetguid][spellName] ~= nil then
-                      DKROT.DT.Unit[targetguid].Spells[spellName] = nil
+                      DKROT.DT.Unit[targetguid].DKROT.spells[spellName] = nil
                       DKROT.DT.Unit[targetguid].NumDots = DKROT.DT.Unit[targetguid].NumDots - 1
                   end
                end
@@ -2550,7 +1864,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local DTupdatetimer = 0
    local DTchecktimer = 0
    local scheduledInit = false
-   DKROT:SetScript("OnUpdate", function()
+   DKROT.MainFrame:SetScript("OnUpdate", function()
       curtime = GetTime()
       --Make sure it only updates at max, once every 0.15 sec
       if (curtime - updatetimer >= 0.08) then
@@ -2568,12 +1882,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                   (DKROT_Settings.VScheme ~= DKROT_OPTIONS_FRAME_VIEW_HIDE and UnitCanAttack("player", "target") and (not UnitIsDead("target")))) then
                DKROT:UpdateUI()
                if DKROT_Settings.Locked then
-                  if IsAltKeyDown() then DKROT:EnableMouse(true)
-                  else DKROT:EnableMouse(false) end
+                  if IsAltKeyDown() then DKROT.MainFrame:EnableMouse(true)
+                  else DKROT.MainFrame:EnableMouse(false) end
                end
 
             else
-               DKROT:SetAlpha(0)
+               DKROT.MainFrame:SetAlpha(0)
             end
 
             if resize ~= nil then
@@ -2645,68 +1959,68 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
 
          --CD/R
-         DKROT_CDRPanel_Outbreak_Text:SetText(spells["Outbreak"])
-         DKROT_CDRPanel_UB_Text:SetText(spells["Unholy Blight"])
-         DKROT_CDRPanel_PL_Text:SetText(spells["Plague Leech"])
-         DKROT_CDRPanel_ERW_Text:SetText(spells["Empower Rune Weapon"])
-         DKROT_CDRPanel_BT_Text:SetText(spells["Blood Tap"])
-         DKROT_CDRPanel_DP_Text:SetText(spells["Death Pact"])
-         if (Current_Spec == SPEC_UNHOLY) then
+         DKROT_CDRPanel_Outbreak_Text:SetText(DKROT.spells["Outbreak"])
+         DKROT_CDRPanel_UB_Text:SetText(DKROT.spells["Unholy Blight"])
+         DKROT_CDRPanel_PL_Text:SetText(DKROT.spells["Plague Leech"])
+         DKROT_CDRPanel_ERW_Text:SetText(DKROT.spells["Empower Rune Weapon"])
+         DKROT_CDRPanel_BT_Text:SetText(DKROT.spells["Blood Tap"])
+         DKROT_CDRPanel_DP_Text:SetText(DKROT.spells["Death Pact"])
+         if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
             DKROT_CDRPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_UNHOLY)
             DKROT_CDPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_UNHOLY)
             DKROT_CDRPanel_AltRot_Text:SetText(DKROT_OPTIONS_CDR_ALT_ROT.." ("..DKROT_OPTIONS_CDR_ALT_ROT_UNHOLY..")")
-            DKROT_CDRPanel_AltRot:SetChecked(DKROT_Settings.CD[Current_Spec].AltRot)
-         elseif (Current_Spec == SPEC_FROST) then
+            DKROT_CDRPanel_AltRot:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].AltRot)
+         elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
             DKROT_CDRPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_FROST)
             DKROT_CDPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_FROST)
             DKROT_CDRPanel_AltRot_Text:SetText(DKROT_OPTIONS_CDR_ALT_ROT.." ("..DKROT_OPTIONS_CDR_ALT_ROT_FROST..")")
-            DKROT_CDRPanel_AltRot:SetChecked(DKROT_Settings.CD[Current_Spec].AltRot)
-         elseif (Current_Spec == SPEC_BLOOD) then
+            DKROT_CDRPanel_AltRot:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].AltRot)
+         elseif (DKROT.Current_Spec == DKROT.SPECS.BLOOD) then
             DKROT_CDRPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_BLOOD)
             DKROT_CDPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_BLOOD)
             DKROT_CDRPanel_AltRot_Text:SetText(DKROT_OPTIONS_CDR_ALT_ROT.." ("..DKROT_OPTIONS_CDR_ALT_ROT_BLOOD..")")
             DKROT_CDRPanel_AltRot:Disable()
-            DKROT_CDRPanel_AltRot:SetChecked(DKROT_Settings.CD[Current_Spec].AltRot)
+            DKROT_CDRPanel_AltRot:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].AltRot)
          else
-            DKROT_CDRPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_None)
-            DKROT_CDPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_None)
+            DKROT_CDRPanel_Title_Spec:SetText(DKROT_OPTIONS_DKROT_SPEC_None)
+            DKROT_CDPanel_Title_Spec:SetText(DKROT_OPTIONS_DKROT_SPEC_None)
          end
 
          --Disease Dropdown
-         UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD, DKROT_Settings.CD[Current_Spec].DiseaseOption)
+         UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD, DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption)
          local text
-         if DKROT_Settings.CD[Current_Spec].DiseaseOption == DISEASE_BOTH then text = DKROT_OPTIONS_CDR_DISEASES_DD_BOTH
-         elseif DKROT_Settings.CD[Current_Spec].DiseaseOption == DISEASE_ONE then text = DKROT_OPTIONS_CDR_DISEASES_DD_ONE
+         if DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption == DISEASE_BOTH then text = DKROT_OPTIONS_CDR_DISEASES_DD_BOTH
+         elseif DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption == DISEASE_ONE then text = DKROT_OPTIONS_CDR_DISEASES_DD_ONE
          else text =   DKROT_OPTIONS_CDR_DISEASES_DD_NONE end
          UIDropDownMenu_SetText(DKROT_CDRPanel_Diseases_DD, text)
 
-         DKROT_CDRPanel_Outbreak:SetChecked(DKROT_Settings.CD[Current_Spec].Outbreak)
-         DKROT_CDRPanel_UB:SetChecked(DKROT_Settings.CD[Current_Spec].UB)
-         DKROT_CDRPanel_PL:SetChecked(DKROT_Settings.CD[Current_Spec].PL)
-         DKROT_CDRPanel_ERW:SetChecked(DKROT_Settings.CD[Current_Spec].ERW)
-         DKROT_CDRPanel_BT:SetChecked(DKROT_Settings.CD[Current_Spec].BT)
-         DKROT_CDRPanel_DP:SetChecked(DKROT_Settings.CD[Current_Spec].DP)
-         DKROT_CDRPanel_IRP:SetChecked(DKROT_Settings.CD[Current_Spec].RP)
+         DKROT_CDRPanel_Outbreak:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].Outbreak)
+         DKROT_CDRPanel_UB:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].UB)
+         DKROT_CDRPanel_PL:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].PL)
+         DKROT_CDRPanel_ERW:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].ERW)
+         DKROT_CDRPanel_BT:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].BT)
+         DKROT_CDRPanel_DP:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].DP)
+         DKROT_CDRPanel_IRP:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].RP)
          DKROT_CDRPanel_MoveAltInterrupt:SetChecked(DKROT_Settings.MoveAltInterrupt)
          DKROT_CDRPanel_MoveAltAOE:SetChecked(DKROT_Settings.MoveAltAOE)
          DKROT_CDRPanel_MoveAltDND:SetChecked(DKROT_Settings.MoveAltDND)
          DKROT_CDRPanel_DG:SetChecked(DKROT_Settings.DG)
-         DKROT_CDRPanel_DD_CD1:SetChecked(DKROT_Settings.CD[Current_Spec][1])
-         DKROT_CDRPanel_DD_CD2:SetChecked(DKROT_Settings.CD[Current_Spec][2])
-         DKROT_CDRPanel_DD_CD3:SetChecked(DKROT_Settings.CD[Current_Spec][3])
-         DKROT_CDRPanel_DD_CD4:SetChecked(DKROT_Settings.CD[Current_Spec][4])
+         DKROT_CDRPanel_DD_CD1:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][1])
+         DKROT_CDRPanel_DD_CD2:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][2])
+         DKROT_CDRPanel_DD_CD3:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][3])
+         DKROT_CDRPanel_DD_CD4:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][4])
 
          --Priority Dropdown
-         if DKROT_Settings.CD[Current_Spec]["DKROT_CDRPanel_DD_Priority"] ~= nil and DKROT_Settings.CD[Current_Spec]["DKROT_CDRPanel_DD_Priority"][1] ~= nil then
-            UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_DD_Priority, DKROT_Settings.CD[Current_Spec]["DKROT_CDRPanel_DD_Priority"][1]..((DKROT_Settings.CD[Current_Spec]["DKROT_CDRPanel_DD_Priority"][IS_BUFF] and " (Buff)") or ""))
-            UIDropDownMenu_SetText(DKROT_CDRPanel_DD_Priority, DKROT_Settings.CD[Current_Spec]["DKROT_CDRPanel_DD_Priority"][1]..((DKROT_Settings.CD[Current_Spec]["DKROT_CDRPanel_DD_Priority"][IS_BUFF] and " (Buff)") or ""))
+         if DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"] ~= nil and DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][1] ~= nil then
+            UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_DD_Priority, DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][1]..((DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][IS_BUFF] and " (Buff)") or ""))
+            UIDropDownMenu_SetText(DKROT_CDRPanel_DD_Priority, DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][1]..((DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][IS_BUFF] and " (Buff)") or ""))
          end
 
          --Cooldown Dropdown
          for i = 1, #CDDisplayList do
-            if _G[CDDisplayList[i]] ~= nil and DKROT_Settings.CD[Current_Spec][CDDisplayList[i]] ~= nil and DKROT_Settings.CD[Current_Spec][CDDisplayList[i]][1] ~= nil then
-               UIDropDownMenu_SetSelectedValue(_G[CDDisplayList[i]], DKROT_Settings.CD[Current_Spec][CDDisplayList[i]][1]..((DKROT_Settings.CD[Current_Spec][CDDisplayList[i]][IS_BUFF] and " (Buff)") or ""))
-               UIDropDownMenu_SetText(_G[CDDisplayList[i]], DKROT_Settings.CD[Current_Spec][CDDisplayList[i]][1]..((DKROT_Settings.CD[Current_Spec][CDDisplayList[i]][IS_BUFF] and " (Buff)") or ""))
+            if _G[CDDisplayList[i]] ~= nil and DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]] ~= nil and DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]][1] ~= nil then
+               UIDropDownMenu_SetSelectedValue(_G[CDDisplayList[i]], DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]][1]..((DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]][IS_BUFF] and " (Buff)") or ""))
+               UIDropDownMenu_SetText(_G[CDDisplayList[i]], DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]][1]..((DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]][IS_BUFF] and " (Buff)") or ""))
             end
          end
 
@@ -2734,16 +2048,16 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
          UIDropDownMenu_SetText(DKROT_DTPanel_DD_Threat, text)
 
-         DKROT_DTPanel_DOTS_FF_Text:SetText(spells["Frost Fever"])
-         DKROT_DTPanel_DOTS_FF:SetChecked(DKROT_Settings.DT.Dots[spells["Frost Fever"]])
-         DKROT_DTPanel_DOTS_BP_Text:SetText(spells["Blood Plague"])
-         DKROT_DTPanel_DOTS_BP:SetChecked(DKROT_Settings.DT.Dots[spells["Blood Plague"]])
-         DKROT_DTPanel_DOTS_DD_Text:SetText(spells["Death and Decay"])
-         DKROT_DTPanel_DOTS_DD:SetChecked(DKROT_Settings.DT.Dots[spells["Death and Decay"]])
-         DKROT_DTPanel_DOTS_DF_Text:SetText(spells["Defile"])
-         DKROT_DTPanel_DOTS_DF:SetChecked(DKROT_Settings.DT.Dots[spells["Defile"]])
-         DKROT_DTPanel_DOTS_NP_Text:SetText(spells["Necrotic Plague"])
-         DKROT_DTPanel_DOTS_NP:SetChecked(DKROT_Settings.DT.Dots[spells["Necrotic Plague"]])
+         DKROT_DTPanel_DOTS_FF_Text:SetText(DKROT.spells["Frost Fever"])
+         DKROT_DTPanel_DOTS_FF:SetChecked(DKROT_Settings.DT.Dots[DKROT.spells["Frost Fever"]])
+         DKROT_DTPanel_DOTS_BP_Text:SetText(DKROT.spells["Blood Plague"])
+         DKROT_DTPanel_DOTS_BP:SetChecked(DKROT_Settings.DT.Dots[DKROT.spells["Blood Plague"]])
+         DKROT_DTPanel_DOTS_DD_Text:SetText(DKROT.spells["Death and Decay"])
+         DKROT_DTPanel_DOTS_DD:SetChecked(DKROT_Settings.DT.Dots[DKROT.spells["Death and Decay"]])
+         DKROT_DTPanel_DOTS_DF_Text:SetText(DKROT.spells["Defile"])
+         DKROT_DTPanel_DOTS_DF:SetChecked(DKROT_Settings.DT.Dots[DKROT.spells["Defile"]])
+         DKROT_DTPanel_DOTS_NP_Text:SetText(DKROT.spells["Necrotic Plague"])
+         DKROT_DTPanel_DOTS_NP:SetChecked(DKROT_Settings.DT.Dots[DKROT.spells["Necrotic Plague"]])
 
          --About Options
          local expText = "<html><body>"
@@ -2766,7 +2080,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    end
 
    --Check if options are valid and save them to settings if so
-   function DKROT:OptionsOkay()
+   function DKROT_OptionsOkay()
       if DKROT_Settings ~= nil and (DKROT_Settings.Version ~= nil and DKROT_Settings.Version == DKROT_VERSION) then
          --Frame
          DKROT_Settings.GCD = DKROT_FramePanel_GCD:GetChecked()
@@ -2810,18 +2124,18 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_Settings.MoveAltAOE = DKROT_CDRPanel_MoveAltAOE:GetChecked()
          DKROT_Settings.MoveAltDND = DKROT_CDRPanel_MoveAltDND:GetChecked()
          DKROT_Settings.DG = DKROT_CDRPanel_DG:GetChecked()
-         DKROT_Settings.CD[Current_Spec].AltRot = DKROT_CDRPanel_AltRot:GetChecked()
-         DKROT_Settings.CD[Current_Spec].Outbreak = DKROT_CDRPanel_Outbreak:GetChecked()
-         DKROT_Settings.CD[Current_Spec].UB = DKROT_CDRPanel_UB:GetChecked()
-         DKROT_Settings.CD[Current_Spec].PL = DKROT_CDRPanel_PL:GetChecked()
-         DKROT_Settings.CD[Current_Spec].ERW = DKROT_CDRPanel_ERW:GetChecked()
-         DKROT_Settings.CD[Current_Spec].BT = DKROT_CDRPanel_BT:GetChecked()
-         DKROT_Settings.CD[Current_Spec].DP = DKROT_CDRPanel_DP:GetChecked()
-         DKROT_Settings.CD[Current_Spec].RP = DKROT_CDRPanel_IRP:GetChecked()
-         DKROT_Settings.CD[Current_Spec][1] = (DKROT_CDRPanel_DD_CD1:GetChecked())
-         DKROT_Settings.CD[Current_Spec][2] = (DKROT_CDRPanel_DD_CD2:GetChecked())
-         DKROT_Settings.CD[Current_Spec][3] = (DKROT_CDRPanel_DD_CD3:GetChecked())
-         DKROT_Settings.CD[Current_Spec][4] = (DKROT_CDRPanel_DD_CD4:GetChecked())
+         DKROT_Settings.CD[DKROT.Current_Spec].AltRot = DKROT_CDRPanel_AltRot:GetChecked()
+         DKROT_Settings.CD[DKROT.Current_Spec].Outbreak = DKROT_CDRPanel_Outbreak:GetChecked()
+         DKROT_Settings.CD[DKROT.Current_Spec].UB = DKROT_CDRPanel_UB:GetChecked()
+         DKROT_Settings.CD[DKROT.Current_Spec].PL = DKROT_CDRPanel_PL:GetChecked()
+         DKROT_Settings.CD[DKROT.Current_Spec].ERW = DKROT_CDRPanel_ERW:GetChecked()
+         DKROT_Settings.CD[DKROT.Current_Spec].BT = DKROT_CDRPanel_BT:GetChecked()
+         DKROT_Settings.CD[DKROT.Current_Spec].DP = DKROT_CDRPanel_DP:GetChecked()
+         DKROT_Settings.CD[DKROT.Current_Spec].RP = DKROT_CDRPanel_IRP:GetChecked()
+         DKROT_Settings.CD[DKROT.Current_Spec][1] = (DKROT_CDRPanel_DD_CD1:GetChecked())
+         DKROT_Settings.CD[DKROT.Current_Spec][2] = (DKROT_CDRPanel_DD_CD2:GetChecked())
+         DKROT_Settings.CD[DKROT.Current_Spec][3] = (DKROT_CDRPanel_DD_CD3:GetChecked())
+         DKROT_Settings.CD[DKROT.Current_Spec][4] = (DKROT_CDRPanel_DD_CD4:GetChecked())
 
          --Disease Timers
          DKROT_Settings.DT.Enable = DKROT_DTPanel_Enable:GetChecked()
@@ -2858,16 +2172,16 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          else
             DKROT_DTPanel_Trans:SetNumber(DKROT_Settings.DTTrans)
          end
-         DKROT_Settings.DT.Dots[spells["Frost Fever"]] = DKROT_DTPanel_DOTS_FF:GetChecked()
-         DKROT_Settings.DT.Dots[spells["Blood Plague"]] = DKROT_DTPanel_DOTS_BP:GetChecked()
-         DKROT_Settings.DT.Dots[spells["Death and Decay"]] = DKROT_DTPanel_DOTS_DD:GetChecked()
-         DKROT_Settings.DT.Dots[spells["Defile"]] = DKROT_DTPanel_DOTS_DF:GetChecked()
-         DKROT_Settings.DT.Dots[spells["Necrotic Plague"]] = DKROT_DTPanel_DOTS_NP:GetChecked()
+         DKROT_Settings.DT.Dots[DKROT.spells["Frost Fever"]] = DKROT_DTPanel_DOTS_FF:GetChecked()
+         DKROT_Settings.DT.Dots[DKROT.spells["Blood Plague"]] = DKROT_DTPanel_DOTS_BP:GetChecked()
+         DKROT_Settings.DT.Dots[DKROT.spells["Death and Decay"]] = DKROT_DTPanel_DOTS_DD:GetChecked()
+         DKROT_Settings.DT.Dots[DKROT.spells["Defile"]] = DKROT_DTPanel_DOTS_DF:GetChecked()
+         DKROT_Settings.DT.Dots[DKROT.spells["Necrotic Plague"]] = DKROT_DTPanel_DOTS_NP:GetChecked()
 
          if DKROT_Settings.DT.Combat or not DKROT_Settings.DT.Enable then
-            DKROT:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+            DKROT.MainFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
          else
-            DKROT:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+            DKROT.MainFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
          end
 
          -- Change the cooldown spiral edge settings
@@ -2884,7 +2198,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    function DKROT:CooldownDefaults()
       if DKROT_Settings.CD ~= nil then wipe(DKROT_Settings.CD) end
       DKROT_Settings.CD = {
-         [SPEC_UNHOLY] = {
+         [DKROT.SPECS.UNHOLY] = {
             ["DKROT_CDRPanel_DD_Priority"] = {DKROT_OPTIONS_CDR_CD_PRIORITY, nil},
             DiseaseOption = DISEASE_BOTH,
             Outbreak = true,
@@ -2895,21 +2209,21 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             BT = true,
 
             [1] = true,
-            ["DKROT_CDRPanel_DD_CD1_One"] = {spells["Shadow Infusion"], true},
-            ["DKROT_CDRPanel_DD_CD1_Two"] = {spells["Dark Transformation"], true},
+            ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Shadow Infusion"], true},
+            ["DKROT_CDRPanel_DD_CD1_Two"] = {DKROT.spells["Dark Transformation"], true},
 
             [2] = true,
-            ["DKROT_CDRPanel_DD_CD2_Two"] = {spells["Sudden Doom"], true},
+            ["DKROT_CDRPanel_DD_CD2_Two"] = {DKROT.spells["Sudden Doom"], true},
 
             [3] = false,
-            ["DKROT_CDRPanel_DD_CD3_One"] = {spells["Summon Gargoyle"], nil},
+            ["DKROT_CDRPanel_DD_CD3_One"] = {DKROT.spells["Summon Gargoyle"], nil},
 
             [4] = false,
             ["DKROT_CDRPanel_DD_CD4_One"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1, nil},
             ["DKROT_CDRPanel_DD_CD4_Two"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2, nil},
          },
 
-         [SPEC_FROST] = {
+         [DKROT.SPECS.FROST] = {
             ["DKROT_CDRPanel_DD_Priority"] = {DKROT_OPTIONS_CDR_CD_PRIORITY, nil},
             DiseaseOption = DISEASE_BOTH,
             Outbreak = true,
@@ -2920,22 +2234,22 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             BT = true,
 
             [1] = true,
-            ["DKROT_CDRPanel_DD_CD1_One"] = {spells["Pillar of Frost"], nil},
-            ["DKROT_CDRPanel_DD_CD1_Two"] = {spells["Pillar of Frost"], true},
+            ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Pillar of Frost"], nil},
+            ["DKROT_CDRPanel_DD_CD1_Two"] = {DKROT.spells["Pillar of Frost"], true},
 
             [2] = true,
-            ["DKROT_CDRPanel_DD_CD2_One"] = {spells["Killing Machine"], true},
-            ["DKROT_CDRPanel_DD_CD2_Two"] = {spells["Freezing Fog"], true},
+            ["DKROT_CDRPanel_DD_CD2_One"] = {DKROT.spells["Killing Machine"], true},
+            ["DKROT_CDRPanel_DD_CD2_Two"] = {DKROT.spells["Freezing Fog"], true},
 
             [3] = false,
-            ["DKROT_CDRPanel_DD_CD3_Two"] = {spells["Plague Leech"], nil},
+            ["DKROT_CDRPanel_DD_CD3_Two"] = {DKROT.spells["Plague Leech"], nil},
 
             [4] = false,
             ["DKROT_CDRPanel_DD_CD4_One"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1, nil},
             ["DKROT_CDRPanel_DD_CD4_Two"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2, nil},
          },
 
-         [SPEC_BLOOD] = {
+         [DKROT.SPECS.BLOOD] = {
             ["DKROT_CDRPanel_DD_Priority"] = {DKROT_OPTIONS_CDR_CD_PRIORITY, nil},
             DiseaseOption = DISEASE_BOTH,
             Outbreak = true,
@@ -2946,23 +2260,23 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             BT = true,
 
             [1] = true,
-            ["DKROT_CDRPanel_DD_CD1_One"] = {spells["Bone Shield"], true},
-            ["DKROT_CDRPanel_DD_CD1_Two"] = {spells["Vampiric Blood"], nil},
+            ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Bone Shield"], true},
+            ["DKROT_CDRPanel_DD_CD1_Two"] = {DKROT.spells["Vampiric Blood"], nil},
 
             [2] = true,
-            ["DKROT_CDRPanel_DD_CD2_One"] = {spells["Rune Tap"], nil},
-            ["DKROT_CDRPanel_DD_CD2_Two"] = {spells["Scent of Blood"], true},
+            ["DKROT_CDRPanel_DD_CD2_One"] = {DKROT.spells["Rune Tap"], nil},
+            ["DKROT_CDRPanel_DD_CD2_Two"] = {DKROT.spells["Scent of Blood"], true},
 
             [3] = false,
-            ["DKROT_CDRPanel_DD_CD3_One"] = {spells["Blood Shield"], true},
-            ["DKROT_CDRPanel_DD_CD3_Two"] = {spells["Blood Charge"], true},
+            ["DKROT_CDRPanel_DD_CD3_One"] = {DKROT.spells["Blood Shield"], true},
+            ["DKROT_CDRPanel_DD_CD3_Two"] = {DKROT.spells["Blood Charge"], true},
 
             [4] = false,
             ["DKROT_CDRPanel_DD_CD4_One"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1, nil},
             ["DKROT_CDRPanel_DD_CD4_Two"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2, nil},
          },
 
-         [SPEC_UNKNOWN] = {
+         [DKROT.SPECS.UNKNOWN] = {
             ["DKROT_CDRPanel_DD_Priority"] = {DKROT_OPTIONS_CDR_CD_PRIORITY, nil},
             DiseaseOption = DISEASE_BOTH,
             Outbreak = true,
@@ -2973,14 +2287,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             BT = true,
 
             [1] = true,
-            ["DKROT_CDRPanel_DD_CD1_Two"] = {spells["Blood Charge"], true},
+            ["DKROT_CDRPanel_DD_CD1_Two"] = {DKROT.spells["Blood Charge"], true},
 
             [2] = true,
-            ["DKROT_CDRPanel_DD_CD2_One"] = {spells["Raise Dead"], nil},
-            ["DKROT_CDRPanel_DD_CD2_Two"] = {spells["Army of the Dead"], nil},
+            ["DKROT_CDRPanel_DD_CD2_One"] = {DKROT.spells["Raise Dead"], nil},
+            ["DKROT_CDRPanel_DD_CD2_Two"] = {DKROT.spells["Army of the Dead"], nil},
 
             [3] = false,
-            ["DKROT_CDRPanel_DD_CD3_Two"] = {spells["Blood Tap"], nil},
+            ["DKROT_CDRPanel_DD_CD3_Two"] = {DKROT.spells["Blood Tap"], nil},
 
             [4] = false,
             ["DKROT_CDRPanel_DD_CD4_One"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1, nil},
@@ -2993,7 +2307,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    function DKROT:CheckSettings()
       if debugg then print("DKROT:Check Settings Start")end
 
-      local specs = {SPEC_UNKNOWN, SPEC_BLOOD, SPEC_FROST, SPEC_UNHOLY}
+      local specs = {DKROT.SPECS.UNKNOWN, DKROT.SPECS.BLOOD, DKROT.SPECS.FROST, DKROT.SPECS.UNHOLY}
       local spots = {"Priority", "CD1_One", "CD1_Two", "CD2_One", "CD2_Two", "CD3_One", "CD3_Two", "CD4_One", "CD4_Two"}
 
       --Defaults
@@ -3052,9 +2366,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if DKROT_Settings.DT.Threat == nil then DKROT_Settings.DT.Threat = THREAT_ANALOG end
       if DKROT_Settings.DT.Dots == nil then
          DKROT_Settings.DT.Dots = {}
-         DKROT_Settings.DT.Dots[spells["Frost Fever"]] = true
-         DKROT_Settings.DT.Dots[spells["Blood Plague"]] = true
-         DKROT_Settings.DT.Dots[spells["Death and Decay"]] = true
+         DKROT_Settings.DT.Dots[DKROT.spells["Frost Fever"]] = true
+         DKROT_Settings.DT.Dots[DKROT.spells["Blood Plague"]] = true
+         DKROT_Settings.DT.Dots[DKROT.spells["Death and Decay"]] = true
       end
 
       --Frame Location
@@ -3193,19 +2507,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       info = {}
       info.text = DKROT_OPTIONS_CDR_DISEASES_DD_BOTH
       info.value = DISEASE_BOTH
-      info.func = function() DKROT_Settings.CD[Current_Spec].DiseaseOption = DISEASE_BOTH;UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD,  DKROT_Settings.CD[Current_Spec].DiseaseOption); end
+      info.func = function() DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption = DISEASE_BOTH;UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD,  DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption); end
       UIDropDownMenu_AddButton(info)
 
       info = {}
       info.text = DKROT_OPTIONS_CDR_DISEASES_DD_ONE
       info.value = DISEASE_ONE
-      info.func = function() DKROT_Settings.CD[Current_Spec].DiseaseOption = DISEASE_ONE;UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD,  DKROT_Settings.CD[Current_Spec].DiseaseOption); end
+      info.func = function() DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption = DISEASE_ONE;UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD,  DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption); end
       UIDropDownMenu_AddButton(info)
 
       info = {}
       info.text = DKROT_OPTIONS_CDR_DISEASES_DD_NONE
       info.value = DISEASE_NONE
-      info.func = function() DKROT_Settings.CD[Current_Spec].DiseaseOption = DISEASE_NONE;UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD,  DKROT_Settings.CD[Current_Spec].DiseaseOption); end
+      info.func = function() DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption = DISEASE_NONE;UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD,  DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption); end
       UIDropDownMenu_AddButton(info)
    end
 
@@ -3220,8 +2534,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          info.text = spell .. ((buff and " (Buff)") or "")
          info.value = spell .. ((buff and " (Buff)") or "")
          info.func = function()
-            DKROT_Settings.CD[Current_Spec][panel:GetName()][1] = spell
-            DKROT_Settings.CD[Current_Spec][panel:GetName()][2] = buff
+            DKROT_Settings.CD[DKROT.Current_Spec][panel:GetName()][1] = spell
+            DKROT_Settings.CD[DKROT.Current_Spec][panel:GetName()][2] = buff
             UIDropDownMenu_SetSelectedValue(panel, spell .. ((buff and " (Buff)") or ""))
             CloseDropDownMenus()
          end
@@ -3231,10 +2545,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       --Function to add specs specific CDs
       local function AddSpecCDs(Spec)
          for i = 1, #Spec do
-            if (Cooldowns.Buffs[Spec[i]] == nil or Cooldowns.Buffs[Spec[i]][2]) then
+            if (DKROT.Cooldowns.Buffs[Spec[i]] == nil or DKROT.Cooldowns.Buffs[Spec[i]][2]) then
                UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, Spec[i]), 2)
             end
-            if Cooldowns.Buffs[Spec[i]] ~= nil then
+            if DKROT.Cooldowns.Buffs[Spec[i]] ~= nil then
                UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, Spec[i], true), 2)
             end
          end
@@ -3283,26 +2597,26 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local key = UIDROPDOWNMENU_MENU_VALUE["Level1_Key"]
 
          if key == "Spec" then
-            if (Current_Spec == SPEC_UNHOLY) then
-               AddSpecCDs(Cooldowns.UnholyCDs)
-            elseif (Current_Spec == SPEC_FROST) then
-               AddSpecCDs(Cooldowns.FrostCDs)
-            elseif (Current_Spec == SPEC_BLOOD) then
-               AddSpecCDs(Cooldowns.BloodCDs)
+            if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
+               AddSpecCDs(DKROT.Cooldowns.UnholyCDs)
+            elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
+               AddSpecCDs(DKROT.Cooldowns.FrostCDs)
+            elseif (DKROT.Current_Spec == DKROT.SPECS.BLOOD) then
+               AddSpecCDs(DKROT.Cooldowns.BloodCDs)
             end
 
          elseif key == "Normal" then
-            AddSpecCDs(Cooldowns.NormCDs)
+            AddSpecCDs(DKROT.Cooldowns.NormCDs)
 
          elseif key == "Moves" then
-            for i = 1, #Cooldowns.Moves do
-               if GetSpellTexture(Cooldowns.Moves[i]) ~= nil then
-                  UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, Cooldowns.Moves[i]), 2)
+            for i = 1, #DKROT.Cooldowns.Moves do
+               if GetSpellTexture(DKROT.Cooldowns.Moves[i]) ~= nil then
+                  UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT.Cooldowns.Moves[i]), 2)
                end
             end
 
          elseif key == "Talents" then
-            AddSpecCDs(Cooldowns.TalentCDs)
+            AddSpecCDs(DKROT.Cooldowns.TalentCDs)
 
          elseif key == "Trinkets" then
             UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1), 2)

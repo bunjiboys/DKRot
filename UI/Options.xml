@@ -9,7 +9,7 @@
          </Layer>
       </Layers>
       <Scripts>
-         <OnClick>DKROT:OptionsOkay();</OnClick>
+         <OnClick>DKROT_OptionsOkay();</OnClick>
       </Scripts>
    </CheckButton>
 
@@ -34,11 +34,11 @@
          </Layers>
          <Scripts>
             <OnEnterPressed>
-               DKROT:OptionsOkay()
+               DKROT_OptionsOkay()
                self:ClearFocus()
             </OnEnterPressed>
             <OnEscapePressed>
-               DKROT:OptionsOkay()
+               DKROT_OptionsOkay()
                self:ClearFocus()
             </OnEscapePressed>
          </Scripts>
@@ -48,7 +48,7 @@
       <Scripts>
          <OnLoad>
             self.name = "DKRot"
-            self.okay = function() DKROT:OptionsOkay(); end
+            self.okay = function() DKROT_OptionsOkay(); end
             self.default = function() DKROT:SetDefaults(); end
          </OnLoad>
          <OnShow>
