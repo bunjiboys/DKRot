@@ -1215,7 +1215,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                info.Frame.Icons[j] = DKROT:CreateIcon("DKROT.DT."..j, info.Frame, j, 20)
                info.Frame.Icons[j].Time:SetFont(font, 11, "OUTLINE")
                info.Frame.Icons[j]:SetPoint("RIGHT", -(count*22)-1, 0)
-               info.Frame.Icons[j].Icon:SetTexture(GetSpellTexture(DTDKROT.spells[j][1]))
+               info.Frame.Icons[j].Icon:SetTexture(GetSpellTexture(DKROT.DTspells[j][1]))
                count = count + 1
             end
          end
@@ -1233,12 +1233,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                   else
                      info.NumDots = info.NumDots - 1
                      info.Frame.Icons[j]:SetAlpha(0)
-                     info.DKROT.spells[j] = nil
+                     info.Spells[j] = nil
                   end
                else
                   info.NumDots = info.NumDots - 1
                   if info.Frame.Icons[j]~= nil then info.Frame.Icons[j]:SetAlpha(0) end
-                  info.DKROT.spells[j] = nil
+                  info.Spells[j] = nil
                end
             end
          else
@@ -1305,13 +1305,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
                         updatedGUIDs[guid] = true
 
-                        if DKROT.DT.Unit[guid].DKROT.spells[name] == nil then
+                        if DKROT.DT.Unit[guid].Spells[name] == nil then
                            DKROT.DT.Unit[guid].NumDots = DKROT.DT.Unit[guid].NumDots + 1
                         end
                         if name == DKROT.spells["Death and Decay"] then
-                           DKROT.DT.Unit[guid].DKROT.spells[name] = select(1, GetSpellCooldown(name)) + 10
+                           DKROT.DT.Unit[guid].Spells[name] = select(1, GetSpellCooldown(name)) + 10
                         else
-                           DKROT.DT.Unit[guid].DKROT.spells[name] = expt
+                           DKROT.DT.Unit[guid].Spells[name] = expt
                         end
 
                         if DKROT_Settings.DT.Threat ~= THREAT_OFF then
@@ -1853,19 +1853,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                      DKROT.DT.Unit[targetguid].Name = select(3, string.find(targetName, "(.-)-")) or targetName
                   end
 
-                  if DKROT.DT.Unit[targetguid].DKROT.spells[spellName] == nil then
+                  if DKROT.DT.Unit[targetguid].Spells[spellName] == nil then
                      DKROT.DT.Unit[targetguid].NumDots = DKROT.DT.Unit[targetguid].NumDots + 1
                   end
 
                   if spellName == DKROT.spells["Death and Decay"] then
-                     DKROT.DT.Unit[targetguid].DKROT.spells[spellName] = select(1, GetSpellCooldown(spellName)) + 10
+                     DKROT.DT.Unit[targetguid].Spells[spellName] = select(1, GetSpellCooldown(spellName)) + 10
                   else
-                     DKROT.DT.Unit[targetguid].DKROT.spells[spellName] = DTDKROT.spells[spellName][2] + curtime
+                     DKROT.DT.Unit[targetguid].Spells[spellName] = DKROT.DTspells[spellName][2] + curtime
                   end
 
                elseif (event == "SPELL_AURA_REMOVED") then
                   if DKROT.DT.Unit[targetguid] ~= nil and  DKROT.DT.Unit[targetguid][spellName] ~= nil then
-                      DKROT.DT.Unit[targetguid].DKROT.spells[spellName] = nil
+                      DKROT.DT.Unit[targetguid].Spells[spellName] = nil
                       DKROT.DT.Unit[targetguid].NumDots = DKROT.DT.Unit[targetguid].NumDots - 1
                   end
                end
