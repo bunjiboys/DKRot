@@ -63,4 +63,25 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DEFAULT_CHAT_FRAME:AddMessage("|cFFC41F3BDKRot |cFF00FFFF[DEBUG]|r:|r " .. message)
       end
    end
+
+   -- Display an info box about new rotations first time
+   -- user loads the addon after the update
+   function DKROT:DisplayUpdateWarning()
+      StaticPopupDialogs["DKROT_UPDATE_WARNING"] = {
+         text = "DKRot has been updated to support more than just 2 rotations per spec\n\nIf you want to change the rotation to use, open the settings and select the rotation from the dropdown menu\n\nThis warning should only be displayed once\n",
+         button1 = "OK",
+         button3 = "Open settings",
+         OnAlt = function()
+            InterfaceOptionsFrame_OpenToCategory(DKROT_CDRPanel)
+            InterfaceOptionsFrame_OpenToCategory(DKROT_CDRPanel)
+         end,
+         timeout = 0,
+         whileDead = true,
+         hideOnEscape = true,
+         showAlert = true,
+         preferredIndex = 3,  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
+      }
+
+      StaticPopup_Show("DKROT_UPDATE_WARNING")
+   end
 end
