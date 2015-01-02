@@ -4,6 +4,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    -- --- Create Main Frame-- ---
    DKROT.MainFrame = CreateFrame("Button", "DKROT", UIParent)
+   DKROT.MainFrame:RegisterEvent("ADDON_LOADED")
    DKROT.MainFrame:SetWidth(94)
    DKROT.MainFrame:SetHeight(68)
    DKROT.MainFrame:SetFrameStrata("BACKGROUND")
@@ -1788,7 +1789,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT_CDRPanel_DG_Text:SetText(DKROT.spells["Death Grip"])
       DKROT:CheckSpec()
 
-      -- Initalize all dropdowns
+      -- Initialize all dropdowns
       UIDropDownMenu_Initialize(DKROT_FramePanel_Rune_DD, DKROT_Rune_DD_OnLoad)
       UIDropDownMenu_Initialize(DKROT_CDRPanel_Diseases_DD, DKROT_Diseases_OnLoad)
       UIDropDownMenu_Initialize(DKROT_CDRPanel_DD_Priority, DKROT_CDRPanel_DD_OnLoad)
@@ -1812,12 +1813,24 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    -- Register Events
    DKROT.MainFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
    DKROT.MainFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+   DKROT.MainFrame:RegisterEvent("ADDON_LOADED")
    -- DKROT:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
    -- DKROT:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
    -- Function to be called when events triggered
    local slottimer = 0
    DKROT.MainFrame:SetScript("OnEvent", function(_, e, ...)
+      if e == "ADDON_LOADED" then
+         local addonName = ...
+         if addonName == "DKRot" then
+            DKROT.MainFrame:UnregisterEvent("ADDON_LOADED")
+            if DKROT_Settings.UpdateWarning ~= true then
+               DKROT:DisplayUpdateWarning()
+               DKROT_Settings.UpdateWarning = true
+            end
+         end
+      end
+
       -- Delayed addon initialization due to combat lockdown
       if loaded then
          if e == "COMBAT_LOG_EVENT_UNFILTERED" then
@@ -2720,8 +2733,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    function DKROT_PositionUpdate()
       print("Updating position / sizes of elements")
    end
-
-   DKROT:Log("Loaded addon")
 else
    DKROT:Debug("Not a DK")
    DKROT_Options = nil

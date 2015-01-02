@@ -1,8 +1,8 @@
 ## Interface: 60000
 ## Author: bunjiboys (Jardo@US-Hyjal)
 ## Version: 6.0.3
-## Title: DK Rot
-## Notes: Rotation assist, based on CLC DK
+## Title: DKRot
+## Notes: Death Knight Rotation assistance, based on CLC DK
 ## SavedVariablesPerCharacter: DKROT_Settings
 
 # Embeds
