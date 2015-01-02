@@ -46,11 +46,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT_OPTIONS_CDR_DISEASES_DD_BOTH = "Both Diseases (FF+BP)"
    DKROT_OPTIONS_CDR_DISEASES_DD_ONE = "One Disease (FF)"
    DKROT_OPTIONS_CDR_DISEASES_DD_NONE = "Diseaseless"
-   DKROT_OPTIONS_CDR_ROTATION = "Use in Rotation"
+   DKROT_OPTIONS_CDR_ROTATION = "Rotation"
+   DKROT_OPTIONS_CDR_USE_IN_ROTATION = "Use in Rotation"
    DKROT_OPTIONS_CDR_RP = "Runic Power"
    DKROT_OPTIONS_CDR_MOVEALT_INTERRUPT = "Show Interrupt Icon"
    DKROT_OPTIONS_CDR_MOVEALT_AOE = "Show AOE Icon"
    DKROT_OPTIONS_CDR_MOVEALT_DND = "Show DnD Icon"
+   DKROT_OPTIONS_CDR_USEHOW = "Maintain Horn of Winter buff"
    DKROT_OPTIONS_CDR_ALT_ROT = "Use Alternative Rotation"
    DKROT_OPTIONS_CDR_ALT_ROT_UNHOLY = "Festerblight"
    DKROT_OPTIONS_CDR_ALT_ROT_FROST = "Dual-weild"
@@ -93,6 +95,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT_OPTIONS_DT_THREAT_HEALTH = "Show Health Bars"
    DKROT_OPTIONS_DT_DOTS = "Track DOTs"
    DKROT_OPTIONS_DT_TRANS = "Trans. (0-1)"
+
+   DKROT_OPTIONS_POSITION = "Position"
 
    DKROT_ABOUT = "About"
    DKROT_ABOUT_BODY = "Have Questions? Suggestions? or just want more information?<br/>Leave a comment on Curse.com"

@@ -1,0 +1,111 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+   <CheckButton name="DKROT_CheckButtonTemplate" virtual="true" inherits="InterfaceOptionsBaseCheckButtonTemplate">
+      <Layers>
+         <Layer level="ARTWORK">
+            <FontString name="$Parent_Text" inherits="GameFontHighlight">
+               <Anchors><Anchor point="LEFT" relativePoint="RIGHT"><Offset><AbsDimension x="0" y="1"/></Offset></Anchor></Anchors>
+            </FontString>
+         </Layer>
+      </Layers>
+      <Scripts>
+         <OnClick>DKROT_OptionsOkay();</OnClick>
+      </Scripts>
+   </CheckButton>
+
+   <Button name="DKROT_DropDownTemplate" virtual="true" inherits="UIDropDownMenuTemplate">
+      <Layers>
+         <Layer level="ARTWORK">
+            <FontString name="$Parent_Text" inherits="GameFontHighlight">
+               <Anchors><Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT"><Offset><AbsDimension x="20" y="2"/></Offset></Anchor></Anchors>
+            </FontString>
+         </Layer>
+      </Layers>
+   </Button>
+
+   <EditBox name="DKROT_EditBoxTemplate" virtual="true" autoFocus="false" inherits="InputBoxTemplate">
+      <Size>
+         <AbsDimension x="25" y="28"/>
+      </Size>
+      <Layers>
+         <Layer level="ARTWORK">
+            <FontString name="$Parent_Text" inherits="GameFontHighlight">
+               <Anchors>
+                  <Anchor point="LEFT" relativePoint="RIGHT">
+                     <Offset>
+                        <AbsDimension x="5" y="1"/>
+                     </Offset>
+                  </Anchor>
+               </Anchors>
+            </FontString>
+         </Layer>
+      </Layers>
+      <Scripts>
+         <OnEnterPressed>
+            DKROT_OptionsOkay()
+            self:ClearFocus()
+         </OnEnterPressed>
+         <OnEscapePressed>
+            DKROT_OptionsOkay()
+            self:ClearFocus()
+         </OnEscapePressed>
+      </Scripts>
+   </EditBox>
+
+   <Slider name="DKROT_SliderTemplate" virtual="true" inherits="Slider" orientation="HORIZONTAL">
+      <Size x="250" y="20" />
+      <Backdrop bgFile="Interface\Buttons\UI-SliderBar-Background" edgeFile="Interface\Buttons\UI-SliderBar-Border" tile="true">
+         <EdgeSize val="8"/>
+         <TileSize val="8"/>
+         <BackgroundInsets left="3" right="3" top="6" bottom="6"/>
+      </Backdrop>
+      <ThumbTexture name="$parentThumb" file="Interface\Buttons\UI-SliderBar-Button-Horizontal">
+         <Size x="32" y="32"/>
+      </ThumbTexture>
+      <Layers>
+         <Layer level="ARTWORK">
+            <FontString name="$parent_Value" inherits="GameFontHighlight">
+               <Anchors>
+                  <Anchor point="TOP" relativePoint="BOTTOM"/>
+               </Anchors>
+            </FontString>
+
+            <FontString name="$parent_Low" inherits="GameFontHighlightSmall" text="">
+               <Anchors>
+                  <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT">
+                     <Offset>
+                        <AbsDimension x="-4" y="3"/>
+                     </Offset>
+                  </Anchor>
+               </Anchors>
+            </FontString>
+
+            <FontString name="$parent_High" inherits="GameFontHighlightSmall" text="">
+               <Anchors>
+                  <Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT">
+                     <Offset>
+                        <AbsDimension x="4" y="3"/>
+                     </Offset>
+                  </Anchor>
+               </Anchors>
+            </FontString>
+         </Layer>
+      </Layers>
+      <Scripts>
+         <OnLoad>
+            local min, max = self:GetMinMaxValues()
+            getglobal(self:GetName() .. "_Low"):SetText(min)
+            getglobal(self:GetName() .. "_High"):SetText(max)
+         </OnLoad>
+      </Scripts>
+   </Slider>
+
+   <!--
+   <EditBox name="DKROT_SliderEditBoxTemplate" virtual="true">
+      <Size x="70" y="14" />
+      <Backdrop bgFile="Interface\ChatFrame\ChatFrameBackground" edgeFile="Interface\ChatFrame\ChatFrameBackground" tile="true">
+         <EdgeSize val="1" />
+         <TileSize val="5" />
+      </Backdrop>
+   </EditBox>
+   -->
+</Ui>

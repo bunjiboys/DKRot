@@ -14,7 +14,19 @@ extlibs\LibStub\Libstub.lua
 Localization\localization.lua
 
 # XML UI objects
+ui\templates.xml
 ui\Options.xml
+ui\positions.xml
+
+# Initialize variables we need everywhere, and load helper functions
+init.lua
+helpers.lua
+
+# Rotation files
+rotations\blank.lua
+rotations\blood.lua
+rotations\frost.lua
+rotations\unholy.lua
 
 # Core addon functionality
-DKRot.lua
+core.lua
