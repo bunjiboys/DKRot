@@ -2734,7 +2734,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       print("Updating position / sizes of elements")
    end
 else
-   DKROT:Debug("Not a DK")
+   print("DKRot: Not a DK")
    DKROT_Options = nil
    DKROT_FramePanel = nil
    DKROT_CDRPanel = nil
