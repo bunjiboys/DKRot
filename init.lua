@@ -1,13 +1,15 @@
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
+   DKROT.debug = false
    DKROT_VERSION = GetAddOnMetadata("DKRot", "Version")
 
    DKROT.SPECS = {
-      UNKNOWN = 0,
       BLOOD = 1,
       FROST = 2,
-      UNHOLY = 3
+      UNHOLY = 3,
+      UNKNOWN = 4
    }
+
    DKROT.DTspells = {}
    DKROT.Current_Spec = DKROT.SPECS.UNKNOWN
    DKROT.spells = {}
@@ -18,11 +20,4 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       {},
       {},
    }
-
-   function DKROT:RegisterRotation(spec, intname, rotname, rotfunc)
-      DKROT.Rotations[spec][intname] = {
-         name = rotname,
-         func = rotfunc
-      }
-   end
 end

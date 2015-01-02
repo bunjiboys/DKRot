@@ -1,49 +1,4 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-
-   <CheckButton name="DKROT_CheckButtonTemplate" virtual="true" inherits="InterfaceOptionsBaseCheckButtonTemplate">
-      <Layers>
-         <Layer level="ARTWORK">
-            <FontString name="$Parent_Text" inherits="GameFontHighlight">
-               <Anchors><Anchor point="LEFT" relativePoint="RIGHT"><Offset><AbsDimension x="0" y="1"/></Offset></Anchor></Anchors>
-            </FontString>
-         </Layer>
-      </Layers>
-      <Scripts>
-         <OnClick>DKROT_OptionsOkay();</OnClick>
-      </Scripts>
-   </CheckButton>
-
-   <Button name="DKROT_DropDownTemplate" virtual="true" inherits="UIDropDownMenuTemplate">
-      <Layers>
-         <Layer level="ARTWORK">
-            <FontString name="$Parent_Text" inherits="GameFontHighlight">
-               <Anchors><Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT"><Offset><AbsDimension x="20" y="2"/></Offset></Anchor></Anchors>
-            </FontString>
-         </Layer>
-      </Layers>
-   </Button>
-
-   <EditBox name="DKROT_EditBoxTemplate" virtual="true" autoFocus="false" inherits="InputBoxTemplate">
-         <Size><AbsDimension x="25" y="28"/></Size>
-         <Layers>
-            <Layer level="ARTWORK">
-               <FontString name="$Parent_Text" inherits="GameFontHighlight">
-                 <Anchors><Anchor point="LEFT" relativePoint="RIGHT"><Offset><AbsDimension x="5" y="1"/></Offset></Anchor></Anchors>
-               </FontString>
-            </Layer>
-         </Layers>
-         <Scripts>
-            <OnEnterPressed>
-               DKROT_OptionsOkay()
-               self:ClearFocus()
-            </OnEnterPressed>
-            <OnEscapePressed>
-               DKROT_OptionsOkay()
-               self:ClearFocus()
-            </OnEscapePressed>
-         </Scripts>
-      </EditBox>
-
    <Frame name="DKROT_Options">
       <Scripts>
          <OnLoad>
@@ -108,7 +63,7 @@
             </Scripts>
          </CheckButton>
          
-         <!--Range -->
+         <!-- Range -->
          <CheckButton name="DKROT_FramePanel_Range" inherits="DKROT_CheckButtonTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_CDS"><Offset><AbsDimension x="0" y="-35"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -118,7 +73,7 @@
             </Scripts>
          </CheckButton>
          
-         <!--Rune -->
+         <!-- Rune -->
          <CheckButton name="DKROT_FramePanel_Rune" inherits="DKROT_CheckButtonTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_Range"><Offset><AbsDimension x="0" y="-35"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -128,7 +83,7 @@
             </Scripts>
          </CheckButton>
          
-         <!--RuneBars -->
+         <!-- RuneBars -->
          <CheckButton name="DKROT_FramePanel_RuneBars" inherits="DKROT_CheckButtonTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_Rune"><Offset><AbsDimension x="0" y="-35"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -138,7 +93,7 @@
             </Scripts>
          </CheckButton>
          
-         <!--Rune DD-->
+         <!-- Rune DD-->
          <Button name="DKROT_FramePanel_Rune_DD" inherits="DKROT_DropDownTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_RuneBars" ><Offset><AbsDimension x="-16" y="-45"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -149,7 +104,7 @@
             </Scripts>
          </Button>
          
-         <!--RP -->
+         <!-- RP -->
          <CheckButton name="DKROT_FramePanel_RP" inherits="DKROT_CheckButtonTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_Rune_DD"><Offset><AbsDimension x="15" y="-35"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -159,7 +114,7 @@
             </Scripts>
          </CheckButton>
          
-         <!--Disease -->
+         <!-- Disease -->
          <CheckButton name="DKROT_FramePanel_Disease" inherits="DKROT_CheckButtonTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_RP"><Offset><AbsDimension x="0" y="-35"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -168,8 +123,6 @@
                </OnLoad>
             </Scripts>
          </CheckButton>
-         
-         
          
          <!-- Lock -->
          <CheckButton name="DKROT_FramePanel_Locked" inherits="DKROT_CheckButtonTemplate">
@@ -191,7 +144,7 @@
             </Scripts>
          </CheckButton>
 
-         <!--View Dropdown -->
+         <!-- View Dropdown -->
          <Button name="DKROT_FramePanel_ViewDD" inherits="DKROT_DropDownTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_LockedPieces" ><Offset><AbsDimension x="-15" y="-50"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -202,7 +155,7 @@
             </Scripts>
          </Button>
 
-         <!--Scale -->
+         <!-- Scale -->
          <EditBox name="DKROT_FramePanel_Scale" inherits="DKROT_EditBoxTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_ViewDD" relativePoint="BOTTOMLEFT"><Offset><AbsDimension x="25" y="-5"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -212,7 +165,7 @@
             </Scripts>
          </EditBox>
 
-         <!--Trans -->
+         <!-- Trans -->
          <EditBox name="DKROT_FramePanel_NormalTrans" inherits="DKROT_EditBoxTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_Scale" relativePoint="BOTTOMLEFT"><Offset><AbsDimension x="0" y="-5"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -231,7 +184,7 @@
             </Scripts>
          </EditBox>
          
-         <!--Trans Combat -->
+         <!-- Trans Combat -->
          <EditBox name="DKROT_FramePanel_CombatTrans" inherits="DKROT_EditBoxTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_Trans" relativePoint="BOTTOMLEFT"><Offset><AbsDimension x="0" y="-5"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -241,7 +194,7 @@
             </Scripts>
          </EditBox>
 
-         <!--Reset -->
+         <!-- Reset -->
          <Button name="DKROT_FramePanel_Reset" inherits="UIPanelButtonTemplate"  Text="DKROT_OPTIONS_RESET">
             <Size><AbsDimension x="120" y="22"/></Size>
             <Anchors><Anchor point="BOTTOMLEFT"><Offset><AbsDimension x="15" y="15" /></Offset></Anchor></Anchors>
@@ -250,7 +203,7 @@
             </Scripts>
          </Button>
 
-         <!--Location Reset -->
+         <!-- Location Reset -->
          <Button name="DKROT_FramePanel_LocationReset" inherits="UIPanelButtonTemplate"  Text="DKROT_OPTIONS_RESETLOCATION">
             <Size><AbsDimension x="120" y="22"/></Size>
             <Anchors><Anchor point="BOTTOMRIGHT"><Offset><AbsDimension x="-15" y="15" /></Offset></Anchor></Anchors>
@@ -283,14 +236,14 @@
          </Layer>
          
          <Layer level="ARTWORK">
-            <FontString name="DKROT_CDRPanel_Rotation_Title" inherits="GameFontHighlight" text="DKROT_OPTIONS_CDR_ROTATION">
+            <FontString name="DKROT_CDRPanel_Rotation_Title" inherits="GameFontHighlight" text="DKROT_OPTIONS_CDR_USE_IN_ROTATION">
                <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel" relativePoint="TOPRIGHT"><Offset><AbsDimension x="-200" y="-40" /></Offset></Anchor></Anchors>
             </FontString>
          </Layer>
       </Layers>
 
       <Frames>
-         <!--Diseases DD-->
+         <!-- Diseases DD -->
          <Button name="DKROT_CDRPanel_Diseases_DD" inherits="DKROT_DropDownTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_DD_Title" ><Offset><AbsDimension x="-16" y="-40"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -299,7 +252,7 @@
                   UIDropDownMenu_SetWidth(self, 160, 5)
                </OnLoad>
             </Scripts>
-            </Button>
+         </Button>
          
          <!-- Interrupt  Icon-->
          <CheckButton name="DKROT_CDRPanel_MoveAltInterrupt" inherits="DKROT_CheckButtonTemplate">
@@ -311,7 +264,7 @@
             </Scripts>
          </CheckButton>
          
-         <!-- AOE  Icon-->
+         <!-- AOE Icon -->
          <CheckButton name="DKROT_CDRPanel_MoveAltAOE" inherits="DKROT_CheckButtonTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_MoveAltInterrupt"><Offset><AbsDimension x="0" y="-35"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -321,7 +274,7 @@
             </Scripts>
          </CheckButton>
 
-         <!-- AOE  Icon-->
+         <!-- DND Icon -->
          <CheckButton name="DKROT_CDRPanel_MoveAltDND" inherits="DKROT_CheckButtonTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_MoveAltAOE"><Offset><AbsDimension x="0" y="-35"/></Offset></Anchor></Anchors>
             <Scripts>
@@ -331,10 +284,26 @@
             </Scripts>
          </CheckButton>
 
-         <!-- Alternative Rotation-->
-         <CheckButton name="DKROT_CDRPanel_AltRot" inherits="DKROT_CheckButtonTemplate">
+         <!-- Horn of Winter -->
+         <CheckButton name="DKROT_CDRPanel_UseHoW" inherits="DKROT_CheckButtonTemplate">
             <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_MoveAltDND"><Offset><AbsDimension x="0" y="-35"/></Offset></Anchor></Anchors>
+            <Scripts>
+               <OnLoad>
+                  DKROT_CDRPanel_UseHoW_Text:SetText(DKROT_OPTIONS_CDR_USEHOW)
+               </OnLoad>
+            </Scripts>
          </CheckButton>
+
+         <!-- Rotation to use -->
+         <Button name="DKROT_CDRPanel_Rotation" inherits="DKROT_DropDownTemplate">
+            <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_UseHoW"><Offset><AbsDimension x="-16" y="-45"/></Offset></Anchor></Anchors>
+            <Scripts>
+               <OnLoad>
+                  DKROT_CDRPanel_Rotation_Text:SetText(DKROT_OPTIONS_CDR_ROTATION)
+                  UIDropDownMenu_SetWidth(self, 200, 5)
+               </OnLoad>
+            </Scripts>
+         </Button>
          
          <!-- Rotation Option-->
          <Frame name="DKROT_CDRPanel_Rotation" toplevel="true" parent="DKROT_CDRPanel" frameStrata="DIALOG">
