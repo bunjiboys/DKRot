@@ -15,7 +15,7 @@
    <Button name="DKROT_DropDownTemplate" virtual="true" inherits="UIDropDownMenuTemplate">
       <Layers>
          <Layer level="ARTWORK">
-            <FontString name="$Parent_Text" inherits="GameFontHighlight">
+            <FontString name="$Parent_Text" inherits="GameFontNormal">
                <Anchors><Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT"><Offset><AbsDimension x="20" y="2"/></Offset></Anchor></Anchors>
             </FontString>
          </Layer>
@@ -51,61 +51,124 @@
       </Scripts>
    </EditBox>
 
-   <Slider name="DKROT_SliderTemplate" virtual="true" inherits="Slider" orientation="HORIZONTAL">
-      <Size x="250" y="20" />
-      <Backdrop bgFile="Interface\Buttons\UI-SliderBar-Background" edgeFile="Interface\Buttons\UI-SliderBar-Border" tile="true">
-         <EdgeSize val="8"/>
-         <TileSize val="8"/>
-         <BackgroundInsets left="3" right="3" top="6" bottom="6"/>
-      </Backdrop>
-      <ThumbTexture name="$parentThumb" file="Interface\Buttons\UI-SliderBar-Button-Horizontal">
-         <Size x="32" y="32"/>
-      </ThumbTexture>
+   <Frame name="DKROT_SliderTemplate" virtual="true">
       <Layers>
          <Layer level="ARTWORK">
-            <FontString name="$parent_Value" inherits="GameFontHighlight">
-               <Anchors>
-                  <Anchor point="TOP" relativePoint="BOTTOM"/>
-               </Anchors>
+            <FontString name="$Parent_Text" inherits="GameFontHighlight" text="FooBar">
+               <Anchors><Anchor point="LEFT" relativePoint="RIGHT"><Offset><AbsDimension x="0" y="1"/></Offset></Anchor></Anchors>
             </FontString>
+         </Layer>
+      </Layers>
+      <Frames>
+         <Slider name="$parent_Slider" inherits="Slider" orientation="HORIZONTAL">
+            <Size x="250" y="20" />
+            <Backdrop bgFile="Interface\Buttons\UI-SliderBar-Background" edgeFile="Interface\Buttons\UI-SliderBar-Border" tile="true">
+               <EdgeSize val="8"/>
+               <TileSize val="8"/>
+               <BackgroundInsets left="3" right="3" top="6" bottom="6"/>
+            </Backdrop>
+            <ThumbTexture name="$parentThumb" file="Interface\Buttons\UI-SliderBar-Button-Horizontal">
+               <Size x="32" y="32"/>
+            </ThumbTexture>
+            <Layers>
+               <Layer level="ARTWORK">
+                  <!--
+                  <FontString name="$parent_Value" inherits="GameFontHighlight">
+                     <Anchors>
+                        <Anchor point="TOP" relativePoint="BOTTOM"/>
+                     </Anchors>
+                  </FontString>
+                  -->
 
-            <FontString name="$parent_Low" inherits="GameFontHighlightSmall" text="">
+                  <FontString name="$parent_Low" inherits="GameFontHighlightSmall" text="">
+                     <Anchors>
+                        <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT">
+                           <Offset>
+                              <AbsDimension x="-4" y="3"/>
+                           </Offset>
+                        </Anchor>
+                     </Anchors>
+                  </FontString>
+
+                  <FontString name="$parent_High" inherits="GameFontHighlightSmall" text="">
+                     <Anchors>
+                        <Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT">
+                           <Offset>
+                              <AbsDimension x="4" y="3"/>
+                           </Offset>
+                        </Anchor>
+                     </Anchors>
+                  </FontString>
+               </Layer>
+            </Layers>
+            <Scripts>
+               <OnLoad>
+                  local min, max = self:GetMinMaxValues()
+                  getglobal(self:GetName() .. "_Low"):SetText(min)
+                  getglobal(self:GetName() .. "_High"):SetText(max)
+               </OnLoad>
+            </Scripts>
+         </Slider>
+         <EditBox name="$parent_Value" inherits="DKROT_SliderEditBoxTemplate" autoFocus="false" enableMouse="true">
+            <Anchors>
+               <Anchor point="TOPLEFT" relativeTo="$parent">
+                  <OffSet>
+                     <AbsDimension x="15" y="-35" />
+                  </OffSet>
+               </Anchor>
+            </Anchors>
+         </EditBox>
+      </Frames>
+   </Frame>
+
+   <EditBox name="DKROT_SliderEditBoxTemplate" virtual="true" autoFocus="false">
+      <Size x="100" y="32" />
+      <Anchors>
+         <Anchor point="LEFT">
+            <Offset x="50" y="0" />
+         </Anchor>
+      </Anchors>
+      <Layers>
+         <Layer level="BACKGROUND">
+            <Texture file="Interface\ChatFrame\UI-ChatInputBorder-Left">
+               <Size x="75" y="32" />
                <Anchors>
-                  <Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT">
-                     <Offset>
-                        <AbsDimension x="-4" y="3"/>
-                     </Offset>
+                  <Anchor point="LEFT">
+                     <Offset x="-10" y="0" />
                   </Anchor>
                </Anchors>
-            </FontString>
-
-            <FontString name="$parent_High" inherits="GameFontHighlightSmall" text="">
+               <TexCoords left="0" right="0.2" top="0" bottom="1.0"/>
+            </Texture>
+            <Texture file="Interface\ChatFrame\UI-ChatInputBorder-Right">
+               <Size x="75" y="32" />
                <Anchors>
-                  <Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT">
-                     <Offset>
-                        <AbsDimension x="4" y="3"/>
-                     </Offset>
+                  <Anchor point="RIGHT">
+                     <Offset x="10" y="0" />
                   </Anchor>
                </Anchors>
-            </FontString>
+               <TexCoords left="0.7" right="1.0" top="0" bottom="1.0"/>
+            </Texture>
          </Layer>
       </Layers>
       <Scripts>
          <OnLoad>
-            local min, max = self:GetMinMaxValues()
-            getglobal(self:GetName() .. "_Low"):SetText(min)
-            getglobal(self:GetName() .. "_High"):SetText(max)
          </OnLoad>
       </Scripts>
-   </Slider>
+      <FontString inherits="ChatFontNormal" />
+   </EditBox>
 
    <!--
-   <EditBox name="DKROT_SliderEditBoxTemplate" virtual="true">
+   <EditBox name="DKROT_SliderEditBoxTemplate" virtual="true" autoFocus="false">
       <Size x="70" y="14" />
-      <Backdrop bgFile="Interface\ChatFrame\ChatFrameBackground" edgeFile="Interface\ChatFrame\ChatFrameBackground" tile="true">
-         <EdgeSize val="1" />
-         <TileSize val="5" />
-      </Backdrop>
+      <Layers>
+         <Layer level="BACKGROUND">
+            <Texture file="Interface\ChatFrame\UI-ChatInputBorder-Left">
+               <Size x="75" y="32" />
+
+            <Backdrop bgFile="Interface\ChatFrame\ChatFrameBackground" edgeFile="Interface\ChatFrame\ChatFrameBackground" tile="true">
+               <EdgeSize val="1" />
+               <TileSize val="5" />
+            </Backdrop>
    </EditBox>
    -->
 </Ui>

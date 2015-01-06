@@ -10,6 +10,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
 
+      -- Horn of Winter
+      if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         return DKROT.spells["Horn of Winter"]
+      end
+
       -- Diseases
       local disease = DKROT:GetDisease()
       if disease ~= nil then
