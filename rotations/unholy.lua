@@ -10,7 +10,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
  
       -- Horn of Winter
-      if DKROT_Settings.UseHoW and DKROT:UseHoW() then
+      if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
          return DKROT.spells["Horn of Winter"]
       end
 
@@ -168,7 +168,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local dFF, dBP = DKROT:GetDiseaseTime()
  
       -- Horn of Winter
-      if DKROT_Settings.UseHoW and DKROT:UseHoW() then
+      if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
          return DKROT.spells["Horn of Winter"]
       end
 

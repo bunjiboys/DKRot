@@ -28,7 +28,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Horn of Winter
-      if DKROT_Settings.UseHoW and DKROT:UseHoW() then
+      if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
          return DKROT.spells["Horn of Winter"]
       end
 
@@ -147,7 +147,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Horn of Winter
-      if DKROT_Settings.UseHoW and DKROT:UseHoW() then
+      if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
          return DKROT.spells["Horn of Winter"], true
       end
 

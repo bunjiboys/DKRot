@@ -520,6 +520,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local resize = nil
    -- Sets up required information for each element that can be moved
    function DKROT:SetupMoveFunction(frame)
+      --[[
       frame.Drag = CreateFrame("Button", "ResizeGrip", frame) -- Grip Buttons from Omen2
       frame.Drag:SetFrameLevel(frame:GetFrameLevel() + 100)
       frame.Drag:SetNormalTexture("Interface\\AddOns\\DKRot\\ResizeGrip")
@@ -543,6 +544,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             resize, mousex, mousey = nil, nil, nil
          end
       end)
+      ]]--
 
       frame:EnableMouse(false)
       frame:SetMovable(true)
@@ -558,7 +560,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       frame:SetScript("OnMouseUp", function(self, button)
          DKROT:Debug("Mouse Up " .. self:GetName())
          self:StopMovingOrSizing()
-         DKROT_Settings.Location[self:GetName()].Point, DKROT_Settings.Location[self:GetName()].Rel, DKROT_Settings.Location[self:GetName()].RelPoint, DKROT_Settings.Location[self:GetName()].X, DKROT_Settings.Location[self:GetName()].Y = self:GetPoint()
+         DKROT_Settings.Location[self:GetName()].Point, _, DKROT_Settings.Location[self:GetName()].RelPoint, DKROT_Settings.Location[self:GetName()].X, DKROT_Settings.Location[self:GetName()].Y = self:GetPoint()
+         DKROT_PositionPanel_Element_Select(DKROT_PositionPanel_Element, DKROT:GetFrame(self:GetName(), true))
       end)
    end
 
@@ -707,11 +710,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT.Diseases:SetFrameStrata("BACKGROUND")
       DKROT.Diseases:SetBackdrop{bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background', tile = false, insets = {left = 0, right = 0, top = 0, bottom = 0},}
       DKROT.Diseases:SetBackdropColor(0, 0, 0, 0.5)
-      DKROT.Diseases.BP = DKROT:CreateIcon("DKROT.Diseases.BP", DKROT.Diseases, DKROT.spells["Blood Plague"], 21)
+      DKROT.Diseases.BP = DKROT:CreateIcon("DKROT.Diseases.BP", DKROT.Diseases, 55078, 21)
       DKROT.Diseases.BP:SetParent(DKROT.Diseases)
       DKROT.Diseases.BP:SetPoint("TOPRIGHT", DKROT.Diseases, "TOPRIGHT", -1, -1)
       DKROT.Diseases.BP:SetBackdropColor(0, 0, 0, 0)
-      DKROT.Diseases.FF = DKROT:CreateIcon("DKROT.Diseases.FF", DKROT.Diseases, DKROT.spells["Frost Fever"], 21)
+      DKROT.Diseases.FF = DKROT:CreateIcon("DKROT.Diseases.FF", DKROT.Diseases, 55095, 21)
       DKROT.Diseases.FF:SetParent(DKROT.Diseases)
       DKROT.Diseases.FF:SetPoint("RIGHT", DKROT.Diseases.BP, "LEFT", -3, 0)
       DKROT.Diseases.FF:SetBackdropColor(0, 0, 0, 0)
@@ -932,14 +935,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       self:ClearAllPoints()
       self:SetPoint(DKROT_Settings.Location[self:GetName()].Point, DKROT_Settings.Location[self:GetName()].Rel, DKROT_Settings.Location[self:GetName()].RelPoint, DKROT_Settings.Location[self:GetName()].X, DKROT_Settings.Location[self:GetName()].Y)
       self:SetBackdropColor(0, 0, 0, DKROT_Settings.Trans)
-      self:EnableMouse((not DKROT_Settings.Locked) and ((not DKROT_Settings.LockedPieces) or (DKROT_Settings.Location[self:GetName()].Rel == nil)))
-      if DKROT_Settings.Locked then
-         self.Drag:SetAlpha(0)
-         self.Drag:EnableMouse(0)
-      else
-         self.Drag:SetAlpha(1)
-         self.Drag:EnableMouse(1)
-      end
+      self:EnableMouse(not DKROT_Settings.Locked)
 
       if DKROT_Settings.Location[self:GetName()].Scale ~= nil then
          self:SetScale(DKROT_Settings.Location[self:GetName()].Scale)
@@ -950,7 +946,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    -- Called to update all the frames positions and scales
    function DKROT:UpdatePosition()
-      DKROT:MoveFrame(DKROT.MainFrame)
+      -- DKROT:MoveFrame(DKROT.MainFrame)
       DKROT:MoveFrame(DKROT.CD[1])
       DKROT:MoveFrame(DKROT.CD[2])
       DKROT:MoveFrame(DKROT.CD[3])
@@ -972,7 +968,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT.DT:EnableMouse(true)
       end
 
-      DKROT.MainFrame:SetScale(DKROT_Settings.Scale)
       DKROT:Debug("UpdatePosition")
    end
 
@@ -992,6 +987,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT.MainFrame:SetAlpha(DKROT_Settings.NormTrans)
       else
          DKROT.MainFrame:SetAlpha(DKROT_Settings.CombatTrans)
+      end
+
+      if DKROT_Settings.Locked == false and (DKROT.LockDialog == nil or DKROT.LockDialog == false) then
+         DKROT.LockDialog = true
+         StaticPopup_Show("DKROT_FRAME_UNLOCKED")
       end
 
       -- GCD
@@ -1141,7 +1141,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                   bsamount = temp
                end
             end
-            -- print(select(1, UnitBuff("player", i)).." "..select(11, UnitBuff("player", i)))
          end
       end
    end
@@ -1775,14 +1774,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
       end
       
-      local PosPanel = DKROT:SetupPositionPanel()
+      local PosPanel = DKROT:SetupPositionPanel(function() DKROT:PositionUpdate() end)
 
       InterfaceOptions_AddCategory(DKROT_Options)
       InterfaceOptions_AddCategory(DKROT_FramePanel)
       InterfaceOptions_AddCategory(DKROT_CDRPanel)
       InterfaceOptions_AddCategory(DKROT_CDPanel)
       InterfaceOptions_AddCategory(DKROT_DTPanel)
-      -- InterfaceOptions_AddCategory(DKROT_PositionPanel)
+      InterfaceOptions_AddCategory(DKROT_PositionPanel)
       -- InterfaceOptions_AddCategory(PosPanel)
       InterfaceOptions_AddCategory(DKROT_ABOUTPanel)
 
@@ -1824,8 +1823,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local addonName = ...
          if addonName == "DKRot" then
             DKROT.MainFrame:UnregisterEvent("ADDON_LOADED")
-            if DKROT_Settings.UpdateWarning ~= true then
-               DKROT:DisplayUpdateWarning()
+            if DKROT_Settings ~= nil and DKROT_Settings.UpdateWarning ~= true then
+               StaticPopup_Show("DKROT_UPDATE_WARNING")
                DKROT_Settings.UpdateWarning = true
             end
          end
@@ -1891,17 +1890,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             DKROT:Initialize()
          elseif loaded then
             -- Check if visibility conditions are met, if so update the information in the addon
-            if (not UnitHasVehicleUI("player")) and
-                  ((InCombatLockdown() and DKROT_Settings.VScheme == DKROT_OPTIONS_FRAME_VIEW_NORM) or
-                  (DKROT_Settings.VScheme == DKROT_OPTIONS_FRAME_VIEW_SHOW) or
-                  (not DKROT_Settings.Locked) or
-                  (DKROT_Settings.VScheme ~= DKROT_OPTIONS_FRAME_VIEW_HIDE and UnitCanAttack("player", "target") and (not UnitIsDead("target")))) then
+            if not UnitHasVehicleUI("player") 
+               and (
+                  (InCombatLockdown() and DKROT_Settings.VScheme == DKROT_OPTIONS_FRAME_VIEW_NORM)
+                  or (DKROT_Settings.VScheme == DKROT_OPTIONS_FRAME_VIEW_SHOW)
+                  or not DKROT_Settings.Locked
+                  or (
+                     DKROT_Settings.VScheme ~= DKROT_OPTIONS_FRAME_VIEW_HIDE 
+                     and UnitCanAttack("player", "target") 
+                     and not UnitIsDead("target")
+                  )
+               )
+            then
                DKROT:UpdateUI()
-               if DKROT_Settings.Locked then
-                  if IsAltKeyDown() then DKROT.MainFrame:EnableMouse(true)
-                  else DKROT.MainFrame:EnableMouse(false) end
-               end
-
             else
                DKROT.MainFrame:SetAlpha(0)
             end
@@ -1956,9 +1957,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_FramePanel_RP:SetChecked(DKROT_Settings.RP)
          DKROT_FramePanel_Disease:SetChecked(DKROT_Settings.Disease)
          DKROT_FramePanel_Locked:SetChecked(DKROT_Settings.Locked)
-         DKROT_FramePanel_LockedPieces:SetChecked(DKROT_Settings.LockedPieces)
-         DKROT_FramePanel_Scale:SetNumber(DKROT_Settings.Scale)
-         DKROT_FramePanel_Scale:SetCursorPosition(0)
          DKROT_FramePanel_Trans:SetNumber(DKROT_Settings.Trans)
          DKROT_FramePanel_Trans:SetCursorPosition(0)
          DKROT_FramePanel_CombatTrans:SetNumber(DKROT_Settings.CombatTrans)
@@ -2014,7 +2012,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             if DKROT.Current_Spec ~= DKROT.SPECS.UNKNOWN then
                for rotName, rotInfo in pairs(DKROT.Rotations[DKROT.Current_Spec]) do
                   if rotInfo.default == true then
-                     print('Setting default rotation: ' .. rotName)
                      current_rotation = rotName
                      break
                   end
@@ -2034,7 +2031,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_CDRPanel_MoveAltInterrupt:SetChecked(DKROT_Settings.MoveAltInterrupt)
          DKROT_CDRPanel_MoveAltAOE:SetChecked(DKROT_Settings.MoveAltAOE)
          DKROT_CDRPanel_MoveAltDND:SetChecked(DKROT_Settings.MoveAltDND)
-         DKROT_CDRPanel_UseHoW:SetChecked(DKROT_Settings.UseHoW)
+         DKROT_CDRPanel_UseHoW:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].UseHoW)
          DKROT_CDRPanel_DG:SetChecked(DKROT_Settings.DG)
          DKROT_CDRPanel_DD_CD1:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][1])
          DKROT_CDRPanel_DD_CD2:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][2])
@@ -2105,6 +2102,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          DKROT:Debug("OptionsRefresh")
          DKROT:UpdatePosition()
+
+         if DKROT.LockDialog == true and DKROT_Settings.Locked == true then
+            StaticPopup_Hide("DKROT_FRAME_UNLOCKED")
+            DKROT.LockDialog = false
+         end
       else
          DKROT:Debug("ERROR OptionsRefresh - " .. (DKROT_Settings == nil and "Settings are nil") or (DKROT_Settings.Version == nil and "Version is nil") or ("Invalid Version" .. DKROT_Settings.Version))
       end
@@ -2124,14 +2126,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_Settings.RP = DKROT_FramePanel_RP:GetChecked()
          DKROT_Settings.Disease = DKROT_FramePanel_Disease:GetChecked()
          DKROT_Settings.Locked = DKROT_FramePanel_Locked:GetChecked()
-         DKROT_Settings.LockedPieces = DKROT_FramePanel_LockedPieces:GetChecked()
-
-         -- Scale
-         if DKROT_FramePanel_Scale:GetNumber() >= 0.5 and DKROT_FramePanel_Scale:GetNumber() <= 5 then
-            DKROT_Settings.Scale = DKROT_FramePanel_Scale:GetNumber()
-         else
-            DKROT_FramePanel_Scale:SetNumber(DKROT_Settings.Scale)
-         end
 
          -- Transparency
          if DKROT_FramePanel_Trans:GetNumber() >= 0 and DKROT_FramePanel_Trans:GetNumber() <= 1 then
@@ -2154,8 +2148,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_Settings.MoveAltInterrupt = DKROT_CDRPanel_MoveAltInterrupt:GetChecked()
          DKROT_Settings.MoveAltAOE = DKROT_CDRPanel_MoveAltAOE:GetChecked()
          DKROT_Settings.MoveAltDND = DKROT_CDRPanel_MoveAltDND:GetChecked()
-         DKROT_Settings.UseHoW = DKROT_CDRPanel_UseHoW:GetChecked()
          DKROT_Settings.DG = DKROT_CDRPanel_DG:GetChecked()
+         DKROT_Settings.CD[DKROT.Current_Spec].UseHoW = DKROT_CDRPanel_UseHoW:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec].Outbreak = DKROT_CDRPanel_Outbreak:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec].UB = DKROT_CDRPanel_UB:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec].PL = DKROT_CDRPanel_PL:GetChecked()
@@ -2236,9 +2230,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             Outbreak = true,
             RP = true,
             UB = false,
-            PL = false,
+            PL = true,
             ERW = false,
             BT = true,
+            UseHoW = true,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Shadow Infusion"], true},
@@ -2265,6 +2260,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             PL = true,
             ERW = false,
             BT = true,
+            UseHoW = true,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Pillar of Frost"], nil},
@@ -2292,6 +2288,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             PL = false,
             ERW = false,
             BT = true,
+            UseHoW = true,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Bone Shield"], true},
@@ -2320,6 +2317,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             PL = true,
             ERW = false,
             BT = true,
+            UseHoW = true,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_Two"] = {DKROT.spells["Blood Charge"], true},
@@ -2349,7 +2347,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if DKROT_Settings == nil then
          DKROT_Settings = {}
          DKROT_Settings.Locked = true
-         DKROT_Settings.LockedPieces = true
          DKROT_Settings.Range = true
          DKROT_Settings.GCD = true
          DKROT_Settings.Rune = true
@@ -2357,12 +2354,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_Settings.RP = true
          DKROT_Settings.Disease = true
          DKROT_Settings.CD = {}
+         DKROT_Settings.UpdateWarning = true
          DKROT:CooldownDefaults()
       end
 
       -- General Settings
       if DKROT_Settings.lbf == nil then DKROT_Settings.lbf = { 'Blizzard', 0, nil }end
-      if DKROT_Settings.Scale == nil then DKROT_Settings.Scale = 1.0 end
       if DKROT_Settings.RuneOrder == nil then  DKROT_Settings.RuneOrder = BBUUFF end
       if DKROT_Settings.Trans == nil then DKROT_Settings.Trans = 0.5 end
       if DKROT_Settings.CombatTrans == nil then DKROT_Settings.CombatTrans = 1.0 end
@@ -2409,16 +2406,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       -- Frame Location
       if DKROT_Settings.Location == nil then DKROT_Settings.Location = {} end
       if DKROT_Settings.Location["DKROT"] == nil then   DKROT_Settings.Location["DKROT"] = {Point = "Center", Rel = nil, RelPoint = "CENTER", X = 0, Y = -175, Scale = 1} end
-      if DKROT_Settings.Location["DKROT.CD1"] == nil then   DKROT_Settings.Location["DKROT.CD1"] = {Point = "TOPRIGHT",Rel = "DKROT",RelPoint = "TOPLEFT", X = -1, Y = -3, Scale = 1} end
-      if DKROT_Settings.Location["DKROT.CD2"] == nil then   DKROT_Settings.Location["DKROT.CD2"] = {Point = "TOPLEFT",Rel = "DKROT",RelPoint = "TOPRIGHT",X = 1,Y = -3, Scale = 1}   end
-      if DKROT_Settings.Location["DKROT.CD3"] == nil then   DKROT_Settings.Location["DKROT.CD3"] = {Point = "TOPRIGHT",Rel = "DKROT.CD1",RelPoint = "TOPLEFT", X = -2, Y = 0, Scale = 1} end
-      if DKROT_Settings.Location["DKROT.CD4"] == nil then   DKROT_Settings.Location["DKROT.CD4"] = {Point = "TOPLEFT",Rel = "DKROT.CD2",RelPoint = "TOPRIGHT",X = 2,Y = 0, Scale = 1} end
-      if DKROT_Settings.Location["DKROT.RuneBar"] == nil then   DKROT_Settings.Location["DKROT.RuneBar"] = {Point = "Top",Rel = "DKROT",RelPoint = "Top",X = 0,Y = -2, Scale = 1} end
-      if DKROT_Settings.Location["DKROT.RuneBarHolder"] == nil then DKROT_Settings.Location["DKROT.RuneBarHolder"] = {Point = "BottomLeft",Rel = "DKROT",RelPoint = "TopLeft",X = 0,Y = 0, Scale = 0.86} end
-      if DKROT_Settings.Location["DKROT.RunicPower"] == nil then DKROT_Settings.Location["DKROT.RunicPower"] = {Point = "TOPRIGHT",Rel = "DKROT.RuneBar",RelPoint = "BOTTOMRIGHT",X = 0,Y = 0, Scale = 1} end
-      if DKROT_Settings.Location["DKROT.Move"] == nil then DKROT_Settings.Location["DKROT.Move"] = {Point = "TOPLEFT",Rel = "DKROT.RuneBar",RelPoint = "BOTTOMLEFT",X = 0,Y = 0, Scale = 1} end
-      if DKROT_Settings.Location["DKROT.Diseases"] == nil then DKROT_Settings.Location["DKROT.Diseases"]= {Point = "TOPRIGHT",Rel = "DKROT.RunicPower",RelPoint = "BOTTOMRIGHT",X = 0,Y = 0, Scale = 1} end
-      if DKROT_Settings.Location["DKROT.DT"] == nil then   DKROT_Settings.Location["DKROT.DT"] = {Point = "BOTTOMRIGHT",Rel = "DKROT.CD3",RelPoint = "BOTTOMLEFT",X = -2,Y = 0, Scale = 0.7} end
+      for idx, el in pairs(DKROT.MovableFrames) do
+         if DKROT_Settings.Location[el.frame] == nil then
+            DKROT_Settings.Location[el.frame] = DKROT.DefaultLocations[el.frame]
+         end
+      end
 
       DKROT_Settings.Version = DKROT_VERSION
 
@@ -2429,16 +2421,20 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    end
 
    -- Set frame location back to Defaults
-   function DKROT:SetLocationDefault()
-      if DKROT_Settings.Location ~= nil then wipe(DKROT_Settings.Location); DKROT_Settings.Location = nil end
-      DKROT:CheckSettings()
+   function DKROT_SetLocationDefault()
+      DKROT_Settings.Location = {}
 
-      DKROT:OptionsRefresh()
+      for idx, el in pairs(DKROT.MovableFrames) do
+         DKROT_Settings.Location[el.frame] = DKROT:deepcopy(DKROT.DefaultLocations[el.frame])
+      end
+
+      -- DKROT:OptionsRefresh()
+      DKROT:UpdatePosition()
       DKROT:Debug("SetLocationDefault Done")
    end
 
    -- Set all settings back to default
-   function DKROT:SetDefaults()
+   function DKROT_SetDefaults()
       if DKROT_Settings ~= nil then wipe(DKROT_Settings); DKROT_Settings = nil end
       DKROT:CheckSettings()
 
@@ -2692,46 +2688,24 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
    end
 
-   -- Initialize the UI element drop down
-   function DKROT_PositionPanel_Elements_OnLoad(self)
-      local ui_elements = {
-         {
-            name = "Runic Power",
-            frame = "DKROT.RunicPower"
-         },
-         {
-            name = "Priority Icon",
-            frame = "DKROT.Move"
-         },
-         {
-            name = "Disease Tracker",
-            frame = "DKROT.DT"
-         },
-      }
+   function DKROT:PositionUpdate()
+      local el = _G[UIDropDownMenu_GetSelectedValue(DKROT_PositionPanel_Element)]
+      local name = el:GetName()
+      local x = DKROT.PositionPanel_X:GetValue()
+      local y = DKROT.PositionPanel_Y:GetValue()
+      local scale = DKROT.PositionPanel_Scale:GetValue()
+      local point = UIDropDownMenu_GetSelectedValue(DKROT.PositionPanel_Point)
+      local relPoint = UIDropDownMenu_GetSelectedValue(DKROT.PositionPanel_RelPoint)
+      local relFrame = UIDropDownMenu_GetSelectedValue(DKROT.PositionPanel_RelFrame)
 
-      for key, element in pairs(ui_elements) do
-         info = {}
-         info.text = element.name
-         info.value = element.frame
-         info.func = function()
-            local el = _G[element.frame]
+      DKROT_Settings.Location[name].X = x
+      DKROT_Settings.Location[name].Y = y
+      DKROT_Settings.Location[name].Scale = scale
+      DKROT_Settings.Location[name].Point = point
+      DKROT_Settings.Location[name].Rel = relFrame
+      DKROT_Settings.Location[name].RelPoint = relPoint
 
-            DKROT_PositionPanel_Width:SetValue(el:GetWidth())
-            DKROT_PositionPanel_Height:SetValue(el:GetHeight())
-            DKROT_PositionPanel_Scale:SetValue(el:GetScale())
-
-            UIDropDownMenu_SetSelectedValue(DKROT_PositionPanel_Element, element.frame)
-         end
-         UIDropDownMenu_AddButton(info)
-      end
-   end
-
-   function DKROT:SetupPositionPanel()
-      UIDropDownMenu_Initialize(DKROT_PositionPanel_Element, DKROT_PositionPanel_Elements_OnLoad)
-   end
-
-   function DKROT_PositionUpdate()
-      print("Updating position / sizes of elements")
+      DKROT:MoveFrame(el)
    end
 else
    print("DKRot: Not a DK")

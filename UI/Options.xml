@@ -4,7 +4,7 @@
          <OnLoad>
             self.name = "DKRot"
             self.okay = function() DKROT_OptionsOkay(); end
-            self.default = function() DKROT:SetDefaults(); end
+            self.default = function() DKROT_SetDefaults(); end
          </OnLoad>
          <OnShow>
             local f = _G["DKROT_FramePanel"];
@@ -126,7 +126,9 @@
          
          <!-- Lock -->
          <CheckButton name="DKROT_FramePanel_Locked" inherits="DKROT_CheckButtonTemplate">
-            <Anchors><Anchor point="TOPRIGHT" ><Offset><AbsDimension x="-170" y="-45"/></Offset></Anchor></Anchors>
+            <Anchors>
+               <Anchor point="TOPRIGHT" relativeTo="DKROT_FramePanel_GCD" relativePoint="TOPLEFT" x="350" y="0" />
+            </Anchors>
             <Scripts>
                <OnLoad>
                   DKROT_FramePanel_Locked_Text:SetText(DKROT_OPTIONS_FRAME_LOCKED)
@@ -134,19 +136,9 @@
             </Scripts>
          </CheckButton>
 
-         <!-- Lock Pieces Together -->
-         <CheckButton name="DKROT_FramePanel_LockedPieces" inherits="DKROT_CheckButtonTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_Locked" ><Offset><AbsDimension x="0" y="-35"/></Offset></Anchor></Anchors>
-            <Scripts>
-               <OnLoad>
-                  DKROT_FramePanel_LockedPieces_Text:SetText(DKROT_OPTIONS_FRAME_LOCKEDPIECES)
-               </OnLoad>
-            </Scripts>
-         </CheckButton>
-
          <!-- View Dropdown -->
          <Button name="DKROT_FramePanel_ViewDD" inherits="DKROT_DropDownTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_LockedPieces" ><Offset><AbsDimension x="-15" y="-50"/></Offset></Anchor></Anchors>
+            <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_Locked" ><Offset><AbsDimension x="-15" y="-50"/></Offset></Anchor></Anchors>
             <Scripts>
                <OnLoad>
                   DKROT_FramePanel_ViewDD_Text:SetText(DKROT_OPTIONS_FRAME_VIEW)
@@ -155,19 +147,12 @@
             </Scripts>
          </Button>
 
-         <!-- Scale -->
-         <EditBox name="DKROT_FramePanel_Scale" inherits="DKROT_EditBoxTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_ViewDD" relativePoint="BOTTOMLEFT"><Offset><AbsDimension x="25" y="-5"/></Offset></Anchor></Anchors>
-            <Scripts>
-               <OnLoad>
-                  DKROT_FramePanel_Scale_Text:SetText(DKROT_OPTIONS_FRAME_SCALE)
-               </OnLoad>
-            </Scripts>
-         </EditBox>
-
          <!-- Trans -->
          <EditBox name="DKROT_FramePanel_NormalTrans" inherits="DKROT_EditBoxTemplate">
-            <Anchors><Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_Scale" relativePoint="BOTTOMLEFT"><Offset><AbsDimension x="0" y="-5"/></Offset></Anchor></Anchors>
+            <Anchors>
+               <Anchor point="TOP" relativeTo="DKROT_FramePanel_ViewDD" relativePoint="BOTTOM" x="0" y="-5" />
+               <Anchor point="LEFT" relativeTo="DKROT_FramePanel_Locked" relativePoint="LEFT" x="10" />
+            </Anchors>
             <Scripts>
                <OnLoad>
                   DKROT_FramePanel_NormalTrans_Text:SetText(DKROT_OPTIONS_FRAME_NORMALTRANS)
@@ -199,7 +184,7 @@
             <Size><AbsDimension x="120" y="22"/></Size>
             <Anchors><Anchor point="BOTTOMLEFT"><Offset><AbsDimension x="15" y="15" /></Offset></Anchor></Anchors>
             <Scripts>
-               <OnClick>DKROT:SetDefaults()</OnClick>
+               <OnClick>DKROT_SetDefaults()</OnClick>
             </Scripts>
          </Button>
 
@@ -208,7 +193,7 @@
             <Size><AbsDimension x="120" y="22"/></Size>
             <Anchors><Anchor point="BOTTOMRIGHT"><Offset><AbsDimension x="-15" y="15" /></Offset></Anchor></Anchors>
             <Scripts>
-               <OnClick>DKROT:SetLocationDefault()</OnClick>
+               <OnClick>DKROT_SetLocationDefault()</OnClick>
             </Scripts>
          </Button>
       </Frames>
@@ -367,7 +352,7 @@
             <Size><AbsDimension x="120" y="22"/></Size>
             <Anchors><Anchor point="BOTTOMLEFT"><Offset><AbsDimension x="15" y="15" /></Offset></Anchor></Anchors>
             <Scripts>
-               <OnClick>DKROT:SetDefaults()</OnClick>
+               <OnClick>DKROT_SetDefaults()</OnClick>
             </Scripts>
          </Button>
       </Frames>
@@ -540,7 +525,7 @@
             <Size><AbsDimension x="120" y="22"/></Size>
             <Anchors><Anchor point="BOTTOMLEFT"><Offset><AbsDimension x="15" y="15" /></Offset></Anchor></Anchors>
             <Scripts>
-               <OnClick>DKROT:SetDefaults()</OnClick>
+               <OnClick>DKROT_SetDefaults()</OnClick>
             </Scripts>
          </Button>
       </Frames>
@@ -733,7 +718,7 @@
             <Size><AbsDimension x="120" y="22"/></Size>
             <Anchors><Anchor point="BOTTOMLEFT"><Offset><AbsDimension x="15" y="15" /></Offset></Anchor></Anchors>
             <Scripts>
-               <OnClick>DKROT:SetDefaults()</OnClick>
+               <OnClick>DKROT_SetDefaults()</OnClick>
             </Scripts>
          </Button>
 
@@ -742,7 +727,7 @@
             <Size><AbsDimension x="120" y="22"/></Size>
             <Anchors><Anchor point="BOTTOMRIGHT"><Offset><AbsDimension x="-15" y="15" /></Offset></Anchor></Anchors>
             <Scripts>
-               <OnClick>DKROT:SetLocationDefault()</OnClick>
+               <OnClick>DKROT_SetLocationDefault()</OnClick>
             </Scripts>
          </Button>
       </Frames>

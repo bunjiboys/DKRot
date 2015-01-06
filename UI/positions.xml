@@ -22,6 +22,7 @@
       </Layers>
 
       <Frames>
+         <!-- Element selector dropdown -->
          <Button name="DKROT_PositionPanel_Element" inherits="DKROT_DropDownTemplate">
             <Anchors>
                <Anchor point="TOPLEFT" relativeTo="DKROT_PositionPanel_Title">
@@ -32,99 +33,21 @@
             </Anchors>
             <Scripts>
                <OnLoad>
+                  DKROT_PositionPanel_Element_Text:SetText(DKROT_OPTIONS_POSITION_ELEMENT)
                   UIDropDownMenu_SetWidth(self, 200, 5)
                </OnLoad>
             </Scripts>
          </Button>
 
-         <Slider name="DKROT_PositionPanel_Width" inherits="DKROT_SliderTemplate"
-            minValue="0" maxValue="500" valueStep="1" stepsPerPage="10">
-            <Layers>
-               <Layer level="ARTWORK">
-                  <FontString name="$parent_Title" inherits="GameFontHighlight" text="Width">
-                     <Anchors>
-                        <Anchor point="BOTTOM" relativePoint="TOP"/>
-                     </Anchors>
-                  </FontString>
-               </Layer>
-            </Layers>
+         <Button name="DKROT_PositionPanel_LocationReset" inherits="UIPanelButtonTemplate" text="DKROT_OPTIONS_RESETLOCATION">
+            <Size x="120" y="22" />
             <Anchors>
-               <Anchor point="TOPLEFT" relativeTo="DKROT_PositionPanel_Element">
-                  <OffSet>
-                     <AbsDimension x="15" y="-55" />
-                  </OffSet>
-               </Anchor>
+               <Anchor point="BOTTOMRIGHT" x="-15" y="15" />
             </Anchors>
             <Scripts>
-               <OnValueChanged>
-                  getglobal(self:GetName() .. "_Value"):SetText(math.floor(value))
-               </OnValueChanged>
+               <OnClick>DKROT_SetLocationDefault()</OnClick>
             </Scripts>
-         </Slider>
-
-         <Slider name="DKROT_PositionPanel_Height" inherits="DKROT_SliderTemplate"
-            minValue="0" maxValue="500" valueStep="1" stepsPerPage="10">
-            <Layers>
-               <Layer level="ARTWORK">
-                     <FontString name="$parent_Title" inherits="GameFontHighlight" text="Height">
-                     <Anchors>
-                        <Anchor point="BOTTOM" relativePoint="TOP"/>
-                     </Anchors>
-                  </FontString>
-               </Layer>
-            </Layers>
-            <Anchors>
-               <Anchor point="LEFT" relativePoint="RIGHT" relativeTo="DKROT_PositionPanel_Width">
-                  <OffSet>
-                     <AbsDimension x="50" y="0" />
-                  </OffSet>
-               </Anchor>
-            </Anchors>
-            <Scripts>
-               <OnValueChanged>
-                  getglobal(self:GetName() .. "_Value"):SetText(math.floor(value))
-               </OnValueChanged>
-            </Scripts>
-         </Slider>
-
-         <Slider name="DKROT_PositionPanel_Scale" inherits="DKROT_SliderTemplate"
-            minValue="0" maxValue="10" valueStep="1" stepsPerPage="2">
-            <Layers>
-               <Layer level="ARTWORK">
-                  <FontString name="$parent_Title" inherits="GameFontHighlight" text="Scale">
-                     <Anchors>
-                        <Anchor point="BOTTOM" relativePoint="TOP"/>
-                     </Anchors>
-                  </FontString>
-               </Layer>
-            </Layers>
-            <Anchors>
-               <Anchor point="TOPLEFT" relativeTo="DKROT_PositionPanel_Width">
-                  <OffSet>
-                     <AbsDimension x="0" y="-55" />
-                  </OffSet>
-               </Anchor>
-            </Anchors>
-            <Scripts>
-               <OnValueChanged>
-                  DKROT_PositionUpdate()
-                  local val = tonumber(string.format("%.1f", value))
-                  getglobal(self:GetName() .. "_Value"):SetText(math.floor(val))
-               </OnValueChanged>
-            </Scripts>
-         </Slider>
-
-         <!--
-         <EditBox name="DKROT_PositionPanel_EditX" inherits="DKROT_SliderEditBoxTemplate">
-            <Anchors>
-               <Anchor point="TOPLEFT" relativeTo="DKROT_PositionPanel_SliderX">
-                  <OffSet>
-                     <AbsDimension x="15" y="-35" />
-                  </OffSet>
-               </Anchor>
-            </Anchors>
-         </EditBox>
-         -->
+         </Button>
       </Frames>
    </Frame>
 </Ui>

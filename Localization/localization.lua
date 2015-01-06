@@ -97,6 +97,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT_OPTIONS_DT_TRANS = "Trans. (0-1)"
 
    DKROT_OPTIONS_POSITION = "Position"
+   DKROT_OPTIONS_POSITION_ELEMENT = "UI Element"
+   DKROT_OPTIONS_POSITION_X = "X Offset"
+   DKROT_OPTIONS_POSITION_Y = "Y Offset"
+   DKROT_OPTIONS_POSITION_SCALE = "Scale"
+   DKROT_OPTIONS_POSITION_POINT = "Frame Point"
+   DKROT_OPTIONS_POSITION_REL_FRAME = "Anchor To"
+   DKROT_OPTIONS_POSITION_REL_POINT = "Anchor Point"
 
    DKROT_ABOUT = "About"
    DKROT_ABOUT_BODY = "Have Questions? Suggestions? or just want more information?<br/>Leave a comment on Curse.com"
