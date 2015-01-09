@@ -248,4 +248,124 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT:Debug("Trinkets Loaded")
       return true
    end
+
+   -- Cooldown Defaults
+   function DKROT:CooldownDefaults()
+      if DKROT_Settings.CD ~= nil then
+         wipe(DKROT_Settings.CD)
+      end
+
+      DKROT_Settings.CD = {
+         [DKROT.SPECS.UNHOLY] = {
+            ["DKROT_CDRPanel_DD_Priority"] = {DKROT_OPTIONS_CDR_CD_PRIORITY, nil},
+            DiseaseOption = DISEASE_BOTH,
+            Rotation = DKROT:GetDefaultSpecRotation(DKROT.SPECS.UNHOLY),
+            Outbreak = true,
+            RP = true,
+            UB = false,
+            PL = true,
+            ERW = false,
+            BT = true,
+            UseHoW = true,
+
+            [1] = true,
+            ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Shadow Infusion"], true},
+            ["DKROT_CDRPanel_DD_CD1_Two"] = {DKROT.spells["Dark Transformation"], true},
+
+            [2] = true,
+            ["DKROT_CDRPanel_DD_CD2_Two"] = {DKROT.spells["Sudden Doom"], true},
+
+            [3] = false,
+            ["DKROT_CDRPanel_DD_CD3_One"] = {DKROT.spells["Summon Gargoyle"], nil},
+
+            [4] = false,
+            ["DKROT_CDRPanel_DD_CD4_One"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1, nil},
+            ["DKROT_CDRPanel_DD_CD4_Two"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2, nil},
+         },
+
+         [DKROT.SPECS.FROST] = {
+            ["DKROT_CDRPanel_DD_Priority"] = {DKROT_OPTIONS_CDR_CD_PRIORITY, nil},
+            DiseaseOption = DISEASE_BOTH,
+            Rotation = DKROT:GetDefaultSpecRotation(DKROT.SPECS.FROST),
+            Outbreak = true,
+            RP = true,
+            UB = true,
+            PL = true,
+            ERW = false,
+            BT = true,
+            UseHoW = true,
+
+            [1] = true,
+            ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Pillar of Frost"], nil},
+            ["DKROT_CDRPanel_DD_CD1_Two"] = {DKROT.spells["Pillar of Frost"], true},
+
+            [2] = true,
+            ["DKROT_CDRPanel_DD_CD2_One"] = {DKROT.spells["Killing Machine"], true},
+            ["DKROT_CDRPanel_DD_CD2_Two"] = {DKROT.spells["Freezing Fog"], true},
+
+            [3] = false,
+            ["DKROT_CDRPanel_DD_CD3_Two"] = {DKROT.spells["Plague Leech"], nil},
+
+            [4] = false,
+            ["DKROT_CDRPanel_DD_CD4_One"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1, nil},
+            ["DKROT_CDRPanel_DD_CD4_Two"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2, nil},
+         },
+
+         [DKROT.SPECS.BLOOD] = {
+            ["DKROT_CDRPanel_DD_Priority"] = {DKROT_OPTIONS_CDR_CD_PRIORITY, nil},
+            DiseaseOption = DISEASE_BOTH,
+            Rotation = DKROT:GetDefaultSpecRotation(DKROT.SPECS.BLOOD),
+            Outbreak = true,
+            RP = true,
+            UB = true,
+            PL = false,
+            ERW = false,
+            BT = true,
+            UseHoW = true,
+
+            [1] = true,
+            ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Bone Shield"], true},
+            ["DKROT_CDRPanel_DD_CD1_Two"] = {DKROT.spells["Vampiric Blood"], nil},
+
+            [2] = true,
+            ["DKROT_CDRPanel_DD_CD2_One"] = {DKROT.spells["Rune Tap"], nil},
+            ["DKROT_CDRPanel_DD_CD2_Two"] = {DKROT.spells["Scent of Blood"], true},
+
+            [3] = false,
+            ["DKROT_CDRPanel_DD_CD3_One"] = {DKROT.spells["Blood Shield"], true},
+            ["DKROT_CDRPanel_DD_CD3_Two"] = {DKROT.spells["Blood Charge"], true},
+
+            [4] = false,
+            ["DKROT_CDRPanel_DD_CD4_One"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1, nil},
+            ["DKROT_CDRPanel_DD_CD4_Two"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2, nil},
+         },
+
+         [DKROT.SPECS.UNKNOWN] = {
+            ["DKROT_CDRPanel_DD_Priority"] = {DKROT_OPTIONS_CDR_CD_PRIORITY, nil},
+            DiseaseOption = DISEASE_BOTH,
+            Rotation = DKROT:GetDefaultSpecRotation(DKROT.SPECS.UNKNOWN),
+            Outbreak = true,
+            RP = true,
+            UB = true,
+            PL = true,
+            ERW = false,
+            BT = true,
+            UseHoW = true,
+
+            [1] = true,
+            ["DKROT_CDRPanel_DD_CD1_Two"] = {DKROT.spells["Blood Charge"], true},
+
+            [2] = true,
+            ["DKROT_CDRPanel_DD_CD2_One"] = {DKROT.spells["Raise Dead"], nil},
+            ["DKROT_CDRPanel_DD_CD2_Two"] = {DKROT.spells["Army of the Dead"], nil},
+
+            [3] = false,
+            ["DKROT_CDRPanel_DD_CD3_Two"] = {DKROT.spells["Blood Tap"], nil},
+
+            [4] = false,
+            ["DKROT_CDRPanel_DD_CD4_One"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1, nil},
+            ["DKROT_CDRPanel_DD_CD4_Two"] = {DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2, nil},
+         },
+      }
+   end
 end
