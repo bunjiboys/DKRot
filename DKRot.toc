@@ -3,6 +3,7 @@
 ## Version: 6.0.3
 ## Title: DKRot
 ## Notes: Death Knight Rotation assistance, based on CLC DK
+## OptionalDeps: Masque, ButtonFacade
 ## SavedVariablesPerCharacter: DKROT_Settings
 
 # Embeds
