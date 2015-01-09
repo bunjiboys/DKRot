@@ -760,12 +760,13 @@
       
       <Frames>
          <SimpleHTML name="DKROT_ABOUTHTML">
-            <Size><AbsDimension x="420" y="120" /></Size>
+            <Size x="420" y="140" />
             <Anchors>
-               <Anchor point="TOPLEFT"><Offset><AbsDimension x="20" y="-70"/></Offset></Anchor>
+               <Anchor point="TOPLEFT" x="20" y="-50" />
+               <Anchor point="BOTTOMRIGHT" x="-20" y="50" />
             </Anchors>
-            <FontString inherits="GameFontHighlightSmall"/>
-            <FontStringHeader1 inherits="GameFontNormal"/>
+            <FontString inherits="GameFontHighlightSmall" />
+            <FontStringHeader1 inherits="GameFontNormal" />
          </SimpleHTML>
       </Frames>
    </Frame>
