@@ -10,6 +10,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       UNKNOWN = 4
    }
 
+   DKROT.TrinketType = {
+      OnUse = 1,
+      Stacking = 2,
+      ICD = 3,
+      RRPM = 4
+   }
+
    DKROT.DTspells = {}
    DKROT.Current_Spec = DKROT.SPECS.UNKNOWN
    DKROT.spells = {}

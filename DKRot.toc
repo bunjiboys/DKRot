@@ -20,6 +20,7 @@ ui\positions.xml
 
 # Initialize variables we need everywhere, and load helper functions
 init.lua
+data.lua
 helpers.lua
 
 # Rotation files

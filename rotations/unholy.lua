@@ -15,7 +15,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Raise Dead
-      if UnitExists("pet") ~= true then
+      if UnitExists("pet") ~= true and DKROT:isOffCD(DKROT.spells["Raise Dead"]) then
          return DKROT.spells["Raise Dead"], true
       end
 

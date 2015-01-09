@@ -413,4 +413,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          
       end
    end
+
+   function DKROT:SpellKnown(spell)
+      return GetSpellTexture(spell) and true or false
+   end
 end
