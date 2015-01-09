@@ -28,7 +28,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    -- Variables
    local loaded, mutex = false, false
    local mousex, mousey
-   local font = select(1, GameFontNormal:GetFont())
+   local font = "Interface\\AddOns\\DKRot\\resources\\font.ttf"
    local darksim = {0, 0}
    local simtime = 0
    local bsamount = 0
@@ -751,7 +751,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          frame.Name = frame:CreateFontString(nil, 'OVERLAY')
          frame.Name:SetPoint("LEFT", frame, 3, 0)
-         frame.Name:SetFont(DKROT_NAMEFONT, 13, "OUTLINE")
+         frame.Name:SetFont(font, 13, "OUTLINE")
 
          return frame
       end

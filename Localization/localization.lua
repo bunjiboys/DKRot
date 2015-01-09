@@ -1,6 +1,5 @@
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT_ADDONNAME = "DKRot"
-   DKROT_NAMEFONT = 'Interface\\AddOns\\DKRot\\Font.ttf'
 
    DKROT_OPTIONS_SPEC_NONE = "Current Spec: None"
    DKROT_OPTIONS_SPEC_UNHOLY = "Current Spec: Unholy"
