@@ -1,7 +1,12 @@
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
-   DKROT.debug = false
    DKROT_VERSION = GetAddOnMetadata("DKRot", "Version")
+
+   DKROT.debug = false
+   DKROT.font = "Interface\\AddOns\\DKRot\\resources\\font.ttf"
+
+   DKROT.curtime = 0
+   DKROT.GCD = 0
 
    DKROT.SPECS = {
       BLOOD = 1,
@@ -30,12 +35,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    DKROT.MovableFrames = {
       { name = "Priority Icon", frame = "DKROT.Move" },
+      { name = "AOE Icon", frame = "DKROT.AOE" },
       { name = "Cooldown #1", frame = "DKROT.CD1" },
       { name = "Cooldown #2", frame = "DKROT.CD2" },
       { name = "Cooldown #3", frame = "DKROT.CD3" },
       { name = "Cooldown #4", frame = "DKROT.CD4" },
       { name = "Diseases", frame = "DKROT.Diseases" },
       { name = "Disease Tracker", frame = "DKROT.DT" },
+      { name = "Interrupt", frame = "DKROT.Interrupt" },
       { name = "Rune Bar - Text", frame = "DKROT.RuneBar" },
       { name = "Rune Bar - Graphical", frame = "DKROT.RuneBarHolder" },
       { name = "Runic Power", frame = "DKROT.RunicPower" },
@@ -43,16 +50,18 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    DKROT.FrameAnchors = {
       { name = "Screen", frame = "UIParent" },
-      { name = "Priority Icon", frame = "DKROT.Move" },
-      { name = "Runic Power", frame = "DKROT.RunicPower" },
-      { name = "Disease Tracker", frame = "DKROT.DT" },
-      { name = "Graphical Rune Bar", frame = "DKROT.RuneBarHolder" },
+      { name = "AOE Icon", frame = "DKROT.AOE" },
       { name = "Cooldown #1", frame = "DKROT.CD1" },
       { name = "Cooldown #2", frame = "DKROT.CD2" },
       { name = "Cooldown #3", frame = "DKROT.CD3" },
       { name = "Cooldown #4", frame = "DKROT.CD4" },
-      { name = "Rune Bar", frame = "DKROT.RuneBar" },
+      { name = "Disease Tracker", frame = "DKROT.DT" },
       { name = "Diseases", frame = "DKROT.Diseases" },
+      { name = "Interrupt", frame = "DKROT.Interrupt" },
+      { name = "Priority Icon", frame = "DKROT.Move" },
+      { name = "Rune Bar - Graphical", frame = "DKROT.RuneBarHolder" },
+      { name = "Rune Bar - Text", frame = "DKROT.RuneBar" },
+      { name = "Runic Power", frame = "DKROT.RunicPower" },
    }
 
    DKROT.DefaultLocations = {
@@ -72,20 +81,36 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          Y = -150,
          Scale = 1
       },
+      ["DKROT.AOE"] = {
+         Point = "BOTTOMLEFT",
+         Rel = "DKROT.Move",
+         RelPoint = "BOTTOMLEFT",
+         X = 0,
+         Y = 0,
+         Scale = 0.5
+      },
+      ["DKROT.Interrupt"] = {
+         Point = "TOPRIGHT",
+         Rel = "DKROT.Move",
+         RelPoint = "TOPRIGHT",
+         X = 0,
+         Y = 0,
+         Scale = 0.5
+      },
       ["DKROT.CD1"] = {
          Point = "TOPRIGHT",
          Rel = "DKROT.Move",
          RelPoint = "TOPLEFT",
-         X = -1,
-         Y = -3,
+         X = -4,
+         Y = 1,
          Scale = 1
       },
       ["DKROT.CD2"] = {
          Point = "TOPLEFT",
          Rel = "DKROT.Move",
          RelPoint = "TOPRIGHT",
-         X = 1,
-         Y = -3,
+         X = 4,
+         Y = 1,
          Scale = 1
       },
       ["DKROT.CD3"] = {
@@ -125,7 +150,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          Rel = "DKROT.Move",
          RelPoint = "BOTTOM",
          X = 0,
-         Y = 0,
+         Y = -2,
          Scale = 1
       },
       ["DKROT.Diseases"]= {
@@ -177,6 +202,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       OnAlt = function()
          DKROT_Settings.Locked = true
          DKROT.LockDialog = false
+         DKROT_LockUI()
          DKROT:OptionsRefresh()
       end,
       timeout = 0,

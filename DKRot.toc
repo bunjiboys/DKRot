@@ -3,7 +3,7 @@
 ## Version: 6.0.3
 ## Title: DKRot
 ## Notes: Death Knight Rotation assistance, based on CLC DK
-## OptionalDeps: Masque, ButtonFacade
+## OptionalDeps: Masque
 ## SavedVariablesPerCharacter: DKROT_Settings
 
 # Embeds
@@ -22,7 +22,8 @@ ui\positions.xml
 # Initialize variables we need everywhere, and load helper functions
 init.lua
 data.lua
-helpers.lua
+utils.lua
+ui.lua
 
 # Rotation files
 rotations\blank.lua
