@@ -314,6 +314,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       return nil
    end
 
-   DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'IcyVeins', 'Unholy - Icy Veins', IcyVeins, true)
-   DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SimC', 'Unholy - SimCraft', SimC, false)
+   DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'IcyVeins', 'Unholy - Icy Veins', IcyVeins, false)
+   DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SimC', 'Unholy - SimCraft', SimC, true)
 end
