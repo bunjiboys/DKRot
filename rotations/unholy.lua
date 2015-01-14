@@ -67,7 +67,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if GetSpellTexture(DKROT.spells["Blood Tap"])
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 11
-         and (frost >= 0 or unholy >= 0 or blood >= 0)
+         and DKROT:HasFullyDepletedRunes()
       then
          return DKROT.spells["Blood Tap"], true
       end
@@ -219,7 +219,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if GetSpellTexture(DKROT.spells["Blood Tap"])
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 11
-         and (frost >= 0 or unholy >= 0 or blood >= 0)
+         and DKROT:HasFullyDepletedRunes()
       then
          return DKROT.spells["Blood Tap"], true
       end
@@ -262,7 +262,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if GetSpellTexture(DKROT.spells["Blood Tap"])
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 5
-         and (frost >= 0 or blood >= 0)
+         and DKROT:HasFullyDepletedRunes()
       then
          return DKROT.spells["Blood Tap"], true
       end
@@ -285,7 +285,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if GetSpellTexture(DKROT.spells["Blood Tap"])
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 5
-         and (frost >= 0 or unholy >= 0 or blood >= 0)
+         and DKROT:HasFullyDepletedRunes()
       then
          return DKROT.spells["Blood Tap"], true
       end
