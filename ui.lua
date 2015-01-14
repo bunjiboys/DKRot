@@ -10,14 +10,28 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       frame:SetScript("OnMouseDown", function(self, button)
          DKROT:Debug("Mouse Down " .. self:GetName())
          CloseDropDownMenus()
+         local _, _, _, x, y = self:GetPoint()
+         self.PreMoveLoc = { X = x, Y = y }
          self:StartMoving()
+         _, _, _, x, y = self:GetPoint()
+         self.MoveLoc = { X = x, Y = y }
       end)
 
       -- When mouse released, save position
       frame:SetScript("OnMouseUp", function(self, button)
          DKROT:Debug("Mouse Up " .. self:GetName())
+         local _, _, _, postMoveX, postMoveY = self:GetPoint()
          self:StopMovingOrSizing()
-         DKROT_Settings.Location[self:GetName()].Point, _, DKROT_Settings.Location[self:GetName()].RelPoint, DKROT_Settings.Location[self:GetName()].X, DKROT_Settings.Location[self:GetName()].Y = self:GetPoint()
+
+         -- Calculate the new offset delta's
+         local x = self.PreMoveLoc.X + (postMoveX - self.MoveLoc.X)
+         local y = self.PreMoveLoc.Y + (postMoveY - self.MoveLoc.Y)
+
+         --DKROT_Settings.Location[self:GetName()].Point, _, DKROT_Settings.Location[self:GetName()].RelPoint, DKROT_Settings.Location[self:GetName()].X, DKROT_Settings.Location[self:GetName()].Y = self:GetPoint()
+         DKROT_Settings.Location[self:GetName()].X = x
+         DKROT_Settings.Location[self:GetName()].Y = y
+         DKROT:MoveFrame(self)
+         UIDropDownMenu_Initialize(DKROT_PositionPanel_Element, DKROT_PositionPanel_Element_Init)
          DKROT_PositionPanel_Element_Select(DKROT_PositionPanel_Element, DKROT:GetFrame(self:GetName(), true))
       end)
    end
@@ -73,7 +87,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- List of CD frame names, using the name of dropdown menu to allow easy saving and fetching
-      CDDisplayList = {
+      DKROT.CDDisplayList = {
          "DKROT_CDRPanel_DD_CD1_One",
          "DKROT_CDRPanel_DD_CD1_Two",
          "DKROT_CDRPanel_DD_CD2_One",
@@ -85,22 +99,22 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       }
 
       -- Create the Icons with desired paramaters
-      for i = 1, #CDDisplayList do
-         DKROT.CD[CDDisplayList[i]] = DKROT:CreateIcon(CDDisplayList[i].."Butt", DKROT.MainFrame, DKROT.spells["Army of the Dead"], 32)
-         DKROT.CD[CDDisplayList[i]].Time:SetFont(DKROT.font, 11, "OUTLINE")
-         DKROT.CD[CDDisplayList[i]]:SetParent(DKROT.CD[ceil(i/2)])
-         DKROT.CD[CDDisplayList[i]]:EnableMouse(false)
+      for i = 1, #DKROT.CDDisplayList do
+         DKROT.CD[DKROT.CDDisplayList[i]] = DKROT:CreateIcon(DKROT.CDDisplayList[i].."Butt", DKROT.MainFrame, DKROT.spells["Army of the Dead"], 32)
+         DKROT.CD[DKROT.CDDisplayList[i]].Time:SetFont(DKROT.font, 11, "OUTLINE")
+         DKROT.CD[DKROT.CDDisplayList[i]]:SetParent(DKROT.CD[ceil(i/2)])
+         DKROT.CD[DKROT.CDDisplayList[i]]:EnableMouse(false)
       end
 
       -- Give Icons their position based on parent
-      DKROT.CD[CDDisplayList[1]]:SetPoint("TOPLEFT", DKROT.CD[1], "TOPLEFT", 1, -1)
-      DKROT.CD[CDDisplayList[2]]:SetPoint("TOPLEFT", DKROT.CD[CDDisplayList[1]], "BOTTOMLEFT", 0, -2)
-      DKROT.CD[CDDisplayList[3]]:SetPoint("TOPRIGHT", DKROT.CD[2], "TOPRIGHT", -1, -1)
-      DKROT.CD[CDDisplayList[4]]:SetPoint("TOPLEFT", DKROT.CD[CDDisplayList[3]], "BOTTOMLEFT", 0, -2)
-      DKROT.CD[CDDisplayList[5]]:SetPoint("TOPRIGHT", DKROT.CD[3], "TOPRIGHT", -1, -1)
-      DKROT.CD[CDDisplayList[6]]:SetPoint("TOPLEFT", DKROT.CD[CDDisplayList[5]], "BOTTOMLEFT", 0, -2)
-      DKROT.CD[CDDisplayList[7]]:SetPoint("TOPRIGHT", DKROT.CD[4], "TOPRIGHT", -1, -1)
-      DKROT.CD[CDDisplayList[8]]:SetPoint("TOPLEFT", DKROT.CD[CDDisplayList[7]], "BOTTOMLEFT", 0, -2)
+      DKROT.CD[DKROT.CDDisplayList[1]]:SetPoint("TOPLEFT", DKROT.CD[1], "TOPLEFT", 1, -1)
+      DKROT.CD[DKROT.CDDisplayList[2]]:SetPoint("TOPLEFT", DKROT.CD[DKROT.CDDisplayList[1]], "BOTTOMLEFT", 0, -2)
+      DKROT.CD[DKROT.CDDisplayList[3]]:SetPoint("TOPRIGHT", DKROT.CD[2], "TOPRIGHT", -1, -1)
+      DKROT.CD[DKROT.CDDisplayList[4]]:SetPoint("TOPLEFT", DKROT.CD[DKROT.CDDisplayList[3]], "BOTTOMLEFT", 0, -2)
+      DKROT.CD[DKROT.CDDisplayList[5]]:SetPoint("TOPRIGHT", DKROT.CD[3], "TOPRIGHT", -1, -1)
+      DKROT.CD[DKROT.CDDisplayList[6]]:SetPoint("TOPLEFT", DKROT.CD[DKROT.CDDisplayList[5]], "BOTTOMLEFT", 0, -2)
+      DKROT.CD[DKROT.CDDisplayList[7]]:SetPoint("TOPRIGHT", DKROT.CD[4], "TOPRIGHT", -1, -1)
+      DKROT.CD[DKROT.CDDisplayList[8]]:SetPoint("TOPLEFT", DKROT.CD[DKROT.CDDisplayList[7]], "BOTTOMLEFT", 0, -2)
 
       DKROT:Debug("Cooldowns Created")
    end
@@ -210,13 +224,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT.Interrupt:SetPoint("TOPRIGHT", DKROT.Move, "TOPRIGHT", -2, -2)
       DKROT:Debug("UI Created")
 
-      DKROT.DT = CreateFrame("Frame", "DKROT.DT", UIPARENT)
+      DKROT.DT = CreateFrame("Frame", "DKROT.DT", DKROT.MainFrame)
       DKROT.DT:SetHeight(5*25)
       DKROT.DT:SetWidth(180)
       DKROT.DT:SetFrameStrata("BACKGROUND")
       DKROT.DT:SetBackdrop{bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background', tile = false, insets = {left = 0, right = 0, top = 0, bottom = 0},}
       DKROT.DT:SetBackdropColor(0, 0, 0, 0)
-      DKROT.DT:SetScale(0.7)
+      DKROT.DT:SetScale(1)
       DKROT:SetupMoveFunction(DKROT.DT)
       DKROT.DT.Unit = {}
    end
@@ -322,7 +336,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- Update element dropdown
       UIDropDownMenu_SetSelectedValue(DKROT_PositionPanel_Element, element.frame)
-      -- UIDropDownMenu_SetText(DKROT_PositionPanel_Element, element.name)
 
       -- Update positional settings
       DKROT.PositionPanel_X:InitValue(x)
@@ -336,12 +349,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       UIDropDownMenu_SetText(DKROT.PositionPanel_RelPoint, relPoint)
 
       -- Handle some weirdness where the drop down doesnt update correctly
-      if relFrame == "UIParent" then
-         UIDropDownMenu_SetSelectedValue(DKROT.PositionPanel_RelFrame, relFrame)
-         UIDropDownMenu_SetText(DKROT.PositionPanel_RelFrame, "Screen")
-      else
-         UIDropDownMenu_SetSelectedValue(DKROT.PositionPanel_RelFrame, relFrame)
-      end
+      UIDropDownMenu_Initialize(DKROT_PositionPanel_RelFrame, DKROT_PositionPanel_RelFrame_Init)
+      UIDropDownMenu_SetSelectedValue(DKROT.PositionPanel_RelFrame, relFrame)
    end
 
    --function DKROT:BuildSliderOption(name, parent, value, callback)

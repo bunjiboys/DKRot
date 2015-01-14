@@ -167,7 +167,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "BOTTOMLEFT",
          X = -2,
          Y = 0,
-         Scale = 0.7
+         Scale = 1
       },
    }
 

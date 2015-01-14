@@ -367,10 +367,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    -- Main function for updating all information
    function DKROT:UpdateUI()
-      if (UnitCanAttack("player", "target") and (not UnitIsDead("target"))) then
-         DKROT.MainFrame:SetAlpha(DKROT_Settings.NormTrans)
-      else
+      if InCombatLockdown() then
          DKROT.MainFrame:SetAlpha(DKROT_Settings.CombatTrans)
+      else
+         DKROT.MainFrame:SetAlpha(DKROT_Settings.NormTrans)
       end
 
       if DKROT_Settings.Locked == false and (DKROT.LockDialog == nil or DKROT.LockDialog == false) then
@@ -455,7 +455,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT.Interrupt:SetAlpha(0)
       if DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][1] ~= DKROT_OPTIONS_FRAME_VIEW_NONE then
          DKROT.Move:SetAlpha(1)
-         -- DKROT.MoveBackdrop:SetAlpha(1)
          DKROT:UpdateCD("DKROT_CDRPanel_DD_Priority", DKROT.Move)
 
          -- If Priority on Main Icon
@@ -480,14 +479,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
       else
          DKROT.Move:SetAlpha(0)
-         -- DKROT.MoveBackdrop:SetAlpha(0)
       end
 
       -- CDs
-      for i = 1, #CDDisplayList do
+      for i = 1, #DKROT.CDDisplayList do
          if DKROT_Settings.CD[DKROT.Current_Spec][ceil(i/2)] then
             DKROT.CD[ceil(i/2)]:SetAlpha(1)
-            DKROT:UpdateCD(CDDisplayList[i], DKROT.CD[CDDisplayList[i]])
+            DKROT:UpdateCD(DKROT.CDDisplayList[i], DKROT.CD[DKROT.CDDisplayList[i]])
          else
             DKROT.CD[ceil(i/2)]:SetAlpha(0)
          end
@@ -521,7 +519,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Create Frame
-         if info.Frame == nil then info.Frame = DKROT:DTCreateFrame() end
+         if info.Frame == nil then
+            info.Frame = DKROT:DTCreateFrame()
+         end
          info.Frame:SetAlpha(DKROT_Settings.DTTrans)
 
          -- Set Settings
@@ -1153,8 +1153,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          msqDiseaseGrp:AddButton(DKROT.Diseases.FF)
          msqDiseaseGrp:AddButton(DKROT.Diseases.BP)
 
-         for i = 1, #CDDisplayList do
-            msqCDGrp:AddButton(DKROT.CD[CDDisplayList[i]])
+         for i = 1, #DKROT.CDDisplayList do
+            msqCDGrp:AddButton(DKROT.CD[DKROT.CDDisplayList[i]])
          end
       end
       
@@ -1176,8 +1176,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       UIDropDownMenu_Initialize(DKROT_CDRPanel_Diseases_DD, DKROT_Diseases_OnLoad)
       UIDropDownMenu_Initialize(DKROT_CDRPanel_DD_Priority, DKROT_CDRPanel_DD_OnLoad)
       UIDropDownMenu_Initialize(DKROT_CDRPanel_Rotation, DKROT_Rotations_OnLoad)
-      for i = 1, #CDDisplayList do
-         UIDropDownMenu_Initialize(_G[CDDisplayList[i]], DKROT_CDRPanel_DD_OnLoad)
+      for i = 1, #DKROT.CDDisplayList do
+         UIDropDownMenu_Initialize(_G[DKROT.CDDisplayList[i]], DKROT_CDRPanel_DD_OnLoad)
       end
       UIDropDownMenu_Initialize(DKROT_FramePanel_ViewDD, DKROT_FramePanel_ViewDD_OnLoad)
       UIDropDownMenu_Initialize(DKROT_DTPanel_DD_Threat, DKROT_DTPanel_Threat_OnLoad)
@@ -1428,10 +1428,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Cooldown Dropdown
-         for i = 1, #CDDisplayList do
-            if _G[CDDisplayList[i]] ~= nil and DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]] ~= nil and DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]][1] ~= nil then
-               UIDropDownMenu_SetSelectedValue(_G[CDDisplayList[i]], DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]][1]..((DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]][IS_BUFF] and " (Buff)") or ""))
-               UIDropDownMenu_SetText(_G[CDDisplayList[i]], DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]][1]..((DKROT_Settings.CD[DKROT.Current_Spec][CDDisplayList[i]][IS_BUFF] and " (Buff)") or ""))
+         for i = 1, #DKROT.CDDisplayList do
+            if _G[DKROT.CDDisplayList[i]] ~= nil and DKROT_Settings.CD[DKROT.Current_Spec][DKROT.CDDisplayList[i]] ~= nil and DKROT_Settings.CD[DKROT.Current_Spec][DKROT.CDDisplayList[i]][1] ~= nil then
+               UIDropDownMenu_SetSelectedValue(_G[DKROT.CDDisplayList[i]], DKROT_Settings.CD[DKROT.Current_Spec][DKROT.CDDisplayList[i]][1]..((DKROT_Settings.CD[DKROT.Current_Spec][DKROT.CDDisplayList[i]][IS_BUFF] and " (Buff)") or ""))
+               UIDropDownMenu_SetText(_G[DKROT.CDDisplayList[i]], DKROT_Settings.CD[DKROT.Current_Spec][DKROT.CDDisplayList[i]][1]..((DKROT_Settings.CD[DKROT.Current_Spec][DKROT.CDDisplayList[i]][IS_BUFF] and " (Buff)") or ""))
             end
          end
 
