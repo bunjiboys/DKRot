@@ -23,6 +23,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       {0, 1, 1},     -- Frost
       {0.8, 0.1, 1}  -- Death
    }
+   local RuneOrder = {
+      [BBUUFF] = { 1, 2, 3, 4, 5, 6 },
+      [BBFFUU] = { 1, 2, 5, 6, 3, 4 },
+      [UUBBFF] = { 3, 4, 1, 2, 5, 6 },
+      [UUFFBB] = { 3, 4, 5, 6, 1, 2 },
+      [FFUUBB] = { 5, 6, 3, 4, 1, 2 },
+      [FFBBUU] = { 5, 6, 1, 2, 3, 4 },
+   }
    local RuneTexture = {
       "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Blood",
       "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Unholy",
@@ -317,17 +325,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    function DKROT:BuildRuneBar()
       local runebar = ""
       local place = 1
-      local b1, b2, u1, u2, f1, f2 = 1, 2, 3, 4, 5, 6
-      local order = {
-         [BBUUFF] = { 1, 2, 3, 4, 5, 6 },
-         [BBFFUU] = { 1, 2, 5, 6, 3, 4 },
-         [UUBBFF] = { 3, 4, 1, 2, 5, 6 },
-         [UUFFBB] = { 3, 4, 5, 6, 1, 2 },
-         [FFUUBB] = { 5, 6, 3, 4, 1, 2 },
-         [FFBBUU] = { 5, 6, 1, 2, 3, 4 },
-      }
 
-      for _, rune in pairs(order[DKROT_Settings.RuneOrder]) do
+      for _, rune in pairs(RuneOrder[DKROT_Settings.RuneOrder]) do
          local start, cooldown = GetRuneCooldown(rune)
          local r, g, b = unpack(RUNE_COLOR[GetRuneType(rune)])
          local cdtime = start + cooldown - DKROT.curtime
