@@ -267,6 +267,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             ERW = false,
             BT = true,
             UseHoW = true,
+            BossCD = true,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Shadow Infusion"], true},
@@ -294,6 +295,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             ERW = false,
             BT = true,
             UseHoW = true,
+            BossCD = true,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Pillar of Frost"], nil},
@@ -322,6 +324,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             ERW = false,
             BT = true,
             UseHoW = true,
+            BossCD = true,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Bone Shield"], true},
@@ -351,6 +354,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             ERW = false,
             BT = true,
             UseHoW = true,
+            BossCD = true,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_Two"] = {DKROT.spells["Blood Charge"], true},

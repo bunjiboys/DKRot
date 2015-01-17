@@ -195,4 +195,66 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          return 0, nil, nil
       end
    end
+
+   function DKROT:TimeToDie()
+      if DKROT.TTD == nil then
+         DKROT.TTD = {}
+      end
+
+      local now = GetTime()
+
+      -- Cleanup old entries in the table
+      if (now - DKROT.SweepTTD) > 2 then
+         for guid, info in pairs(DKROT.TTD) do
+            local tss = now - info.lastUpdate
+            if (now - info.lastUpdate) > 10 then
+               DKROT.TTD[guid] = nil
+            end
+         end
+         DKROT.SweepTTD = GetTime()
+      end
+
+      local target = UnitGUID("TARGET")
+      if target ~= nil and UnitCanAttack("PLAYER", "TARGET") then
+         if not DKROT.TTD[target] then
+            DKROT.TTD[target] = {
+               maxHealth = UnitHealth("TARGET"),
+               startTime = now,
+               lastUpdate = now
+            }
+         else
+            DKROT.TTD[target].lastUpdate = now
+         end
+
+         local curHealth = UnitHealth("TARGET")
+         local diff = DKROT.TTD[target].maxHealth - curHealth
+
+         -- Target isnt taking damage, might be invulnerable
+         if diff == 0 then
+            return 99999
+         end
+
+         local dps = diff / (now - DKROT.TTD[target].startTime)
+
+         return DKROT:round(curHealth / dps, 2)
+      end
+
+      return 99999
+   end
+
+   function DKROT:BossOrPlayer(unit)
+      -- Player targets should be considered High Level to allow
+      -- for full rotation use in PvP
+      if UnitPlayerControlled(unit) or UnitLevel(unit) == -1 then
+         return true
+      end
+   end
+
+   function DKROT:SimpleNumbers(val)
+      if val > 1000 then
+         return tostring(DKROT:round(val/1000, 1)) .. "k"
+      else
+         return val
+      end
+   end
 end

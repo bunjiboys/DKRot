@@ -8,6 +8,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local blood, lblood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4,UnitBuff("player", DKROT.spells["Blood Charge"]))
+      local timeToDie = DKROT:TimeToDie()
 
       -- Death Pact
       if GetSpellTexture(DKROT.spells["Death Pact"]) ~= nil
@@ -43,7 +44,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if lblood <= 2 and GetSpellTexture(DKROT.spells["Soul Reaper"]) ~= nil
          and UnitHealth("target")/UnitHealthMax("target") < 0.35
       then
-         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) then
+         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) and timeToDie > 5 then
             return DKROT.spells["Soul Reaper"]
          end
       end
@@ -87,16 +88,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- Crimson Scourge BB
       if select(7,UnitBuff("player", DKROT.spells["Crimson Scourge"])) ~= nil then
-         if DKROT_Settings.MoveAltDND then
-            -- Death and Decay
-            if GetSpellTexture(DKROT.spells["Death and Decay"]) ~= nil then
-               if DKROT:isOffCD(DKROT.spells["Death and Decay"]) then
-                  DKROT.Move.AOE:SetAlpha(1)
-                  DKROT.Move.AOE.Icon:SetTexture(GetSpellTexture(DKROT.spells["Death and Decay"]))
-               end
-            end
-         end
-
          return DKROT.spells["Blood Boil"]
       end
 
@@ -131,6 +122,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4,UnitBuff("player", DKROT.spells["Blood Charge"]))
       local healthPct = (UnitHealth("PLAYER") / UnitHealthMax("PLAYER")) * 100
+      local timeToDie = DKROT:TimeToDie()
 
       -- Death Pact
       if GetSpellTexture(DKROT.spells["Death Pact"]) and healthPct < 50 then
@@ -174,7 +166,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if lblood <= 2 and GetSpellTexture(DKROT.spells["Soul Reaper"]) ~= nil
          and UnitHealth("target")/UnitHealthMax("target") < 0.35
       then
-         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) then
+         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) and timeToDie > 5 then
             return DKROT.spells["Soul Reaper"]
          end
       end
