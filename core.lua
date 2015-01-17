@@ -139,11 +139,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                frame.Icon:SetVertexColor(0.5, 0.5, 0.5, 1)
                frame.Time:SetText(DKROT:formatTime(ceil(expirationTime - DKROT.curtime)))
                if DKROT_Settings.CD[DKROT.Current_Spec][location][1] == DKROT.spells["Blood Shield"] then
-                  count = bsamount
-               end
-
-               if count > 1 then
-                  frame.Stack:SetText(count)
+                  count = DKROT:SimpleNumbers(bsamount)
+                  frame.Stack:SetText(DKROT:SimpleNumbers(bsamount))
+               else
+                  if count > 1 then
+                     frame.Stack:SetText(count)
+                  end
                end
             end
 

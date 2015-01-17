@@ -249,4 +249,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          return true
       end
    end
+
+   function DKROT:SimpleNumbers(val)
+      if val > 1000 then
+         return tostring(DKROT:round(val/1000, 1)) .. "k"
+      else
+         return val
+      end
+   end
 end
