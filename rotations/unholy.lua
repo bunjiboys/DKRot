@@ -8,6 +8,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
+      local timeToDie = DKROT:TimeToDie()
  
       -- Horn of Winter
       if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
@@ -86,16 +87,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- Scourge Strike (UU are up or FF or BB are up as Deathrunes)
       if lunholy <= 0 or (lfrost <= 0 and (fd or lfd)) or (lblood <= 0 and (bd or lbd)) then
-         if DKROT_Settings.MoveAltDND then
-            -- Death and Decay
-            if GetSpellTexture(DKROT.spells["Death and Decay"]) ~= nil then
-               if DKROT:isOffCD(DKROT.spells["Death and Decay"]) then
-                  DKROT.Move.AOE:SetAlpha(1)
-                  DKROT.Move.AOE.Icon:SetTexture(GetSpellTexture(DKROT.spells["Death and Decay"]))
-               end
-            end
-         end
-
          return DKROT.spells["Scourge Strike"]
       end
 
@@ -116,16 +107,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- Scourge Strike
       if unholy <= 0 or death >= 1 then
-         if DKROT_Settings.MoveAltDND then
-            -- Death and Decay
-            if GetSpellTexture(DKROT.spells["Death and Decay"]) ~= nil then
-               if DKROT:isOffCD(DKROT.spells["Death and Decay"]) then
-                  DKROT.Move.AOE:SetAlpha(1)
-                  DKROT.Move.AOE.Icon:SetTexture(GetSpellTexture(DKROT.spells["Death and Decay"]))
-               end
-            end
-         end
-
          return DKROT.spells["Scourge Strike"]
       end
 
@@ -166,7 +147,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
       local dFF, dBP = DKROT:GetDiseaseTime()
- 
+      local timeToDie = DKROT:TimeToDie()
+
       -- Horn of Winter
       if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
          return DKROT.spells["Horn of Winter"]
@@ -203,13 +185,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          )
          or UnitHealth("target")/UnitHealthMax("target") < 0.35
       then
-         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) then
+         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) and timeToDie > 5 then
             return DKROT.spells["Soul Reaper"]
          end
       end
 
       -- Defile
-      if GetSpellTexture(DKROT.spells["Defile"]) ~= nil then
+      if GetSpellTexture(DKROT.spells["Defile"]) ~= nil and timeToDie > 10 then
          if DKROT:isOffCD(DKROT.spells["Defile"]) then
             return DKROT.spells["Defile"], true
          end
@@ -225,8 +207,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Summon Gargoyle
-      if DKROT:isOffCD(DKROT.spells["Summon Gargoyle"]) then
-         return DKROT.spells["Summon Gargoyle"]
+      if DKROT:isOffCD(DKROT.spells["Summon Gargoyle"]) and timeToDie > 30 then
+         if DKROT_Settings.CD[DKROT.Current_Spec].BossCD then
+            if DKROT:BossOrPlayer("TARGET") then
+               return DKROT.spells["Summon Gargoyle"]
+            end
+         else
+            return DKROT.spells["Summon Gargoyle"]
+         end
       end
 
       -- Death Coil if we are close to RP cap or with Sudden Doom proc
@@ -249,7 +237,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if disease ~= nil then
          return disease
       end
- 
+
       -- Breath of Sindragosa
       if GetSpellTexture(DKROT.spells["Breath of Sindragosa"]) ~= nil
          and UnitPower("player") > 75 
@@ -316,4 +304,55 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'IcyVeins', 'Unholy - Icy Veins', IcyVeins, false)
    DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SimC', 'Unholy - SimCraft', SimC, true)
+
+   -- Function to determine AOE rotation for Unholy Spec
+   function DKROT:UnholyAOEMove(icon)
+      -- Rune Info
+      local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+      local unholy, lunholy = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+      local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
+      local death = DKROT:DeathRunes()
+
+      if not DKROT_Settings.MoveAltAOE then
+         return nil
+      end
+
+      -- Unholy Blight
+      if GetSpellTexture(DKROT.spells["Unholy Blight"]) and DKROT:isOffCD(DKROT.spells["Unholy Blight"]) then
+         return DKROT.spells["Unholy Blight"]
+      end
+
+      -- Defile / DND
+      if GetSpellTexture(DKROT.spells["Defile"]) ~= nil then
+         if DKROT:isOffCD(DKROT.spells["Defile"]) then
+            return DKROT.spells["Defile"], true
+         end
+      end
+
+      -- Diseases
+      local disease = DKROT:GetDisease()
+      if disease ~= nil then
+         return disease
+      end
+
+      -- Breath of Sindragosa
+      if GetSpellTexture(DKROT.spells["Breath of Sindragosa"]) ~= nil
+         and UnitPower("player") > 75
+         and DKROT:isOffCD(DKROT.spells["Breath of Sindragosa"])
+      then
+         return DKROT.spells["Breath of Sindragosa"]
+      end
+
+      -- Blood Boil
+      if DKROT:isOffCD(DKROT.spells["Blood Boil"]) then
+         return DKROT.spells["Blood Boil"]
+      end
+
+      -- Summon Gargoyle
+      if DKROT:isOffCD(DKROT.spells["Summon Gargoyle"]) then
+         return DKROT.spells["Summon Gargoyle"]
+      end
+
+      return nil
+   end
 end

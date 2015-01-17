@@ -48,6 +48,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local updatetimer = 0
    local resize = nil
    local delayedInit = false
+   DKROT.SweepTTD = GetTime()
+   DKROT.TTD = {}
    DKROT:Debug("Locals Done")
 
    ------ Update Frames ------
@@ -726,8 +728,17 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          -- Call correct function based on spec
          if DKROT_Settings.MoveAltAOE then
             if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
-               DKROT.AOE:SetAlpha(1)
-               DKROT.AOE.Icon:SetTexture(DKROT:UnholyAOEMove(DKROT.AOE.Icon))
+               local aoeNextCast, aoeNoCheckRange = DKROT:UnholyAOEMove()
+               if aoeNextCast ~= nil then
+                  DKROT.AOE:SetAlpha(1)
+
+                  if aoeNoCheckRange ~= nil and aoeNoCheckRange == true then
+                     DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
+                  else
+                     DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
+                  end
+
+               end
 
             elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
                DKROT.AOE:SetAlpha(1)
@@ -969,42 +980,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
 
-      -- Function to determine AOE rotation for Unholy Spec
-      function DKROT:UnholyAOEMove(icon)
-         -- Diseases > Dark Transformation > Death and Decay > SS if both Unholy and/or all Death runes are up >
-         -- BB + IT if both pairs of Blood and Frost runes are up >   DC
-         -- > SS > BB + IT
-
-         -- Rune Info
-         local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
-         local unholy, lunholy = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
-         local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
-         local death = DKROT:DeathRunes()
-
-         -- AOE:Death and Decay
-         if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (unholy <= 0 or death >= 1) then
-            return DKROT:GetRangeandIcon(icon, DKROT.spells["Death and Decay"])
-         end
-
-         -- AOE:Blood Boil
-         if DKROT:QuickAOESpellCheck(DKROT.spells["Blood Boil"]) and (blood <= 0 or death >= 1) then
-            return DKROT:GetRangeandIcon(icon, DKROT.spells["Blood Boil"])
-         end
-
-         -- Scourge Strike
-         if (lunholy <= 0) then
-            return DKROT:GetRangeandIcon(icon, nil)
-         end
-
-         -- AOE:Death Coil
-         if DKROT_Settings.CD[DKROT.Current_Spec].RP
-         and (UnitPower("player") >= 40
-            or select(7, UnitBuff("PLAYER",DKROT.spells["Sudden Doom"])) ~= nil) then
-            return DKROT:GetRangeandIcon(icon, nil)
-         end
-
-         return nil
-      end
 
       -- Function to determine AOE rotation for Frost Spec
       function DKROT:FrostAOEMove(icon)
@@ -1017,37 +992,37 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- AOE:Howling Blast if both Frost runes and/or both Death runes are up
          if DKROT:QuickAOESpellCheck(DKROT.spells["Howling Blast"]) and ((lfrost <= 0) or (lblood <= 0) or (lunholy <= 0 and lud)) then
-            return DKROT:GetRangeandIcon(icon, DKROT.spells["Howling Blast"])
+            return DKROT.spells["Howling Blast"]
          end
 
          -- AOE:DnD if both Unholy Runes are up
          if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (lunholy <= 0) then
-            return DKROT:GetRangeandIcon(icon, DKROT.spells["Death and Decay"])
+            return DKROT.spells["Death and Decay"], true
          end
 
          -- AOE:Frost Strike if RP capped
          if DKROT:QuickAOESpellCheck(DKROT.spells["Frost Strike"]) and (UnitPower("player") > 88) then
-            return DKROT:GetRangeandIcon(icon, nil)
+            return DKROT.spells["Frost Strike"]
          end
 
          -- AOE:Howling Blast
          if DKROT:QuickAOESpellCheck(DKROT.spells["Howling Blast"]) and (frost <= 0 or death >= 1) then
-            return DKROT:GetRangeandIcon(icon, DKROT.spells["Howling Blast"])
+            return DKROT.spells["Howling Blast"]
          end
 
          -- AOE:DnD
          if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (unholy <= 0) then
-            return DKROT:GetRangeandIcon(icon, DKROT.spells["Death and Decay"])
+            return DKROT.spells["Death and Decay"]
          end
 
          -- AOE:Frost Strike
          if DKROT:QuickAOESpellCheck(DKROT.spells["Frost Strike"]) and UnitPower("player") >= 20 then
-            return DKROT:GetRangeandIcon(icon, nil)
+            return DKROT.spells["Frost Strike"]
          end
 
          -- AOE:PS
          if DKROT:QuickAOESpellCheck(DKROT.spells["Plague Strike"]) and (unholy <= 0) then
-            return DKROT:GetRangeandIcon(icon, DKROT.spells["Plague Strike"])
+            return DKROT.spells["Plague Strike"]
          end
 
          return nil
@@ -1195,6 +1170,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT.MainFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
    DKROT.MainFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
    DKROT.MainFrame:RegisterEvent("ADDON_LOADED")
+   DKROT.MainFrame:RegisterEvent("PLAYER_ENTER_COMBAT")
    -- DKROT:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
    -- DKROT:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
@@ -1210,6 +1186,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                DKROT_Settings.UpdateWarning = true
             end
          end
+      end
+
+      -- Setup variables for the TimeToDie tracker
+      if e == "PLAYER_EVENT_COMBAT" then
+         DKROT.TTD = {}
+         DKROT.SweepTTD = DKROT.curtime
       end
 
       -- Delayed addon initialization due to combat lockdown
@@ -1412,8 +1394,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_CDRPanel_IRP:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].RP)
          DKROT_CDRPanel_MoveAltInterrupt:SetChecked(DKROT_Settings.MoveAltInterrupt)
          DKROT_CDRPanel_MoveAltAOE:SetChecked(DKROT_Settings.MoveAltAOE)
-         DKROT_CDRPanel_MoveAltDND:SetChecked(DKROT_Settings.MoveAltDND)
          DKROT_CDRPanel_UseHoW:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].UseHoW)
+         DKROT_CDRPanel_BossCD:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].BossCD)
          DKROT_CDRPanel_DG:SetChecked(DKROT_Settings.DG)
          DKROT_CDRPanel_DD_CD1:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][1])
          DKROT_CDRPanel_DD_CD2:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][2])
@@ -1521,9 +1503,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          -- CD/R
          DKROT_Settings.MoveAltInterrupt = DKROT_CDRPanel_MoveAltInterrupt:GetChecked()
          DKROT_Settings.MoveAltAOE = DKROT_CDRPanel_MoveAltAOE:GetChecked()
-         DKROT_Settings.MoveAltDND = DKROT_CDRPanel_MoveAltDND:GetChecked()
          DKROT_Settings.DG = DKROT_CDRPanel_DG:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec].UseHoW = DKROT_CDRPanel_UseHoW:GetChecked()
+         DKROT_Settings.CD[DKROT.Current_Spec].BossCD = DKROT_CDRPanel_BossCD:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec].Outbreak = DKROT_CDRPanel_Outbreak:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec].UB = DKROT_CDRPanel_UB:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec].PL = DKROT_CDRPanel_PL:GetChecked()

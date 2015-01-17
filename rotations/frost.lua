@@ -8,6 +8,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
+      local timeToDie = DKROT:TimeToDie()
  
       -- Horn of Winter
       if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
@@ -27,7 +28,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if GetSpellTexture(DKROT.spells["Soul Reaper"]) ~= nil
          and UnitHealth("target")/UnitHealthMax("target") < 0.35
       then
-         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) then
+         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) and timeToDie > 5 then
             return DKROT.spells["Soul Reaper"]
          end
       end
@@ -132,6 +133,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local blood, lblood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
+      local timeToDie = DKROT:TimeToDie()
  
       -- Horn of Winter
       if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
@@ -152,7 +154,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          and (death >= 1 or frost <= 0)
          and UnitHealth("target")/UnitHealthMax("target") < 0.35
       then
-         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) then
+         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) and timeToDie > 5 then
             return DKROT.spells["Soul Reaper"]
          end
       end
@@ -266,6 +268,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local death = DKROT:DeathRunes()
       local dFF, dBP = DKROT:GetDiseaseTime()
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
+      local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
+      local timeToDie = DKROT:TimeToDie()
  
       -- Death Pact
       if GetSpellTexture(DKROT.spells["Death Pact"]) ~= nil
@@ -290,7 +294,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if GetSpellTexture(DKROT.spells["Soul Reaper"]) ~= nil
          and UnitHealth("target")/UnitHealthMax("target") < 0.35
       then
-         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) then
+         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) and timeToDie > 5 then
             return DKROT.spells["Soul Reaper"]
          end
       end
@@ -301,12 +305,18 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             return DKROT.spells["Defile"]
          end
       end
+
+      -- Blood Tap with >= 11 Charges
+      if GetSpellTexture(DKROT.spells["Blood Tap"])
+         and DKROT_Settings.CD[DKROT.Current_Spec].BT
+         and bloodCharges ~= nil and bloodCharges >= 11
+         and DKROT:HasFullyDepletedRunes()
+      then
+         return DKROT.spells["Blood Tap"], true
+      end
  
       -- Rime Howling Blast if we need to refresh
-      local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
-      if rimeProc ~= nil 
-         and (dFF == nil or dFF < 5)
-      then
+      if rimeProc ~= nil and (dFF == nil or dFF < 5) then
          return DKROT.spells["Howling Blast"]
       end
 
@@ -330,15 +340,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          or (lfrost <= 0 or lunholy <= 0 or (lblood <= 0 and lbd)))
       then
          return DKROT.spells["Obliterate"]
-      end
-
-      -- Blood Tap with >= 11 Charges
-      if GetSpellTexture(DKROT.spells["Blood Tap"])
-         and DKROT_Settings.CD[DKROT.Current_Spec].BT
-         and bloodCharges ~= nil and bloodCharges >= 11
-         and DKROT:HasFullyDepletedRunes()
-      then
-         return DKROT.spells["Blood Tap"], true
       end
 
       -- Frost Strike if rp overcaped
