@@ -196,47 +196,45 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
    end
 
-   function DKROT:TimeToDie()
-      if DKROT.TTD == nil then
-         DKROT.TTD = {}
-      end
-
+   function DKROT:GetTimeToDie()
       local now = GetTime()
+      local target = UnitGUID("TARGET")
+
+      if (now - DKROT.TimeToDie.LastUpdate) < 1 and DKROT.TimeToDie.Targets[target] ~= nil then
+         return DKROT.TimeToDie.Targets[target].ttd
+      end
 
       -- Cleanup old entries in the table
-      if (now - DKROT.SweepTTD) > 2 then
-         for guid, info in pairs(DKROT.TTD) do
+      if (now - DKROT.TimeToDie.Sweep) > 5 then
+         for guid, info in pairs(DKROT.TimeToDie.Targets) do
             local tss = now - info.lastUpdate
-            if (now - info.lastUpdate) > 10 then
-               DKROT.TTD[guid] = nil
+            if (now - info.lastUpdate) > 30 then
+               DKROT.TimeToDie.Targets[guid] = nil
             end
          end
-         DKROT.SweepTTD = GetTime()
+         DKROT.Sweep = GetTime()
       end
 
-      local target = UnitGUID("TARGET")
       if target ~= nil and UnitCanAttack("PLAYER", "TARGET") then
-         if not DKROT.TTD[target] then
-            DKROT.TTD[target] = {
-               maxHealth = UnitHealth("TARGET"),
-               startTime = now,
-               lastUpdate = now
-            }
-         else
-            DKROT.TTD[target].lastUpdate = now
-         end
-
          local curHealth = UnitHealth("TARGET")
-         local diff = DKROT.TTD[target].maxHealth - curHealth
+         if not DKROT.TimeToDie.Targets[target] then
+            DKROT.TimeToDie.Targets[target] = {
+               maxHealth = curHealth,
+               startTime = now,
+               lastUpdate = now,
+               ttd = 99999
+            }
 
-         -- Target isnt taking damage, might be invulnerable
-         if diff == 0 then
-            return 99999
+         else
+            local diff = DKROT.TimeToDie.Targets[target].maxHealth - curHealth
+            local dps = diff / (now - DKROT.TimeToDie.Targets[target].startTime)
+
+            DKROT.TimeToDie.Targets[target].ttd = diff > 0 and DKROT:round(curHealth / dps, 1) or 99999
+            DKROT.TimeToDie.Targets[target].lastUpdate = now
          end
 
-         local dps = diff / (now - DKROT.TTD[target].startTime)
-
-         return DKROT:round(curHealth / dps, 2)
+         DKROT.TimeToDie.LastUpdate = now
+         return DKROT.TimeToDie.Targets[target].ttd
       end
 
       return 99999
@@ -255,6 +253,16 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          return tostring(DKROT:round(val/1000, 1)) .. "k"
       else
          return val
+      end
+   end
+
+   function DKROT:FormatTTD(ttd)
+      if ttd > 60 then
+         local minutes = math.floor(ttd / 60)
+         local seconds = ttd - (minutes * 60)
+         return string.format("|cffC41F3B%dm %ds|r", minutes, seconds)
+      else
+         return string.format("|cffC41F3B%ds|r", DKROT:round(ttd))
       end
    end
 end

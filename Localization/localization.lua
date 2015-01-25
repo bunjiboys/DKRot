@@ -25,6 +25,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       "|cFF00FFFFFF|r|cFFFF0000BB|r|cFF00FF00UU|r"
    }
    DKROT_OPTIONS_FRAME_RP = "Show Runic Power"
+   DKROT_OPTIONS_FRAME_TTD = "Show Time to Die timer"
    DKROT_OPTIONS_FRAME_DISEASE = "Show Disease Timers"
    DKROT_OPTIONS_FRAME_LOCKED = "Lock DKRot"
    DKROT_OPTIONS_FRAME_LOCKEDPIECES = "Lock Pieces Together"

@@ -8,7 +8,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local blood, lblood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4,UnitBuff("player", DKROT.spells["Blood Charge"]))
-      local timeToDie = DKROT:TimeToDie()
+      local timeToDie = DKROT:GetTimeToDie()
 
       -- Death Pact
       if GetSpellTexture(DKROT.spells["Death Pact"]) ~= nil
@@ -122,7 +122,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4,UnitBuff("player", DKROT.spells["Blood Charge"]))
       local healthPct = (UnitHealth("PLAYER") / UnitHealthMax("PLAYER")) * 100
-      local timeToDie = DKROT:TimeToDie()
+      local timeToDie = DKROT:GetTimeToDie()
 
       -- Death Pact
       if GetSpellTexture(DKROT.spells["Death Pact"]) and healthPct < 50 then
