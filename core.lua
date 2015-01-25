@@ -728,26 +728,23 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       function DKROT:GetNextMove(icon)
          -- Call correct function based on spec
          if DKROT_Settings.MoveAltAOE then
+            local aoeNextCast, aoeNocheckRange
             if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
-               local aoeNextCast, aoeNoCheckRange = DKROT:UnholyAOEMove()
-               if aoeNextCast ~= nil then
-                  DKROT.AOE:SetAlpha(1)
-
-                  if aoeNoCheckRange ~= nil and aoeNoCheckRange == true then
-                     DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
-                  else
-                     DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
-                  end
-
-               end
-
+               aoeNextCast, aoeNoCheckRange = DKROT:UnholyAOEMove()
             elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
-               DKROT.AOE:SetAlpha(1)
-               DKROT.AOE.Icon:SetTexture(DKROT:FrostAOEMove(DKROT.AOE.Icon))
-
+               aoeNextCast, aoeNoCheckRange = DKROT:FrostAOEMove()
             elseif (DKROT.Current_Spec == DKROT.SPECS.BLOOD) then
+               aoeNextCast, aoeNoCheckRange = nil, nil
+            end
+
+            if aoeNextCast ~= nil then
                DKROT.AOE:SetAlpha(1)
-               DKROT.AOE.Icon:SetTexture(DKROT:BloodAOEMove(DKROT.AOE.Icon))
+
+               if aoeNoCheckRange ~= nil and aoeNoCheckRange == true then
+                  DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
+               else
+                  DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
+               end
             end
          end
 
@@ -979,61 +976,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          return nil
       end
-
-
-
-      -- Function to determine AOE rotation for Frost Spec
-      function DKROT:FrostAOEMove(icon)
-
-         -- Rune Info
-         local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
-         local unholy, lunholy, ud, lud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
-         local blood, lblood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
-         local death = DKROT:DeathRunes()
-
-         -- AOE:Howling Blast if both Frost runes and/or both Death runes are up
-         if DKROT:QuickAOESpellCheck(DKROT.spells["Howling Blast"]) and ((lfrost <= 0) or (lblood <= 0) or (lunholy <= 0 and lud)) then
-            return DKROT.spells["Howling Blast"]
-         end
-
-         -- AOE:DnD if both Unholy Runes are up
-         if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (lunholy <= 0) then
-            return DKROT.spells["Death and Decay"], true
-         end
-
-         -- AOE:Frost Strike if RP capped
-         if DKROT:QuickAOESpellCheck(DKROT.spells["Frost Strike"]) and (UnitPower("player") > 88) then
-            return DKROT.spells["Frost Strike"]
-         end
-
-         -- AOE:Howling Blast
-         if DKROT:QuickAOESpellCheck(DKROT.spells["Howling Blast"]) and (frost <= 0 or death >= 1) then
-            return DKROT.spells["Howling Blast"]
-         end
-
-         -- AOE:DnD
-         if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (unholy <= 0) then
-            return DKROT.spells["Death and Decay"]
-         end
-
-         -- AOE:Frost Strike
-         if DKROT:QuickAOESpellCheck(DKROT.spells["Frost Strike"]) and UnitPower("player") >= 20 then
-            return DKROT.spells["Frost Strike"]
-         end
-
-         -- AOE:PS
-         if DKROT:QuickAOESpellCheck(DKROT.spells["Plague Strike"]) and (unholy <= 0) then
-            return DKROT.spells["Plague Strike"]
-         end
-
-         return nil
-      end
-
-      -- Function to determine AOE rotation for Blood Spec
-      function DKROT:BloodAOEMove(icon)
-         return nil
-      end
-
    end
 
    -- Function to check spec and presence

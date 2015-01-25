@@ -400,4 +400,50 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT_RegisterRotation(DKROT.SPECS.FROST, 'IcyVeins2H', '2H Frost - Icy Veins', IcyVeins2H, false)
    DKROT_RegisterRotation(DKROT.SPECS.FROST, 'IcyVeinsDualWield', 'Dual Wield Frost - Icy Veins', IcyVeinsDualWield, false)
    DKROT_RegisterRotation(DKROT.SPECS.FROST, 'SimC2H', '2H Frost - SimCraft', SimC2H, true)
+
+   -- Function to determine AOE rotation for Frost Spec
+   function DKROT:FrostAOEMove()
+      -- Rune Info
+      local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+      local unholy, lunholy, ud, lud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+      local blood, lblood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
+      local death = DKROT:DeathRunes()
+
+      -- AOE:Howling Blast if both Frost runes and/or both Death runes are up
+      if DKROT:QuickAOESpellCheck(DKROT.spells["Howling Blast"]) and ((lfrost <= 0) or (lblood <= 0) or (lunholy <= 0 and lud)) then
+         return DKROT.spells["Howling Blast"]
+      end
+
+      -- AOE:DnD if both Unholy Runes are up
+      if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (lunholy <= 0) then
+         return DKROT.spells["Death and Decay"], true
+      end
+
+      -- AOE:Frost Strike if RP capped
+      if DKROT:QuickAOESpellCheck(DKROT.spells["Frost Strike"]) and (UnitPower("player") > 88) then
+         return DKROT.spells["Frost Strike"]
+      end
+
+      -- AOE:Howling Blast
+      if DKROT:QuickAOESpellCheck(DKROT.spells["Howling Blast"]) and (frost <= 0 or death >= 1) then
+         return DKROT.spells["Howling Blast"]
+      end
+
+      -- AOE:DnD
+      if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (unholy <= 0) then
+         return DKROT.spells["Death and Decay"]
+      end
+
+      -- AOE:Frost Strike
+      if DKROT:QuickAOESpellCheck(DKROT.spells["Frost Strike"]) and UnitPower("player") >= 20 then
+         return DKROT.spells["Frost Strike"]
+      end
+
+      -- AOE:PS
+      if DKROT:QuickAOESpellCheck(DKROT.spells["Plague Strike"]) and (unholy <= 0) then
+         return DKROT.spells["Plague Strike"]
+      end
+
+      return nil
+   end
 end
