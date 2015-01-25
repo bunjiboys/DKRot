@@ -132,10 +132,22 @@
             </Scripts>
          </CheckButton>
          
+         <!-- TTD -->
+         <CheckButton name="DKROT_FramePanel_TTD" inherits="DKROT_CheckButtonTemplate">
+            <Anchors>
+               <Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_RP" x="0" y="-35" />
+            </Anchors>
+            <Scripts>
+               <OnLoad>
+                  DKROT_FramePanel_TTD_Text:SetText(DKROT_OPTIONS_FRAME_TTD)
+               </OnLoad>
+            </Scripts>
+         </CheckButton>
+         
          <!-- Disease -->
          <CheckButton name="DKROT_FramePanel_Disease" inherits="DKROT_CheckButtonTemplate">
             <Anchors>
-               <Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_RP" x="0" y="-35" />
+               <Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_TTD" x="0" y="-35" />
             </Anchors>
             <Scripts>
                <OnLoad>

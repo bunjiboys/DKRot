@@ -186,6 +186,18 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT.RunicPower.Text:SetFont(DKROT.font, 22, "OUTLINE")
       DKROT:SetupMoveFunction(DKROT.RunicPower)
 
+      -- Create Time to Die frame
+      DKROT.TTD = CreateFrame("Button", "DKROT.TTD", DKROT.MainFrame)
+      DKROT.TTD:SetHeight(23)
+      DKROT.TTD:SetWidth(47)
+      DKROT.TTD:SetBackdrop{bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background', tile = false, insets = {left = 0, right = 0, top = 0, bottom = 0},}
+      DKROT.TTD:SetBackdropColor(0, 0, 0, 0.5)
+      DKROT.TTD.Text = DKROT.TTD:CreateFontString(nil, 'OVERLAY')
+      DKROT.TTD.Text:SetPoint("TOP", DKROT.TTD, "TOP", 0, -2)
+      DKROT.TTD.Text:SetJustifyH("CENTER")
+      DKROT.TTD.Text:SetFont(DKROT.font, 22, "OUTLINE")
+      DKROT:SetupMoveFunction(DKROT.TTD)
+
       -- Create frame for Diseases with 2 icons for their respective disease
       DKROT.Diseases = CreateFrame("Button", "DKROT.Diseases", DKROT.MainFrame)
       DKROT.Diseases:SetHeight(24)

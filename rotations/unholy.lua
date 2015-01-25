@@ -8,7 +8,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
-      local timeToDie = DKROT:TimeToDie()
+      local timeToDie = DKROT:GetTimeToDie()
  
       -- Horn of Winter
       if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
@@ -147,7 +147,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
       local dFF, dBP = DKROT:GetDiseaseTime()
-      local timeToDie = DKROT:TimeToDie()
+      local timeToDie = DKROT:GetTimeToDie()
 
       -- Horn of Winter
       if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then

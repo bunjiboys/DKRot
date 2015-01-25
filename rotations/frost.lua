@@ -8,7 +8,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
-      local timeToDie = DKROT:TimeToDie()
+      local timeToDie = DKROT:GetTimeToDie()
  
       -- Horn of Winter
       if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
@@ -133,7 +133,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local blood, lblood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
       local death = DKROT:DeathRunes()
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
-      local timeToDie = DKROT:TimeToDie()
+      local timeToDie = DKROT:GetTimeToDie()
  
       -- Horn of Winter
       if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
@@ -269,7 +269,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local dFF, dBP = DKROT:GetDiseaseTime()
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
       local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
-      local timeToDie = DKROT:TimeToDie()
+      local timeToDie = DKROT:GetTimeToDie()
  
       -- Death Pact
       if GetSpellTexture(DKROT.spells["Death Pact"]) ~= nil

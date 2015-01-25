@@ -48,8 +48,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local updatetimer = 0
    local resize = nil
    local delayedInit = false
-   DKROT.SweepTTD = GetTime()
-   DKROT.TTD = {}
    DKROT:Debug("Locals Done")
 
    ------ Update Frames ------
@@ -406,6 +404,16 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT.RunicPower.Text:SetText(string.format("|cff00ffff%.3d|r", UnitPower("player")))
       else
          DKROT.RunicPower:SetAlpha(0)
+      end
+
+      if DKROT_Settings.TTD then
+         local ttd = DKROT:GetTimeToDie()
+         if ttd == 99999 then
+            DKROT.TTD:SetAlpha(0)
+         else
+            DKROT.TTD:SetAlpha(1)
+            DKROT.TTD.Text:SetText(DKROT:FormatTTD(ttd))
+         end
       end
 
       -- Diseases
@@ -1121,7 +1129,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- Setup variables for the TimeToDie tracker
       if e == "PLAYER_EVENT_COMBAT" then
-         DKROT.TTD = {}
+         DKROT.TTD.Targets = {}
          DKROT.SweepTTD = DKROT.curtime
       end
 
@@ -1250,6 +1258,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_FramePanel_Rune:SetChecked(DKROT_Settings.Rune)
          DKROT_FramePanel_RuneBars:SetChecked(DKROT_Settings.RuneBars)
          DKROT_FramePanel_RP:SetChecked(DKROT_Settings.RP)
+         DKROT_FramePanel_TTD:SetChecked(DKROT_Settings.TTD)
          DKROT_FramePanel_Disease:SetChecked(DKROT_Settings.Disease)
          DKROT_FramePanel_Locked:SetChecked(DKROT_Settings.Locked)
          DKROT_FramePanel_Trans:SetNumber(DKROT_Settings.Trans)
@@ -1411,6 +1420,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_Settings.Rune = DKROT_FramePanel_Rune:GetChecked()
          DKROT_Settings.RuneBars = DKROT_FramePanel_RuneBars:GetChecked()
          DKROT_Settings.RP = DKROT_FramePanel_RP:GetChecked()
+         DKROT_Settings.TTD = DKROT_FramePanel_TTD:GetChecked()
          DKROT_Settings.Disease = DKROT_FramePanel_Disease:GetChecked()
          DKROT_Settings.Locked = DKROT_FramePanel_Locked:GetChecked()
 
@@ -1522,6 +1532,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_Settings.Rune = true
          DKROT_Settings.RuneOrder = BBFFUU
          DKROT_Settings.RP = true
+         DKROT_Settings.TTD = true
          DKROT_Settings.Disease = true
          DKROT_Settings.CD = {}
          DKROT_Settings.UpdateWarning = true

@@ -33,6 +33,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       {},
    }
 
+   DKROT.TimeToDie = {
+      Sweep = 0,
+      Targets = {},
+      LastUpdate = 0
+   }
+
    DKROT.MovableFrames = {
       { name = "Priority Icon", frame = "DKROT.Move" },
       { name = "AOE Icon", frame = "DKROT.AOE" },
@@ -46,6 +52,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       { name = "Rune Bar - Text", frame = "DKROT.RuneBar" },
       { name = "Rune Bar - Graphical", frame = "DKROT.RuneBarHolder" },
       { name = "Runic Power", frame = "DKROT.RunicPower" },
+      { name = "Time to Die", frame = "DKROT.TTD" },
    }
 
    DKROT.FrameAnchors = {
@@ -62,6 +69,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       { name = "Rune Bar - Graphical", frame = "DKROT.RuneBarHolder" },
       { name = "Rune Bar - Text", frame = "DKROT.RuneBar" },
       { name = "Runic Power", frame = "DKROT.RunicPower" },
+      { name = "Time to Die", frame = "DKROT.TTD" },
    }
 
    DKROT.DefaultLocations = {
@@ -166,6 +174,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          Rel = "DKROT.CD3",
          RelPoint = "BOTTOMLEFT",
          X = -2,
+         Y = 0,
+         Scale = 1
+      },
+      ["DKROT.TTD"] = {
+         Point = "BOTTOM",
+         Rel = "DKROT.RuneBar",
+         RelPoint = "TOP",
+         X = 0,
          Y = 0,
          Scale = 1
       },
