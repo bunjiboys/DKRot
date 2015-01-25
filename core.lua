@@ -272,7 +272,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local loc = DKROT_Settings.Location[self:GetName()]
       self:ClearAllPoints()
       self:SetPoint(loc.Point, loc.Rel, loc.RelPoint, loc.X, loc.Y)
-      self:SetBackdropColor(0, 0, 0, DKROT_Settings.Trans)
+      if self:GetName() == "DKROT.DT" then
+         local dtopacity = DKROT_Settings.DT.Enable and DKROT_Settings.DTTrans or 0
+         self:SetBackdropColor(0, 0, 0, dtopacity)
+      else
+         self:SetBackdropColor(0, 0, 0, DKROT_Settings.Trans)
+      end
       self:EnableMouse(not DKROT_Settings.Locked)
 
       if loc.Scale ~= nil then
@@ -497,23 +502,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    end
 
    do -- Disease Tracker
-      -- Create a DT Frame
-      function DKROT:DTCreateFrame()
-         local frame = CreateFrame('StatusBar', nil, DKROT.DT)
-         frame:SetHeight(24)
-         frame:SetWidth(DKROT.DT:GetWidth()-2)
-         frame:SetStatusBarTexture([[Interface\Tooltips\UI-Tooltip-Background]])
-         frame:SetStatusBarColor(1, 0, 0);
-         frame:SetBackdrop{bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background', tile = false, insets = {left = -1, right = -1, top = -1, bottom = -1},}
-         frame:SetBackdropColor(0, 0, 0, 0.5)
-
-         frame.Name = frame:CreateFontString(nil, 'OVERLAY')
-         frame.Name:SetPoint("LEFT", frame, 3, 0)
-         frame.Name:SetFont(DKROT.font, 13, "OUTLINE")
-
-         return frame
-      end
-
       -- Gather the info and apply them to it's frame
       function DKROT:DTUpdateInfo(guid, info)
          if not DKROT_Settings.DT.Target and UnitGUID("target") == guid then
@@ -1492,7 +1480,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             DKROT_DTPanel_Warning:SetNumber(DKROT_Settings.DT.Warning)
          end
          if DKROT_DTPanel_Trans:GetNumber() >= 0 and DKROT_DTPanel_Trans:GetNumber() <= 1 then
-            DKROT_Settings.DTTrans = DKROT_DTPanel_Trans:GetNumber()
+            DKROT_Settings.DTTrans = DKROT:round(DKROT_DTPanel_Trans:GetNumber(), 2)
          else
             DKROT_DTPanel_Trans:SetNumber(DKROT_Settings.DTTrans)
          end

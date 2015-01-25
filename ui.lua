@@ -264,10 +264,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          },
       }
 
-      -- UIDropDownMenu_SetSelectedID(DKROT_PositionPanel_Element, 1)
-      -- DKROT_PositionPanel_Element_Select(DKROT_PositionPanel_Element, "TOPLEFT")
-
-
       DKROT.PositionPanel_X = DKROT:BuildSliderOption(sliders.x, updateCallback)
       DKROT.PositionPanel_X:SetPoint("TOPLEFT", DKROT_PositionPanel_Element, "BOTTOMLEFT", 15, -15)
 
@@ -493,4 +489,20 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
    end
 
+   -- Create a DT Frame
+   function DKROT:DTCreateFrame()
+      local frame = CreateFrame('StatusBar', nil, DKROT.DT)
+      frame:SetHeight(24)
+      frame:SetWidth(DKROT.DT:GetWidth()-2)
+      frame:SetStatusBarTexture([[Interface\Tooltips\UI-Tooltip-Background]])
+      frame:SetStatusBarColor(1, 0, 0);
+      frame:SetBackdrop{bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background', tile = false, insets = {left = -1, right = -1, top = -1, bottom = -1},}
+      frame:SetBackdropColor(0, 0, 0, 0.5)
+
+      frame.Name = frame:CreateFontString(nil, 'OVERLAY')
+      frame.Name:SetPoint("LEFT", frame, 3, 0)
+      frame.Name:SetFont(DKROT.font, 13, "OUTLINE")
+
+      return frame
+   end
 end
