@@ -229,7 +229,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             local diff = DKROT.TimeToDie.Targets[target].maxHealth - curHealth
             local dps = diff / (now - DKROT.TimeToDie.Targets[target].startTime)
 
-            DKROT.TimeToDie.Targets[target].ttd = diff > 0 and DKROT:round(curHealth / dps, 1) or 99999
+            local ttd = diff > 0 and DKROT:round(curHealth / dps, 1) or 99999
+            DKROT.TimeToDie.Targets[target].ttd = ttd < 3600 and ttd or 99999
             DKROT.TimeToDie.Targets[target].lastUpdate = now
          end
 
@@ -265,4 +266,31 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          return string.format("|cffC41F3B%ds|r", DKROT:round(ttd))
       end
    end
+
+      -- Gives CD of rune type specified
+      -- In: r: type of rune set to be queried
+      -- Out:  time1: the lowest cd of the 2 runes being queried  time2: the higher of the cds  RT1: returns true if lowest cd rune is a death rune, RT2: same as RT1 except higher CD rune
+      function DKROT:RuneCDs(r)
+         -- Get individual rune numbers
+         local a, b
+         if r == DKROT.SPECS.UNHOLY then a, b = 3, 4
+         elseif r == DKROT.SPECS.FROST then a, b = 5, 6
+         elseif r == DKROT.SPECS.BLOOD then a, b = 1, 2
+         end
+
+         -- Get CD of first rune
+         local start, dur, cool = GetRuneCooldown(a)
+         local time1 = (cool and 0) or (dur - (DKROT.curtime - start + DKROT.GCD))
+
+         -- Get CD of second rune
+         local start, dur, cool = GetRuneCooldown(b)
+         local time2 = (cool and 0) or (dur - (DKROT.curtime - start + DKROT.GCD))
+
+         -- if second rune will be off CD before first, then return second then first rune, else vice versa
+         if time1 > time2 then
+            return time2, time1, GetRuneType(b) == 4, GetRuneType(a) == 4
+         else
+            return time1, time2, GetRuneType(a) == 4, GetRuneType(b) == 4
+         end
+      end
 end

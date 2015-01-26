@@ -520,7 +520,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if info.Frame == nil then
             info.Frame = DKROT:DTCreateFrame()
          end
-         info.Frame:SetAlpha(DKROT_Settings.DTTrans)
+         if InCombatLockdown() then
+            info.Frame:SetAlpha(DKROT_Settings.CombatTrans)
+         else
+            info.Frame:SetAlpha(DKROT_Settings.NormTrans)
+         end
 
          -- Set Settings
          if info.spot == nil or info.spot ~= DKROT.DT.spot then
@@ -767,33 +771,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          return nil
-      end
-
-      -- Gives CD of rune type specified
-      -- In: r: type of rune set to be queried
-      -- Out:  time1: the lowest cd of the 2 runes being queried  time2: the higher of the cds  RT1: returns true if lowest cd rune is a death rune, RT2: same as RT1 except higher CD rune
-      function DKROT:RuneCDs(r)
-         -- Get individual rune numbers
-         local a, b
-         if r == DKROT.SPECS.UNHOLY then a, b = 3, 4
-         elseif r == DKROT.SPECS.FROST then a, b = 5, 6
-         elseif r == DKROT.SPECS.BLOOD then a, b = 1, 2
-         end
-
-         -- Get CD of first rune
-         local start, dur, cool = GetRuneCooldown(a)
-         local time1 = (cool and 0) or (dur - (DKROT.curtime - start + DKROT.GCD))
-
-         -- Get CD of second rune
-         local start, dur, cool = GetRuneCooldown(b)
-         local time2 = (cool and 0) or (dur - (DKROT.curtime - start + DKROT.GCD))
-
-         -- if second rune will be off CD before first, then return second then first rune, else vice versa
-         if time1 > time2 then
-            return time2, time1, GetRuneType(b) == 4, GetRuneType(a) == 4
-         else
-            return time1, time2, GetRuneType(a) == 4, GetRuneType(b) == 4
-         end
       end
 
       -- Returns the number of available runes of a specific type

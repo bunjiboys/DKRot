@@ -270,6 +270,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
       local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
       local timeToDie = DKROT:GetTimeToDie()
+
+      -- Horn of Winter
+      if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         return DKROT.spells["Horn of Winter"]
+      end
  
       -- Death Pact
       if GetSpellTexture(DKROT.spells["Death Pact"]) ~= nil
@@ -397,9 +402,153 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       return nil
    end
 
+   local function SimCDualWield()
+      -- Rune Info
+      local frost, lfrost, fd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+      local unholy, lunholy, ud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+      local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
+      local death = DKROT:DeathRunes()
+      local dFF, dBP = DKROT:GetDiseaseTime()
+      local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
+      local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
+      local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
+      local timeToDie = DKROT:GetTimeToDie()
+      local rp = UnitPower("PLAYER")
+
+      -- Horn of Winter
+      if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         return DKROT.spells["Horn of Winter"]
+      end
+ 
+      -- Death Pact
+      if GetSpellTexture(DKROT.spells["Death Pact"]) ~= nil
+         and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
+      then
+         if DKROT:isOffCD(DKROT.spells["Death Pact"]) then
+            return DKROT.spells["Death Pact"], true
+         end
+      end
+
+      -- Soul Reaper
+      if GetSpellTexture(DKROT.spells["Soul Reaper"]) ~= nil
+         and UnitHealth("target")/UnitHealthMax("target") < 0.35
+      then
+         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) and timeToDie > 5 then
+            return DKROT.spells["Soul Reaper"]
+         end
+      end
+
+      -- Blood Tap with >= 11 Charges
+      if GetSpellTexture(DKROT.spells["Blood Tap"])
+         and DKROT_Settings.CD[DKROT.Current_Spec].BT
+         and bloodCharges ~= nil and bloodCharges >= 11
+         and DKROT:HasFullyDepletedRunes()
+      then
+         return DKROT.spells["Blood Tap"], true
+      end
+
+      -- Breath of Sindragosa
+      if GetSpellTexture(DKROT.spells["Breath of Sindragosa"]) ~= nil and rp > 75 then
+         if DKROT:isOffCD(DKROT.spells["Breath of Sindragosa"]) then
+            return DKROT.spells["Breath of Sindragosa"]
+         end
+      end
+
+      -- Defile
+      if GetSpellTexture(DKROT.spells["Defile"]) ~= nil then
+         if DKROT:isOffCD(DKROT.spells["Defile"]) then
+            return DKROT.spells["Defile"]
+         end
+      end
+ 
+      -- Howling Blast as long as it wont cap out RP
+      if DKROT:isOffCD(DKROT.spells["Howling Blast"]) and rp < 88 then
+         return DKROT.spells["Howling Blast"]
+      end
+
+      -- Obliterate when it wont cap RP
+      if GetSpellTexture(DKROT.spells["Obliterate"]) ~= nil
+         and select(1, IsUsableSpell(DKROT.spells["Obliterate"]))
+         and rp < 76
+      then
+         return DKROT.spells["Obliterate"]
+      end
+
+      -- Frost Strike w/Killing Machine and high RP
+      if kmProc and rp >= 50 and DKROT:isOffCD(DKROT.spells["Frost Strike"]) then
+         return DKROT.spells["Frost Strike"]
+      end
+ 
+      -- Howling Blast if we have at least one full frost or death rune up
+      if frost <= 0 or death > 0 then
+         return DKROT.spells["Howling Blast"]
+      end
+
+      -- Diseases
+      local disease = DKROT:GetDisease()
+      if disease ~= nil then
+         return disease
+      end
+ 
+      -- Howling Blast if Rime is procced
+      if rimeProc then
+         return DKROT.spells["Howling Blast"]
+      end
+
+      -- Frost Strike
+      if rp > 76 then
+         return DKROT.spells["Frost Strike"]
+      end
+
+      if unholy <= 0 and kmProc and DKROT:isOffCD(DKROT.spells["Obliterate"]) then
+         return DKROT.spells["Obliterate"]
+      end
+
+      if DKROT:isOffCD(DKROT.spells["Howling Blast"]) then
+         return DKROT.spells["Howling Blast"]
+      end
+
+      -- Blood Tap with >= 5 Charges
+      if GetSpellTexture(DKROT.spells["Blood Tap"])
+         and DKROT_Settings.CD[DKROT.Current_Spec].BT
+         and bloodCharges ~= nil and bloodCharges >= 5
+         and DKROT:HasFullyDepletedRunes()
+      then
+         return DKROT.spells["Blood Tap"], true
+      end
+
+      -- Plague Leech if we have enabled it in the rotation, and we have a fully depleted rune
+      if GetSpellTexture(DKROT.spells["Plague Leech"])
+         and DKROT:isOffCD(DKROT.spells["Plague Leech"])
+         and DKROT:HasFullyDepletedRunes()
+         and (dFF ~= nil and dBP ~= nil and dFF > 0 and dBP > 0)
+         and DKROT_Settings.CD[DKROT.Current_Spec].PL
+      then
+         return DKROT.spells["Plague Leech"]
+      end
+
+      -- Empower Rune Weapon if we have it enabled and we have at least 3 runes depleted
+      if GetSpellTexture(DKROT.spells["Empower Rune Weapon"]) ~= nil
+         and DKROT_Settings.CD[DKROT.Current_Spec].ERW
+         and DKROT:DepletedRunes() >= 3
+      then
+         if DKROT:isOffCD(DKROT.spells["Empower Rune Weapon"]) then
+            return DKROT.spells["Empower Rune Weapon"]
+         end
+      end
+
+      if rp >= 25 then
+         return DKROT.spells["Frost Strike"]
+      end
+
+      -- If nothing else can be done
+      return nil
+   end
+
    DKROT_RegisterRotation(DKROT.SPECS.FROST, 'IcyVeins2H', '2H Frost - Icy Veins', IcyVeins2H, false)
    DKROT_RegisterRotation(DKROT.SPECS.FROST, 'IcyVeinsDualWield', 'Dual Wield Frost - Icy Veins', IcyVeinsDualWield, false)
    DKROT_RegisterRotation(DKROT.SPECS.FROST, 'SimC2H', '2H Frost - SimCraft', SimC2H, true)
+   DKROT_RegisterRotation(DKROT.SPECS.FROST, 'SimCDualWield', 'Dual Wield Frost - SimCraft', SimCDualWield, false)
 
    -- Function to determine AOE rotation for Frost Spec
    function DKROT:FrostAOEMove()
