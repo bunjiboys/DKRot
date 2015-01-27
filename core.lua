@@ -168,7 +168,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             if trinket ~= nil then
                if trinket.type == DKROT.TrinketType.OnUse then
                   local start, dur, active = GetItemCooldown(trinketID)
-                  frame.Icon:SetTexture(GetmItemIcon(trinketID))
+                  frame.Icon:SetTexture(GetItemIcon(trinketID))
 
                   if active then
                      frame.Icon:SetVertexColor(0.5, 0.5, 0.5, 1)
@@ -407,11 +407,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       if DKROT_Settings.TTD then
+         DKROT.TTD:SetAlpha(1)
          local ttd = DKROT:GetTimeToDie()
          if ttd == 99999 then
-            DKROT.TTD:SetAlpha(0)
+            DKROT.TTD.Text:SetText("")
          else
-            DKROT.TTD:SetAlpha(1)
             DKROT.TTD.Text:SetText(DKROT:FormatTTD(ttd))
          end
       end
@@ -868,7 +868,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Get Duration left on diseases
-         local FFexpires, BPexpires, NPexpires
+         local FFexpires, BPexpires
          local expires = select(7,UnitDebuff("TARGET", DKROT.spells["Frost Fever"], nil, "PLAYER"))
          if expires ~= nil then
             FFexpires = expires - DKROT.curtime
@@ -879,9 +879,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             BPexpires = expires - DKROT.curtime
          end
 
+         -- Necrotic Plague cannot be refreshed, no reason to even try
          expires = select(7, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"], nil, "PLAYER"))
          if expires ~= nil then
-            NPexpires = expires - DKROT.curtime
+            return nil
          end
 
          -- Check if Outbreak is off CD, is known and Player wants to use it in rotation
@@ -901,7 +902,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
 
          -- Apply Frost Fever
-         if (FFexpires == nil or FFexpires < 2) and NPexpires == nil then
+         if FFexpires == nil or FFexpires < 2 then
             if outbreak then -- if can use outbreak, then do it
                return DKROT.spells["Outbreak"]
 
@@ -922,17 +923,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          -- Apply Blood Plague
          if (DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption ~= DISEASE_ONE or outbreak) then
             if (BPexpires == nil or BPexpires < 3) then
-               -- Necrotic plague acts as both frost fever and blood plague
-               if NPexpires ~= nil and NPexpires > 3 then
-                  return nil
-               end
-
                -- Add Death Grip as first priority until PS is in range
                if DKROT_Settings.DG and (IsSpellInRange(DKROT.spells["Plague Strike"], "target")) == 0 and IsUsableSpell(DKROT.spells["Death Grip"]) then
                   return DKROT.spells["Death Grip"]
                end
 
-               if plagueleech and (BPexpires ~= nil or NPexpires ~= nil) and DKROT:DepletedRunes() > 0 then
+               if plagueleech and BPexpires ~= nil and DKROT:DepletedRunes() > 0 then
                   return DKROT.spells["Plague Leech"]
 
                elseif outbreak then -- if can use outbreak, then do it
