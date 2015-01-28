@@ -19,7 +19,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       OnUse = 1,
       Stacking = 2,
       ICD = 3,
-      RRPM = 4
+      RPPM = 4
    }
 
    DKROT.DTspells = {}
