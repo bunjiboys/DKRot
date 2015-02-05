@@ -1101,12 +1101,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
       end
 
-      -- Setup variables for the TimeToDie tracker
-      if e == "PLAYER_EVENT_COMBAT" then
-         DKROT.TTD.Targets = {}
-         DKROT.SweepTTD = DKROT.curtime
-      end
-
       -- Delayed addon initialization due to combat lockdown
       if loaded then
          if e == "COMBAT_LOG_EVENT_UNFILTERED" then
@@ -1146,7 +1140,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                   end
                end
             end
-         else
+
+         -- Setup variables for the TimeToDie tracker
+         elseif e == "PLAYER_ENTER_COMBAT" then
+             DKROT.TTD.Targets = {}
+             DKROT.SweepTTD = DKROT.curtime
+
+         elseif e == "PLAYER_TALENT_UPDATE" or e == "ACTIVE_TALENT_GROUP_CHANGED" then
             DKROT:CheckSpec()
          end
       end
