@@ -1,6 +1,8 @@
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
 
+   DKROT.OptionsFrame = CreateFrame("Frame", "DKROT.OptionsFrame", nil)
+
    -- Sets up required information for each element that can be moved
    function DKROT:SetupMoveFunction(frame)
       frame:EnableMouse(false)
@@ -189,7 +191,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       -- Create Time to Die frame
       DKROT.TTD = CreateFrame("Button", "DKROT.TTD", DKROT.MainFrame)
       DKROT.TTD:SetHeight(23)
-      DKROT.TTD:SetWidth(47)
+      DKROT.TTD:SetWidth(100)
       DKROT.TTD:SetBackdrop{bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background', tile = false, insets = {left = 0, right = 0, top = 0, bottom = 0},}
       DKROT.TTD:SetBackdropColor(0, 0, 0, 0.5)
       DKROT.TTD.Text = DKROT.TTD:CreateFontString(nil, 'OVERLAY')
@@ -274,6 +276,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             minValue = 0.5,
             maxValue = 1.5,
          },
+         opacity = {
+            parent = DKROT_PositionPanel,
+            value = 1,
+            label = "Opacity",
+            minValue = 0,
+            maxValue = 1,
+         },
       }
 
       DKROT.PositionPanel_X = DKROT:BuildSliderOption(sliders.x, updateCallback)
@@ -284,6 +293,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       DKROT.PositionPanel_Scale = DKROT:BuildSliderOption(sliders.scale, updateCallback)
       DKROT.PositionPanel_Scale:SetPoint("TOPLEFT", DKROT.PositionPanel_X, "BOTTOMLEFT", 0, 0)
+
+      DKROT.PositionPanel_Opacity = DKROT:BuildSliderOption(sliders.opacity, updateCallback)
+      DKROT.PositionPanel_Opacity:SetPoint("LEFT", DKROT.PositionPanel_Scale, "RIGHT", 15, 0)
 
       DKROT.PositionPanel_Point = CreateFrame("Button", "DKROT_PositionPanel_Point", DKROT_PositionPanel, "DKROT_DropDownTemplate")
       DKROT.PositionPanel_Point:SetPoint("TOPLEFT", DKROT.PositionPanel_Scale, "BOTTOMLEFT", -15, -15)
@@ -337,7 +349,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    function DKROT_PositionPanel_Element_Select(self, element)
       local el = _G[element.frame]
       local saved = DKROT_Settings.Location[el:GetName()]
-      local point, relFrame, relPoint, x, y, scale = saved.Point:upper(), (saved.Rel or "UIParent"), saved.RelPoint:upper(), saved.X, saved.Y, saved.Scale
+      local point, relFrame, relPoint, x, y, scale, opacity = saved.Point:upper(), (saved.Rel or "UIParent"), saved.RelPoint:upper(), saved.X, saved.Y, saved.Scale, saved.Opacity
       if relFrame == "DKROT" then
          relFrame = "UIParent"
       end
@@ -349,19 +361,36 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT.PositionPanel_X:InitValue(x)
       DKROT.PositionPanel_Y:InitValue(y)
       DKROT.PositionPanel_Scale:InitValue(scale)
+      DKROT.PositionPanel_Opacity:InitValue(opacity or 1)
 
+      UIDropDownMenu_Initialize(DKROT.PositionPanel_Point, DKROT_PositionPanel_Point_Init)
       UIDropDownMenu_SetSelectedValue(DKROT.PositionPanel_Point, point)
-      UIDropDownMenu_SetText(DKROT.PositionPanel_Point, point)
-
       UIDropDownMenu_SetSelectedValue(DKROT.PositionPanel_RelPoint, relPoint)
-      UIDropDownMenu_SetText(DKROT.PositionPanel_RelPoint, relPoint)
 
-      -- Handle some weirdness where the drop down doesnt update correctly
       UIDropDownMenu_Initialize(DKROT_PositionPanel_RelFrame, DKROT_PositionPanel_RelFrame_Init)
       UIDropDownMenu_SetSelectedValue(DKROT.PositionPanel_RelFrame, relFrame)
    end
 
-   --function DKROT:BuildSliderOption(name, parent, value, callback)
+   function DKROT:BuildCheckBox(info, callback)
+      local frame = CreateFrame("Frame", info.name, info.parent)
+      frame:EnableMouse(true)
+      frame:SetWidth(250)
+      frame:SetHeight(70)
+
+      -- CheckButton
+      frame.button = CreateFrame("CheckButton", "$parent_Button", frame, "UICheckButtonTemplate")
+      frame.button:SetPoint("TOPLEFT", 0, 0)
+      frame.button:SetChecked(info.checked)
+      frame.button:SetScript("OnClick", callback)
+
+      -- Text label
+      frame.label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+      frame.label:SetPoint("LEFT", frame.button, "RIGHT", 5, 0)
+      frame.label:SetText(info.label)
+
+      return frame
+   end
+
    function DKROT:BuildSliderOption(info, callback)
       local frame = CreateFrame("Frame", info.name, info.parent)
       frame.value = info.value ~= nil and info.value or 0.0
@@ -516,5 +545,246 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       frame.Name:SetFont(DKROT.font, 13, "OUTLINE")
 
       return frame
+   end
+
+   function DKROT_RuneOrder_SelectItem(item)
+      DKROT_Settings.RuneOrder = item.value
+      UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_Rune_DD, item.value)
+   end
+
+   function DKROT_Rune_DD_OnLoad()
+      for k,v in pairs(DKROT.RuneOrder) do
+         local info = {
+            text  = DKROT_OPTIONS_FRAME_RUNE_ORDER[v],
+            value = v,
+            func  = DKROT_RuneOrder_SelectItem
+         }
+         UIDropDownMenu_AddButton(info)
+      end
+   end
+
+   -- Select item from Disease Tracker Threat options
+   function DKROT_DT_ThreatMode_SelectItem(item)
+      DKROT_Settings.DT.Threat = item.value
+      UIDropDownMenu_SetSelectedValue(DKROT_DTPanel_DD_Threat, item.value)
+   end
+
+   function DKROT_DTPanel_Threat_OnLoad()
+      info           = {}
+      info.text      = DKROT_OPTIONS_DT_THREAT_OFF
+      info.value     = DKROT.ThreatMode.Off
+      info.func      = DKROT_DT_ThreatMode_SelectItem
+      UIDropDownMenu_AddButton(info)
+
+      info           = {}
+      info.text      = DKROT_OPTIONS_DT_THREAT_BARS
+      info.value     = DKROT.ThreatMode.Bars
+      info.func      = DKROT_DT_ThreatMode_SelectItem
+      UIDropDownMenu_AddButton(info)
+
+      info           = {}
+      info.text      = DKROT_OPTIONS_DT_THREAT_HATED
+      info.value     = DKROT.ThreatMode.Hated
+      info.func      = DKROT_DT_ThreatMode_SelectItem
+      UIDropDownMenu_AddButton(info)
+
+      info           = {}
+      info.text      = DKROT_OPTIONS_DT_THREAT_HEALTH
+      info.value     = DKROT.ThreatMode.Health
+      info.func      = DKROT_DT_ThreatMode_SelectItem
+      UIDropDownMenu_AddButton(info)
+   end
+
+   -- Select item from ViewMode drop down
+   function DKROT_ViewMode_SelectItem(item)
+      DKROT_Settings.VScheme = item.value
+      UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_ViewDD, item.value)
+   end
+
+   -- function to handle the View dropdown box
+   function DKROT_FramePanel_ViewDD_OnLoad()
+      info           = {}
+      info.text      = DKROT_OPTIONS_FRAME_VIEW_NORM
+      info.value     = DKROT_OPTIONS_FRAME_VIEW_NORM
+      info.func      = DKROT_ViewMode_SelectItem
+      UIDropDownMenu_AddButton(info)
+
+      info           = {}
+      info.text      = DKROT_OPTIONS_FRAME_VIEW_TARGET
+      info.value     = DKROT_OPTIONS_FRAME_VIEW_TARGET
+      info.func      = DKROT_ViewMode_SelectItem
+      UIDropDownMenu_AddButton(info)
+
+      info           = {}
+      info.text      = DKROT_OPTIONS_FRAME_VIEW_SHOW
+      info.value     = DKROT_OPTIONS_FRAME_VIEW_SHOW
+      info.func      = DKROT_ViewMode_SelectItem
+      UIDropDownMenu_AddButton(info)
+
+      info           = {}
+      info.text      = DKROT_OPTIONS_FRAME_VIEW_HIDE
+      info.value     = DKROT_OPTIONS_FRAME_VIEW_HIDE
+      info.func      = DKROT_ViewMode_SelectItem
+      UIDropDownMenu_AddButton(info)
+   end
+
+   -- Function to select dropdown values for Disease Options
+   function DKROT_Diseases_SelectItem(item)
+      DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption = item.value
+      UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD, item.value)
+   end
+
+   -- function to handle the Disease dropdown box
+   function DKROT_Diseases_OnLoad(self)
+      local info = {}
+      info.text = DKROT_OPTIONS_CDR_DISEASES_DD_BOTH
+      info.value = DKROT.DiseaseOptions.Both
+      info.func = DKROT_Diseases_SelectItem
+      UIDropDownMenu_AddButton(info)
+
+      info = {}
+      info.text = DKROT_OPTIONS_CDR_DISEASES_DD_ONE
+      info.value = DKROT.DiseaseOptions.Single
+      info.func = DKROT_Diseases_SelectItem
+      UIDropDownMenu_AddButton(info)
+
+      info = {}
+      info.text = DKROT_OPTIONS_CDR_DISEASES_DD_NONE
+      info.value = DKROT.DiseaseOptions.None
+      info.func = DKROT_Diseases_SelectItem
+      UIDropDownMenu_AddButton(info)
+   end
+
+   -- Initialize the rotation list
+   function DKROT_Rotations_OnLoad(self)
+      for key, rotation in pairs(DKROT.Rotations[DKROT.Current_Spec]) do
+         local info = {}
+         info.text = rotation.name
+         info.value = key
+         info.func = function()
+            DKROT_Settings.CD[DKROT.Current_Spec].Rotation = key
+            UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Rotation, key)
+         end
+         UIDropDownMenu_AddButton(info)
+      end
+
+      -- Select rotation
+      local current_rotation = DKROT_Settings.CD[DKROT.Current_Spec].Rotation
+      if current_rotation == nil then
+         if DKROT.Current_Spec ~= DKROT.SPECS.UNKNOWN then
+            for rotName, rotInfo in pairs(DKROT.Rotations[DKROT.Current_Spec]) do
+               if rotInfo.default == true then
+                  current_rotation = rotName
+                  break
+               end
+            end
+            UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Rotation, current_rotation)
+         end
+      end
+
+      UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Rotation, current_rotation)
+   end
+
+   -- function to handle the CD dropdown boxes
+   function DKROT_CDRPanel_DD_OnLoad(self, level)
+      -- If specified level, or base
+      level = level or 1
+      local info = {}
+
+      -- Template for an item in the dropdown box
+      local function DKROT_CDRPanel_DD_Item (panel, spell, buff)
+         local info = {}
+         info.text = spell .. ((buff and " (Buff)") or "")
+         info.value = spell .. ((buff and " (Buff)") or "")
+         info.func = function()
+            DKROT_Settings.CD[DKROT.Current_Spec][panel:GetName()][1] = spell
+            DKROT_Settings.CD[DKROT.Current_Spec][panel:GetName()][2] = buff
+            UIDropDownMenu_SetSelectedValue(panel, spell .. ((buff and " (Buff)") or ""))
+            CloseDropDownMenus()
+         end
+         return info
+      end
+
+      -- Function to add specs specific CDs
+      local function AddSpecCDs(Spec)
+         for i = 1, #Spec do
+            if (DKROT.Cooldowns.Buffs[Spec[i]] == nil or DKROT.Cooldowns.Buffs[Spec[i]][2]) then
+               UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, Spec[i]), 2)
+            end
+            if DKROT.Cooldowns.Buffs[Spec[i]] ~= nil then
+               UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, Spec[i], true), 2)
+            end
+         end
+      end
+
+      -- If base level
+      if level == 1 then
+         -- Add unique items to dropdown
+         UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_CD_PRIORITY), 1)
+         UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_CD_PRESENCE), 1)
+         UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_FRAME_VIEW_NONE), 1)
+         UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_RACIAL), 1)
+
+         -- Setup nested dropdowns
+         info.hasArrow = true
+         info.notClickable = 1
+
+         -- Spec Specific CDs
+         info.text = DKROT_OPTIONS_CDR_CD_SPEC
+         info.value = {["Level1_Key"] = "Spec";}
+         UIDropDownMenu_AddButton(info)
+
+         -- Normal CDs
+         info.text = DKROT_OPTIONS_CDR_CD_NORMAL
+         info.value = {["Level1_Key"] = "Normal";}
+         UIDropDownMenu_AddButton(info)
+
+         -- Moves
+         info.text = DKROT_OPTIONS_CDR_CD_MOVES
+         info.value = {["Level1_Key"] = "Moves";}
+         UIDropDownMenu_AddButton(info)
+
+         -- Talents
+         info.text = DKROT_OPTIONS_CDR_CD_TALENTS
+         info.value = {["Level1_Key"] = "Talents";}
+         UIDropDownMenu_AddButton(info)
+
+         -- Trinkets
+         info.text = DKROT_OPTIONS_CDR_CD_TRINKETS
+         info.value = {["Level1_Key"] = "Trinkets";}
+         UIDropDownMenu_AddButton(info)
+
+      -- If nested menu
+      elseif level == 2 then
+         -- Check what the "parent" is
+         local key = UIDROPDOWNMENU_MENU_VALUE["Level1_Key"]
+
+         if key == "Spec" then
+            if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
+               AddSpecCDs(DKROT.Cooldowns.UnholyCDs)
+            elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
+               AddSpecCDs(DKROT.Cooldowns.FrostCDs)
+            elseif (DKROT.Current_Spec == DKROT.SPECS.BLOOD) then
+               AddSpecCDs(DKROT.Cooldowns.BloodCDs)
+            end
+
+         elseif key == "Normal" then
+            AddSpecCDs(DKROT.Cooldowns.NormCDs)
+
+         elseif key == "Moves" then
+            for i = 1, #DKROT.Cooldowns.Moves do
+               if GetSpellTexture(DKROT.Cooldowns.Moves[i]) ~= nil then
+                  UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT.Cooldowns.Moves[i]), 2)
+               end
+            end
+
+         elseif key == "Talents" then
+            AddSpecCDs(DKROT.Cooldowns.TalentCDs)
+
+         elseif key == "Trinkets" then
+            UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1), 2)
+            UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2), 2)
+         end
+      end
    end
 end

@@ -24,6 +24,7 @@ init.lua
 data.lua
 utils.lua
 ui.lua
+UI\frame_panel.lua
 
 # Rotation files
 rotations\blank.lua
