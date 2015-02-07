@@ -542,7 +542,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if info.Frame == nil then
          info.Frame = DKROT:DTCreateFrame()
       end
-      info.Frame:SetAlpha(1)
+      info.Frame:SetAlpha(getOpacity("DKROT.DT"))
 
       -- Set Settings
       if info.spot == nil or info.spot ~= DKROT.DT.spot then
@@ -760,7 +760,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             end
 
             if aoeNextCast ~= nil then
-               DKROT.AOE:SetAlpha(1)
+               DKROT.AOE:SetAlpha(getOpacity("DKROT.AOE"))
 
                if aoeNoCheckRange ~= nil and aoeNoCheckRange == true then
                   DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
