@@ -532,212 +532,216 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       bsamount = (select(15, UnitBuff("PLAYER", DKROT.spells["Blood Shield"])) or 0)
    end
 
-   do -- Disease Tracker
-      -- Gather the info and apply them to it's frame
-      function DKROT:DTUpdateInfo(guid, info)
-         if not DKROT_Settings.DT.Target and UnitGUID("target") == guid then
-            return
-         end
+   -- Disease Tracker
+   -- Gather the info and apply them to it's frame
+   function DKROT:DTUpdateInfo(guid, info)
+      if not DKROT_Settings.DT.Target and UnitGUID("target") == guid then
+         return
+      end
 
-         -- Create Frame
-         if info.Frame == nil then
-            info.Frame = DKROT:DTCreateFrame()
-         end
-         info.Frame:SetAlpha(1)
+      -- Create Frame
+      if info.Frame == nil then
+         info.Frame = DKROT:DTCreateFrame()
+      end
+      info.Frame:SetAlpha(1)
 
-         -- Set Settings
-         if info.spot == nil or info.spot ~= DKROT.DT.spot then
-            info.spot = DKROT.DT.spot
-            info.Frame:ClearAllPoints()
+      -- Set Settings
+      if info.spot == nil or info.spot ~= DKROT.DT.spot then
+         info.spot = DKROT.DT.spot
+         info.Frame:ClearAllPoints()
 
-            if DKROT_Settings.DT.GrowDown then
-               info.Frame:SetPoint("TOP", 0, -(DKROT.DT.spot*27)-1)
-            else
-               info.Frame:SetPoint("BOTTOM", 0, (DKROT.DT.spot*27)+1)
-            end
-         end
-
-         -- Change Colour
-         if DKROT_Settings.DT.TColours then
-            if (UnitGUID("target") == guid) then
-               info.Frame:SetBackdropColor(0.1, 0.75, 0.1, 0.9)
-
-            elseif (UnitGUID("focus") == guid) then
-               info.Frame:SetBackdropColor(0.2, 0.2, 0.75, 0.9)
-
-            else
-               info.Frame:SetBackdropColor(0, 0, 0, 0.5)
-            end
-         end
-
-         -- Threat
-         info.Frame:SetMinMaxValues(DKROT_Settings.DT.Threat, 100)
-         if DKROT_Settings.DT.Threat ~= DKROT.ThreatMode.Off and info.Threat ~= nil then
-            info.Frame:SetValue(info.Threat)
+         if DKROT_Settings.DT.GrowDown then
+            info.Frame:SetPoint("TOP", 0, -(DKROT.DT.spot*27)-1)
          else
-            info.Frame:SetValue(0)
+            info.Frame:SetPoint("BOTTOM", 0, (DKROT.DT.spot*27)+1)
          end
+      end
 
-         -- Name
-         local name = info.Name
-         local color
-         if DKROT_Settings.DT.CColours then
-            color = RAID_CLASS_COLORS[select(2, GetPlayerInfoByGUID(guid))]
+      -- Change Colour
+      if DKROT_Settings.DT.TColours then
+         if (UnitGUID("target") == guid) then
+            info.Frame:SetBackdropColor(0.1, 0.75, 0.1, 0.9)
+
+         elseif (UnitGUID("focus") == guid) then
+            info.Frame:SetBackdropColor(0.2, 0.2, 0.75, 0.9)
+
+         else
+            info.Frame:SetBackdropColor(0, 0, 0, 0.5)
          end
+      end
 
-         if color == nil then
-            color = {}
-            color.r, color.g, color.b = 1, 1, 1
-         end
+      -- Threat
+      info.Frame:SetMinMaxValues(DKROT_Settings.DT.Threat, 100)
+      if DKROT_Settings.DT.Threat ~= DKROT.ThreatMode.Off and info.Threat ~= nil then
+         info.Frame:SetValue(info.Threat)
+      else
+         info.Frame:SetValue(0)
+      end
 
-         name = (string.len(name) > 9 and string.gsub(name, '%s?(.)%S+%s', '%1. ') or name)
-         info.Frame.Name:SetText(string.format("|cff%02x%02x%02x%.9s|r", color.r*255, color.g*255, color.b*255, name))
+      -- Name
+      local name = info.Name
+      local color
+      if DKROT_Settings.DT.CColours then
+         color = RAID_CLASS_COLORS[select(2, GetPlayerInfoByGUID(guid))]
+      end
 
-         -- Dots
-         if info.Frame.Icons == nil or info.OldDots ~= info.NumDots then
-            local count = 0
-            local texture
-            if info.Frame.Icons ~= nil then
-               for j, v in pairs(info.Frame.Icons) do
-                  info.Frame.Icons[j]:SetAlpha(0)
-               end
-               info.Frame.Icons = nil
+      if color == nil then
+         color = {}
+         color.r, color.g, color.b = 1, 1, 1
+      end
+
+      name = (string.len(name) > 9 and string.gsub(name, '%s?(.)%S+%s', '%1. ') or name)
+      info.Frame.Name:SetText(string.format("|cff%02x%02x%02x%.9s|r", color.r*255, color.g*255, color.b*255, name))
+
+      -- Dots
+      if info.Frame.Icons == nil or info.OldDots ~= info.NumDots then
+         local count = 0
+         local texture
+         if info.Frame.Icons ~= nil then
+            for j, v in pairs(info.Frame.Icons) do
+               info.Frame.Icons[j]:SetAlpha(0)
             end
-            info.Frame.Icons = {}
-            info.OldDots = info.NumDots
-            for j, v in pairs(info.Spells) do
-               info.Frame.Icons[j] = DKROT:CreateIcon("DKROT.DT."..j, info.Frame, j, 20)
-               info.Frame.Icons[j].Time:SetFont(DKROT.font, 11, "OUTLINE")
-               info.Frame.Icons[j]:SetPoint("RIGHT", -(count*22)-1, 0)
-               info.Frame.Icons[j].Icon:SetTexture(GetSpellTexture(DKROT.DTspells[j][1]))
-               count = count + 1
-            end
+            info.Frame.Icons = nil
          end
+         info.Frame.Icons = {}
+         info.OldDots = info.NumDots
+         for j, v in pairs(info.Spells) do
+            info.Frame.Icons[j] = DKROT:CreateIcon("DKROT.DT."..j, info.Frame, j, 20)
+            info.Frame.Icons[j].Time:SetFont(DKROT.font, 11, "OUTLINE")
+            info.Frame.Icons[j]:SetPoint("RIGHT", -(count*22)-1, 0)
+            info.Frame.Icons[j].Icon:SetTexture(GetSpellTexture(DKROT.DTspells[j][1]))
+            count = count + 1
+         end
+      end
 
-         -- Update Dots
-         if info.Frame.Icons ~= nil and next(info.Spells) ~= nil then
-            for j, v in pairs(info.Spells) do
-               if v ~= nil and info.Frame.Icons[j]~= nil then
-                  local t = floor(v - DKROT.curtime)
-                  if t >= 0 then
-                     info.Frame.Icons[j]:SetAlpha(1)
-                     info.Frame.Icons[j].Icon:SetVertexColor(0.5, 0.5, 0.5, 1)
+      -- Update Dots
+      if info.Frame.Icons ~= nil and next(info.Spells) ~= nil then
+         for j, v in pairs(info.Spells) do
+            if v ~= nil and info.Frame.Icons[j]~= nil then
+               local t = floor(v - DKROT.curtime)
+               if t >= 0 then
+                  info.Frame.Icons[j]:SetAlpha(1)
+                  info.Frame.Icons[j].Icon:SetVertexColor(0.5, 0.5, 0.5, 1)
 
-                     if t > DKROT_Settings.DT.Warning then
-                        info.Frame.Icons[j].Time:SetText(DKROT:formatTime(t))
-                     else
-                        info.Frame.Icons[j].Time:SetText(format("|cffff2222%s|r", DKROT:formatTime(t)))
-                     end
+                  if t > DKROT_Settings.DT.Warning then
+                     info.Frame.Icons[j].Time:SetText(DKROT:formatTime(t))
                   else
-                     info.NumDots = info.NumDots - 1
-                     info.Frame.Icons[j]:SetAlpha(0)
-                     info.Spells[j] = nil
+                     info.Frame.Icons[j].Time:SetText(format("|cffff2222%s|r", DKROT:formatTime(t)))
                   end
                else
-                  if info.Frame.Icons[j]~= nil then
-                     info.Frame.Icons[j]:SetAlpha(0)
-                  end
-
                   info.NumDots = info.NumDots - 1
+                  info.Frame.Icons[j]:SetAlpha(0)
                   info.Spells[j] = nil
                end
-            end
-         else
-            return
-         end
-
-         info.Updated = true
-         DKROT.DT.spot = DKROT.DT.spot + 1
-      end
-
-      -- Update the frames
-      function DKROT:DTUpdateFrames()
-         local function updateGUIDFrame(guid)
-            if DKROT.DT.Unit[guid] ~= nil then
-               DKROT.DT.Unit[guid].Updated = false
-
-               if DKROT.DT.spot < DKROT_Settings.DT.Numframes then
-                  DKROT:DTUpdateInfo(guid, DKROT.DT.Unit[guid])
+            else
+               if info.Frame.Icons[j]~= nil then
+                  info.Frame.Icons[j]:SetAlpha(0)
                end
 
-               if DKROT.DT.Unit[guid].Updated == false and DKROT.DT.Unit[guid]~= nil and DKROT.DT.Unit[guid].Frame ~= nil then
-                  DKROT.DT.Unit[guid].Frame:SetAlpha(0)
-                  if next(DKROT.DT.Unit[guid].Spells) == nil then DKROT.DT.Unit[guid] = nil end
-               end
+               info.NumDots = info.NumDots - 1
+               info.Spells[j] = nil
             end
          end
+      else
+         return
+      end
 
-         DKROT.DT.spot = 0
+      info.Updated = true
+      DKROT.DT.spot = DKROT.DT.spot + 1
+   end
 
-         local targetguid, focusguid
+   function DKROT:DTupdateGUIDFrame(guid)
+      if DKROT.DT.Unit[guid] ~= nil then
+         DKROT.DT.Unit[guid].Updated = false
 
-         if DKROT_Settings.DT.TPriority then
-            targetguid, focusguid = UnitGUID("target"), UnitGUID("focus")
-            updateGUIDFrame(targetguid)
-            if targetguid ~= focusguid then updateGUIDFrame(focusguid) end
+         if DKROT.DT.spot < DKROT_Settings.DT.Numframes then
+            DKROT:DTUpdateInfo(guid, DKROT.DT.Unit[guid])
          end
 
-         for k, v in pairs(DKROT.DT.Unit) do
-            if k ~= targetguid and k ~= focusguid then updateGUIDFrame(k) end
+         if DKROT.DT.Unit[guid] ~= nil and DKROT.DT.Unit[guid].Updated == false and DKROT.DT.Unit[guid].Frame ~= nil then
+            DKROT.DT.Unit[guid].Frame:SetAlpha(0)
+            if next(DKROT.DT.Unit[guid].Spells) == nil then
+               DKROT.DT.Unit[guid] = nil
+            end
+         end
+      end
+   end
+
+   -- Update the frames
+   function DKROT:DTUpdateFrames()
+      DKROT.DT.spot = 0
+      local targetguid, focusguid
+
+      if DKROT_Settings.DT.TPriority then
+         targetguid, focusguid = UnitGUID("target"), UnitGUID("focus")
+         DKROT:DTupdateGUIDFrame(targetguid)
+         if targetguid ~= focusguid then
+            DKROT:DTupdateGUIDFrame(focusguid)
          end
       end
 
-      -- Update Threat and Dots from checking target infos
+      for k, v in pairs(DKROT.DT.Unit) do
+         if k ~= targetguid and k ~= focusguid then
+            DKROT:DTupdateGUIDFrame(k)
+         end
+      end
+   end
+
+   -- Update Threat and Dots from checking target infos
+   function DKROT:DTCheckTargets()
       local updatedGUIDs = {}
-      function DKROT:DTCheckTargets()
-         local function updateGUIDInfo(unit)
-            local guid = UnitGUID(unit)
-            if guid ~= nil and updatedGUIDs[guid] == nil then
-               if UnitIsDead(unit) and DKROT.DT.Unit[guid] ~= nil and DKROT.DT.Unit[guid].Frame ~= nil then
-                  DKROT.DT.Unit[guid].Frame:SetAlpha(0)
-                  DKROT.DT.Unit[guid].Frame = nil
-                  DKROT.DT.Unit[guid] = nil
-               end
+      local function updateGUIDInfo(unit)
+         local guid = UnitGUID(unit)
+         if guid ~= nil and updatedGUIDs[guid] == nil then
+            if UnitIsDead(unit) and DKROT.DT.Unit[guid] ~= nil and DKROT.DT.Unit[guid].Frame ~= nil then
+               DKROT.DT.Unit[guid].Frame:SetAlpha(0)
+               DKROT.DT.Unit[guid].Frame = nil
+               DKROT.DT.Unit[guid] = nil
+            end
 
-               if select(1, UnitDebuff(unit, 1, "PLAYER")) ~= nil then
-                  local name, expt
-                  for j= 1, 10 do
-                     name, _, _, _, _, _, expt = UnitDebuff(unit, j, "PLAYER")
-                     if name == nil then break end
-                     if DKROT_Settings.DT.Dots[name] then
-                        if DKROT.DT.Unit[guid] == nil then
-                           local targetName = UnitName(unit)
-                           DKROT.DT.Unit[guid] = {}
-                           DKROT.DT.Unit[guid].Spells = {}
-                           DKROT.DT.Unit[guid].NumDots = 0
-                           DKROT.DT.Unit[guid].Name = select(3, string.find(targetName, "(.-)-")) or targetName
-                        end
+            if select(1, UnitDebuff(unit, 1, "PLAYER")) ~= nil then
+               local name, expt
+               for j= 1, 10 do
+                  name, _, _, _, _, _, expt = UnitDebuff(unit, j, "PLAYER")
+                  if name == nil then break end
+                  if DKROT_Settings.DT.Dots[name] then
+                     if DKROT.DT.Unit[guid] == nil then
+                        local targetName = UnitName(unit)
+                        DKROT.DT.Unit[guid] = {}
+                        DKROT.DT.Unit[guid].Spells = {}
+                        DKROT.DT.Unit[guid].NumDots = 0
+                        DKROT.DT.Unit[guid].Name = select(3, string.find(targetName, "(.-)-")) or targetName
+                     end
 
-                        updatedGUIDs[guid] = true
+                     updatedGUIDs[guid] = true
 
-                        if DKROT.DT.Unit[guid].Spells[name] == nil then
-                           DKROT.DT.Unit[guid].NumDots = DKROT.DT.Unit[guid].NumDots + 1
-                        end
-                        if name == DKROT.spells["Death and Decay"] then
-                           DKROT.DT.Unit[guid].Spells[name] = select(1, GetSpellCooldown(name)) + 10
-                        else
-                           DKROT.DT.Unit[guid].Spells[name] = expt
-                        end
+                     if DKROT.DT.Unit[guid].Spells[name] == nil then
+                        DKROT.DT.Unit[guid].NumDots = DKROT.DT.Unit[guid].NumDots + 1
+                     end
+                     if name == DKROT.spells["Death and Decay"] then
+                        DKROT.DT.Unit[guid].Spells[name] = select(1, GetSpellCooldown(name)) + 10
+                     else
+                        DKROT.DT.Unit[guid].Spells[name] = expt
+                     end
 
-                        if DKROT_Settings.DT.Threat ~= DKROT.ThreatMode.Off then
-                           DKROT.DT.Unit[guid].Threat = select(3, UnitDetailedThreatSituation("player", unit))
-                           if DKROT_Settings.DT.Threat == DKROT.ThreatMode.Health then
-                              DKROT.DT.Unit[guid].Threat = (UnitHealth(unit)/UnitHealthMax(unit))*100
-                           end
+                     if DKROT_Settings.DT.Threat ~= DKROT.ThreatMode.Off then
+                        DKROT.DT.Unit[guid].Threat = select(3, UnitDetailedThreatSituation("player", unit))
+                        if DKROT_Settings.DT.Threat == DKROT.ThreatMode.Health then
+                           DKROT.DT.Unit[guid].Threat = (UnitHealth(unit)/UnitHealthMax(unit))*100
                         end
                      end
                   end
                end
             end
          end
+      end
 
-         updatedGUIDs = {}
-         updateGUIDInfo("target")
-         updateGUIDInfo("focus")
-         updateGUIDInfo("pettarget")
-         for i = 1, MAX_BOSS_FRAMES do
-            updateGUIDInfo("boss"..i)
-         end
+      updatedGUIDs = {}
+      updateGUIDInfo("target")
+      updateGUIDInfo("focus")
+      updateGUIDInfo("pettarget")
+      for i = 1, MAX_BOSS_FRAMES do
+         updateGUIDInfo("boss"..i)
       end
    end
 
@@ -1112,8 +1116,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT.MainFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
    DKROT.MainFrame:RegisterEvent("ADDON_LOADED")
    DKROT.MainFrame:RegisterEvent("PLAYER_ENTER_COMBAT")
-   -- DKROT:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
-   -- DKROT:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
    -- Function to be called when events triggered
    local slottimer = 0
@@ -1155,10 +1157,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                      DKROT.DT.Unit[targetguid].NumDots = DKROT.DT.Unit[targetguid].NumDots + 1
                   end
 
-                  if spellName == DKROT.spells["Death and Decay"] then
+                  if spellName == DKROT.spells["Death and Decay"] or spellName == DKROT.spells["Defile"] then
                      DKROT.DT.Unit[targetguid].Spells[spellName] = select(1, GetSpellCooldown(spellName)) + 10
                   else
-                     DKROT.DT.Unit[targetguid].Spells[spellName] = DKROT.DTspells[spellName][2] + DKROT.curtime
+                     DKROT.DT.Unit[targetguid].Spells[spellName] = select(7, UnitDebuff("TARGET", spellName))
                   end
 
                elseif (event == "SPELL_AURA_REMOVED") then

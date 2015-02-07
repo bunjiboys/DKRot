@@ -209,7 +209,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT.Diseases:SetBackdropColor(0, 0, 0, 0.5)
       DKROT.Diseases.NP = DKROT:CreateIcon("DKROT.Diseases.NP", DKROT.Diseases, 152281, 21)
       DKROT.Diseases.NP:SetParent(DKROT.Diseases)
-      DKROT.Diseases.NP:SetPoint("TOPLEFT", DKROT.Diseases, "TOPLEFT", 1, 1)
+      DKROT.Diseases.NP:SetPoint("CENTER")
       DKROT.Diseases.NP:SetBackdropColor(0, 0, 0, 0)
       DKROT.Diseases.NP.Time:SetFont(DKROT.font, 10, "OUTLINE")
       DKROT.Diseases.NP.Stack:SetFont(DKROT.font, 8, "OUTLINE")

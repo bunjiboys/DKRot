@@ -1,6 +1,6 @@
 ## Interface: 60000
 ## Author: bunjiboys (Jardo@US-Hyjal)
-## Version: 0.4.3-beta
+## Version: 0.5.0-beta
 ## Title: DKRot
 ## Notes: Death Knight Rotation assistance, based on CLC DK
 ## OptionalDeps: Masque
@@ -24,7 +24,6 @@ init.lua
 data.lua
 utils.lua
 ui.lua
-UI\frame_panel.lua
 
 # Rotation files
 rotations\blank.lua
