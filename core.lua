@@ -275,7 +275,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          self:SetBackdropColor(0, 0, 0, DKROT_Settings.BackdropOpacity)
       end
 
-      self:SetAlpha(loc.Opacity or 1)
       self:EnableMouse(not DKROT_Settings.Locked)
 
       if loc.Scale ~= nil then
@@ -1068,16 +1067,26 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
       end
 
-      local backdropInfo = {
-            parent = DKROT_FramePanel,
-            value = 1,
-            label = "Backdrop Opacity",
-            minValue = 0,
-            maxValue = 1,
-      }
-      DKROT.FramePanel_BackdropOpacity = DKROT:BuildSliderOption(backdropInfo, function() DKROT_OptionsOkay() end)
-      DKROT.FramePanel_BackdropOpacity:SetPoint("TOPLEFT", DKROT_FramePanel_ViewDD, "BOTTOMLEFT", 15, -10)
       local PosPanel = DKROT:SetupPositionPanel(function() DKROT:PositionUpdate() end)
+
+      -- Background Opacity slider
+      local backdropInfo = { parent = DKROT_FramePanel, value = 1, label = "Backdrop Opacity", minValue = 0, maxValue = 1 }
+      DKROT.FramePanel_BackdropOpacity = DKROT:BuildSliderOption(backdropInfo, function()
+         DKROT_Settings.BackdropOpacity = DKROT.FramePanel_BackdropOpacity:GetValue()
+         for idx, frame in pairs(DKROT.MovableFrames) do
+            DKROT:MoveFrame(_G[frame.frame])
+         end
+      end)
+      DKROT.FramePanel_BackdropOpacity:SetPoint("TOPLEFT", DKROT_FramePanel_ViewDD, "BOTTOMLEFT", 15, -10)
+
+      -- Global Opacity override slider
+      local overrideInfo = { parent = DKROT_FramePanel, value = 1, label = "Global Opacity Override", minValue = 0, maxValue = 1 }
+      DKROT.FramePanel_OpacityOverride = DKROT:BuildSliderOption(overrideInfo, function()
+         for idx, frame in pairs(DKROT.MovableFrames) do
+            DKROT_Settings.Location[frame.frame].Opacity = DKROT.FramePanel_OpacityOverride:GetValue()
+         end
+      end)
+      DKROT.FramePanel_OpacityOverride:SetPoint("TOPLEFT", DKROT.FramePanel_BackdropOpacity, "BOTTOMLEFT", 0, -10)
 
       InterfaceOptions_AddCategory(DKROT_Options)
       InterfaceOptions_AddCategory(DKROT_FramePanel)
