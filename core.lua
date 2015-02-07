@@ -12,9 +12,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    ----- Locals -----
    -- Constants
    local PLAYER_NAME, PLAYER_RACE, PLAYER_PRESENCE = UnitName("player"), select(2, UnitRace("player")), 0
-   local BBUUFF, BBFFUU, UUBBFF, UUFFBB, FFUUBB, FFBBUU = 1, 2, 3, 4, 5, 6
-   local DISEASE_BOTH, DISEASE_ONE, DISEASE_NONE = 2, 1, 0
-   local THREAT_OFF, THREAT_HEALTH, THREAT_ANALOG, THREAT_DIGITAL = 0, 0.1, 1, 99
    local IS_BUFF = 2
    local ITEM_LOAD_THRESHOLD = .5
    local RUNE_COLOR = {
@@ -24,12 +21,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       {0.8, 0.1, 1}  -- Death
    }
    local RuneOrder = {
-      [BBUUFF] = { 1, 2, 3, 4, 5, 6 },
-      [BBFFUU] = { 1, 2, 5, 6, 3, 4 },
-      [UUBBFF] = { 3, 4, 1, 2, 5, 6 },
-      [UUFFBB] = { 3, 4, 5, 6, 1, 2 },
-      [FFUUBB] = { 5, 6, 3, 4, 1, 2 },
-      [FFBBUU] = { 5, 6, 1, 2, 3, 4 },
+      [DKROT.RuneOrder.BBUUFF] = { 1, 2, 3, 4, 5, 6 },
+      [DKROT.RuneOrder.BBFFUU] = { 1, 2, 5, 6, 3, 4 },
+      [DKROT.RuneOrder.UUBBFF] = { 3, 4, 1, 2, 5, 6 },
+      [DKROT.RuneOrder.UUFFBB] = { 3, 4, 5, 6, 1, 2 },
+      [DKROT.RuneOrder.FFUUBB] = { 5, 6, 3, 4, 1, 2 },
+      [DKROT.RuneOrder.FFBBUU] = { 5, 6, 1, 2, 3, 4 },
    }
    local RuneTexture = {
       "Interface\\PlayerFrame\\UI-PlayerFrame-Deathknight-Blood",
@@ -46,14 +43,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local bsamount = 0
    local launchtime = 0
    local updatetimer = 0
-   local resize = nil
    local delayedInit = false
    DKROT:Debug("Locals Done")
 
    ------ Update Frames ------
    -- In:location - name or location of the settings for specific CD   frame- frame in which to set the icon for
    -- Out:: N/A (does not return but does set icon settings
-   function DKROT:UpdateCD(location, frame)
+   function DKROT:UpdateIcon(location, frame)
       -- Reset Icon
       frame.Time:SetText("")
       frame.Stack:SetText("")
@@ -64,7 +60,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- If the option is not set to nothing
       if cdLoc and cdLoc ~= DKROT_OPTIONS_FRAME_VIEW_NONE then
-         frame:SetAlpha(1)
          frame.Icon:SetVertexColor(1, 1, 1, 1)
 
          -- Priority Icon
@@ -271,18 +266,22 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local loc = DKROT_Settings.Location[self:GetName()]
       self:ClearAllPoints()
       self:SetPoint(loc.Point, loc.Rel, loc.RelPoint, loc.X, loc.Y)
+
+      -- Handle the backdrop opacity correctly for the Disease Tracker
       if self:GetName() == "DKROT.DT" then
          local dtopacity = DKROT_Settings.DT.Enable and DKROT_Settings.DTTrans or 0
          self:SetBackdropColor(0, 0, 0, dtopacity)
       else
-         self:SetBackdropColor(0, 0, 0, DKROT_Settings.Trans)
+         self:SetBackdropColor(0, 0, 0, DKROT_Settings.BackdropOpacity)
       end
+
       self:EnableMouse(not DKROT_Settings.Locked)
 
       if loc.Scale ~= nil then
          self:SetScale(loc.Scale)
       else
          loc.Scale = 1
+         self:SetScale(1)
       end
    end
 
@@ -371,14 +370,18 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       return runebar
    end
 
-   -- Main function for updating all information
-   function DKROT:UpdateUI()
-      if InCombatLockdown() then
-         DKROT.MainFrame:SetAlpha(DKROT_Settings.CombatTrans)
-      else
-         DKROT.MainFrame:SetAlpha(DKROT_Settings.NormTrans)
+   local function getOpacity(frameName)
+      if not DKROT_Settings.Location[frameName] or not DKROT_Settings.Location[frameName].Opacity then
+         DKROT_Settings.Location[frameName].Opacity = 1
+         DKROT:Debug("Unable to find an Opacity level for " .. frameName)
+         print("Unable to find an Opacity level for " .. frameName)
       end
 
+      return DKROT_Settings.Location[frameName].Opacity
+   end
+
+   -- Main function for updating all information
+   function DKROT:UpdateUI()
       if DKROT_Settings.Locked == false and (DKROT.LockDialog == nil or DKROT.LockDialog == false) then
          DKROT_UnlockUI()
          DKROT.LockDialog = true
@@ -393,33 +396,50 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Runes
-      DKROT.RuneBar:SetAlpha((DKROT_Settings.Rune and 1) or 0)
-      DKROT.RuneBarHolder:SetAlpha((DKROT_Settings.RuneBars and 1) or 0)
+      if DKROT_Settings.Rune then
+         DKROT.RuneBar:SetAlpha(getOpacity("DKROT.RuneBar"))
+      else
+         DKROT.RuneBar:SetAlpha(0)
+      end
+
+      if DKROT_Settings.RuneBars then
+         DKROT.RuneBarHolder:SetAlpha(getOpacity("DKROT.RuneBarHolder"))
+      else
+         DKROT.RuneBarHolder:SetAlpha(0)
+      end
+
       if DKROT_Settings.Rune or DKROT_Settings.RuneBars then
          DKROT.RuneBar.Text:SetText(DKROT:BuildRuneBar())
       end
 
       -- RunicPower
       if DKROT_Settings.RP then
-         DKROT.RunicPower:SetAlpha(1)
+         DKROT.RunicPower:SetAlpha(getOpacity("DKROT.RunicPower"))
          DKROT.RunicPower.Text:SetText(string.format("|cff00ffff%.3d|r", UnitPower("player")))
       else
          DKROT.RunicPower:SetAlpha(0)
       end
 
+      -- Time to Die tracker
       if DKROT_Settings.TTD then
-         DKROT.TTD:SetAlpha(1)
+         DKROT.TTD:SetAlpha(getOpacity("DKROT.TTD"))
          local ttd = DKROT:GetTimeToDie()
          if ttd == 99999 then
-            DKROT.TTD.Text:SetText("")
+            if DKROT_Settings.Locked ~= true then
+               DKROT.TTD.Text:SetText(DKROT:FormatTTD(math.random(60, 700)))
+            else
+               DKROT.TTD.Text:SetText("")
+            end
          else
             DKROT.TTD.Text:SetText(DKROT:FormatTTD(ttd))
          end
+      else
+         DKROT.TTD:SetAlpha(0)
       end
 
       -- Diseases
       if DKROT_Settings.Disease then
-         DKROT.Diseases:SetAlpha(1)
+         DKROT.Diseases:SetAlpha(getOpacity("DKROT.Diseases"))
 
          if DKROT:SpellKnown(DKROT.spells["Necrotic Plague"]) then
             DKROT.Diseases.FF:SetAlpha(0)
@@ -470,8 +490,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT.AOE:SetAlpha(0)
       DKROT.Interrupt:SetAlpha(0)
       if DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][1] ~= DKROT_OPTIONS_FRAME_VIEW_NONE then
-         DKROT.Move:SetAlpha(1)
-         DKROT:UpdateCD("DKROT_CDRPanel_DD_Priority", DKROT.Move)
+         DKROT.Move:SetAlpha(getOpacity("DKROT.Move"))
+         DKROT:UpdateIcon("DKROT_CDRPanel_DD_Priority", DKROT.Move)
 
          -- If Priority on Main Icon
          if DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][1] == DKROT_OPTIONS_CDR_CD_PRIORITY then
@@ -488,7 +508,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
                if spell ~= nil and not notint then
                   if DKROT:isOffCD(DKROT.spells["Mind Freeze"]) then
-                     DKROT.Interrupt:SetAlpha(1)
+                     DKROT.Interrupt:SetAlpha(getOpacity("DKROT.Interrupt"))
                   end
                end
             end
@@ -499,227 +519,228 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- CDs
       for i = 1, #DKROT.CDDisplayList do
-         if DKROT_Settings.CD[DKROT.Current_Spec][ceil(i/2)] then
-            DKROT.CD[ceil(i/2)]:SetAlpha(1)
-            DKROT:UpdateCD(DKROT.CDDisplayList[i], DKROT.CD[DKROT.CDDisplayList[i]])
+         local idx = ceil(i/2)
+         if DKROT_Settings.CD[DKROT.Current_Spec][idx] then
+            DKROT.CD[idx]:SetAlpha(getOpacity("DKROT.CD" .. idx))
+            DKROT:UpdateIcon(DKROT.CDDisplayList[i], DKROT.CD[DKROT.CDDisplayList[i]])
          else
-            DKROT.CD[ceil(i/2)]:SetAlpha(0)
+            DKROT.CD[idx]:SetAlpha(0)
          end
       end
 
       bsamount = (select(15, UnitBuff("PLAYER", DKROT.spells["Blood Shield"])) or 0)
    end
 
-   do -- Disease Tracker
-      -- Gather the info and apply them to it's frame
-      function DKROT:DTUpdateInfo(guid, info)
-         if not DKROT_Settings.DT.Target and UnitGUID("target") == guid then
-            return
-         end
+   -- Disease Tracker
+   -- Gather the info and apply them to it's frame
+   function DKROT:DTUpdateInfo(guid, info)
+      if not DKROT_Settings.DT.Target and UnitGUID("target") == guid then
+         return
+      end
 
-         -- Create Frame
-         if info.Frame == nil then
-            info.Frame = DKROT:DTCreateFrame()
-         end
-         if InCombatLockdown() then
-            info.Frame:SetAlpha(DKROT_Settings.CombatTrans)
+      -- Create Frame
+      if info.Frame == nil then
+         info.Frame = DKROT:DTCreateFrame()
+      end
+      info.Frame:SetAlpha(1)
+
+      -- Set Settings
+      if info.spot == nil or info.spot ~= DKROT.DT.spot then
+         info.spot = DKROT.DT.spot
+         info.Frame:ClearAllPoints()
+
+         if DKROT_Settings.DT.GrowDown then
+            info.Frame:SetPoint("TOP", 0, -(DKROT.DT.spot*27)-1)
          else
-            info.Frame:SetAlpha(DKROT_Settings.NormTrans)
+            info.Frame:SetPoint("BOTTOM", 0, (DKROT.DT.spot*27)+1)
          end
+      end
 
-         -- Set Settings
-         if info.spot == nil or info.spot ~= DKROT.DT.spot then
-            info.spot = DKROT.DT.spot
-            info.Frame:ClearAllPoints()
+      -- Change Colour
+      if DKROT_Settings.DT.TColours then
+         if (UnitGUID("target") == guid) then
+            info.Frame:SetBackdropColor(0.1, 0.75, 0.1, 0.9)
 
-            if DKROT_Settings.DT.GrowDown then
-               info.Frame:SetPoint("TOP", 0, -(DKROT.DT.spot*27)-1)
-            else
-               info.Frame:SetPoint("BOTTOM", 0, (DKROT.DT.spot*27)+1)
-            end
-         end
+         elseif (UnitGUID("focus") == guid) then
+            info.Frame:SetBackdropColor(0.2, 0.2, 0.75, 0.9)
 
-         -- Change Colour
-         if DKROT_Settings.DT.TColours then
-            if (UnitGUID("target") == guid) then
-               info.Frame:SetBackdropColor(0.1, 0.75, 0.1, 0.9)
-
-            elseif (UnitGUID("focus") == guid) then
-               info.Frame:SetBackdropColor(0.2, 0.2, 0.75, 0.9)
-
-            else
-               info.Frame:SetBackdropColor(0, 0, 0, 0.5)
-            end
-         end
-
-         -- Threat
-         info.Frame:SetMinMaxValues(DKROT_Settings.DT.Threat, 100)
-         if DKROT_Settings.DT.Threat ~= THREAT_OFF and info.Threat ~= nil then
-            info.Frame:SetValue(info.Threat)
          else
-            info.Frame:SetValue(0)
+            info.Frame:SetBackdropColor(0, 0, 0, 0.5)
          end
+      end
 
-         -- Name
-         local name = info.Name
-         local color
-         if DKROT_Settings.DT.CColours then
-            color = RAID_CLASS_COLORS[select(2, GetPlayerInfoByGUID(guid))]
-         end
+      -- Threat
+      info.Frame:SetMinMaxValues(DKROT_Settings.DT.Threat, 100)
+      if DKROT_Settings.DT.Threat ~= DKROT.ThreatMode.Off and info.Threat ~= nil then
+         info.Frame:SetValue(info.Threat)
+      else
+         info.Frame:SetValue(0)
+      end
 
-         if color == nil then
-            color = {}
-            color.r, color.g, color.b = 1, 1, 1
-         end
+      -- Name
+      local name = info.Name
+      local color
+      if DKROT_Settings.DT.CColours then
+         color = RAID_CLASS_COLORS[select(2, GetPlayerInfoByGUID(guid))]
+      end
 
-         name = (string.len(name) > 9 and string.gsub(name, '%s?(.)%S+%s', '%1. ') or name)
-         info.Frame.Name:SetText(string.format("|cff%02x%02x%02x%.9s|r", color.r*255, color.g*255, color.b*255, name))
+      if color == nil then
+         color = {}
+         color.r, color.g, color.b = 1, 1, 1
+      end
 
-         -- Dots
-         if info.Frame.Icons == nil or info.OldDots ~= info.NumDots then
-            local count = 0
-            local texture
-            if info.Frame.Icons ~= nil then
-               for j, v in pairs(info.Frame.Icons) do
-                  info.Frame.Icons[j]:SetAlpha(0)
-               end
-               info.Frame.Icons = nil
+      name = (string.len(name) > 9 and string.gsub(name, '%s?(.)%S+%s', '%1. ') or name)
+      info.Frame.Name:SetText(string.format("|cff%02x%02x%02x%.9s|r", color.r*255, color.g*255, color.b*255, name))
+
+      -- Dots
+      if info.Frame.Icons == nil or info.OldDots ~= info.NumDots then
+         local count = 0
+         local texture
+         if info.Frame.Icons ~= nil then
+            for j, v in pairs(info.Frame.Icons) do
+               info.Frame.Icons[j]:SetAlpha(0)
             end
-            info.Frame.Icons = {}
-            info.OldDots = info.NumDots
-            for j, v in pairs(info.Spells) do
-               info.Frame.Icons[j] = DKROT:CreateIcon("DKROT.DT."..j, info.Frame, j, 20)
-               info.Frame.Icons[j].Time:SetFont(DKROT.font, 11, "OUTLINE")
-               info.Frame.Icons[j]:SetPoint("RIGHT", -(count*22)-1, 0)
-               info.Frame.Icons[j].Icon:SetTexture(GetSpellTexture(DKROT.DTspells[j][1]))
-               count = count + 1
-            end
+            info.Frame.Icons = nil
          end
+         info.Frame.Icons = {}
+         info.OldDots = info.NumDots
+         for j, v in pairs(info.Spells) do
+            info.Frame.Icons[j] = DKROT:CreateIcon("DKROT.DT."..j, info.Frame, j, 20)
+            info.Frame.Icons[j].Time:SetFont(DKROT.font, 11, "OUTLINE")
+            info.Frame.Icons[j]:SetPoint("RIGHT", -(count*22)-1, 0)
+            info.Frame.Icons[j].Icon:SetTexture(GetSpellTexture(DKROT.DTspells[j][1]))
+            count = count + 1
+         end
+      end
 
-         -- Update Dots
-         if info.Frame.Icons ~= nil and next(info.Spells) ~= nil then
-            for j, v in pairs(info.Spells) do
-               if v ~= nil and info.Frame.Icons[j]~= nil then
-                  local t = floor(v - DKROT.curtime)
-                  if t >= 0 then
-                     info.Frame.Icons[j]:SetAlpha(1)
-                     info.Frame.Icons[j].Icon:SetVertexColor(0.5, 0.5, 0.5, 1)
+      -- Update Dots
+      if info.Frame.Icons ~= nil and next(info.Spells) ~= nil then
+         for j, v in pairs(info.Spells) do
+            if v ~= nil and info.Frame.Icons[j]~= nil then
+               local t = floor(v - DKROT.curtime)
+               if t >= 0 then
+                  info.Frame.Icons[j]:SetAlpha(1)
+                  info.Frame.Icons[j].Icon:SetVertexColor(0.5, 0.5, 0.5, 1)
 
-                     if t > DKROT_Settings.DT.Warning then
-                        info.Frame.Icons[j].Time:SetText(DKROT:formatTime(t))
-                     else
-                        info.Frame.Icons[j].Time:SetText(format("|cffff2222%s|r", DKROT:formatTime(t)))
-                     end
+                  if t > DKROT_Settings.DT.Warning then
+                     info.Frame.Icons[j].Time:SetText(DKROT:formatTime(t))
                   else
-                     info.NumDots = info.NumDots - 1
-                     info.Frame.Icons[j]:SetAlpha(0)
-                     info.Spells[j] = nil
+                     info.Frame.Icons[j].Time:SetText(format("|cffff2222%s|r", DKROT:formatTime(t)))
                   end
                else
-                  if info.Frame.Icons[j]~= nil then
-                     info.Frame.Icons[j]:SetAlpha(0)
-                  end
-
                   info.NumDots = info.NumDots - 1
+                  info.Frame.Icons[j]:SetAlpha(0)
                   info.Spells[j] = nil
                end
-            end
-         else
-            return
-         end
-
-         info.Updated = true
-         DKROT.DT.spot = DKROT.DT.spot + 1
-      end
-
-      -- Update the frames
-      function DKROT:DTUpdateFrames()
-         local function updateGUIDFrame(guid)
-            if DKROT.DT.Unit[guid] ~= nil then
-               DKROT.DT.Unit[guid].Updated = false
-
-               if DKROT.DT.spot < DKROT_Settings.DT.Numframes then
-                  DKROT:DTUpdateInfo(guid, DKROT.DT.Unit[guid])
+            else
+               if info.Frame.Icons[j]~= nil then
+                  info.Frame.Icons[j]:SetAlpha(0)
                end
 
-               if DKROT.DT.Unit[guid].Updated == false and DKROT.DT.Unit[guid]~= nil and DKROT.DT.Unit[guid].Frame ~= nil then
-                  DKROT.DT.Unit[guid].Frame:SetAlpha(0)
-                  if next(DKROT.DT.Unit[guid].Spells) == nil then DKROT.DT.Unit[guid] = nil end
-               end
+               info.NumDots = info.NumDots - 1
+               info.Spells[j] = nil
             end
          end
+      else
+         return
+      end
 
-         DKROT.DT.spot = 0
+      info.Updated = true
+      DKROT.DT.spot = DKROT.DT.spot + 1
+   end
 
-         local targetguid, focusguid
+   function DKROT:DTupdateGUIDFrame(guid)
+      if DKROT.DT.Unit[guid] ~= nil then
+         DKROT.DT.Unit[guid].Updated = false
 
-         if DKROT_Settings.DT.TPriority then
-            targetguid, focusguid = UnitGUID("target"), UnitGUID("focus")
-            updateGUIDFrame(targetguid)
-            if targetguid ~= focusguid then updateGUIDFrame(focusguid) end
+         if DKROT.DT.spot < DKROT_Settings.DT.Numframes then
+            DKROT:DTUpdateInfo(guid, DKROT.DT.Unit[guid])
          end
 
-         for k, v in pairs(DKROT.DT.Unit) do
-            if k ~= targetguid and k ~= focusguid then updateGUIDFrame(k) end
+         if DKROT.DT.Unit[guid] ~= nil and DKROT.DT.Unit[guid].Updated == false and DKROT.DT.Unit[guid].Frame ~= nil then
+            DKROT.DT.Unit[guid].Frame:SetAlpha(0)
+            if next(DKROT.DT.Unit[guid].Spells) == nil then
+               DKROT.DT.Unit[guid] = nil
+            end
+         end
+      end
+   end
+
+   -- Update the frames
+   function DKROT:DTUpdateFrames()
+      DKROT.DT.spot = 0
+      local targetguid, focusguid
+
+      if DKROT_Settings.DT.TPriority then
+         targetguid, focusguid = UnitGUID("target"), UnitGUID("focus")
+         DKROT:DTupdateGUIDFrame(targetguid)
+         if targetguid ~= focusguid then
+            DKROT:DTupdateGUIDFrame(focusguid)
          end
       end
 
-      -- Update Threat and Dots from checking target infos
+      for k, v in pairs(DKROT.DT.Unit) do
+         if k ~= targetguid and k ~= focusguid then
+            DKROT:DTupdateGUIDFrame(k)
+         end
+      end
+   end
+
+   -- Update Threat and Dots from checking target infos
+   function DKROT:DTCheckTargets()
       local updatedGUIDs = {}
-      function DKROT:DTCheckTargets()
-         local function updateGUIDInfo(unit)
-            local guid = UnitGUID(unit)
-            if guid ~= nil and updatedGUIDs[guid] == nil then
-               if UnitIsDead(unit) and DKROT.DT.Unit[guid] ~= nil and DKROT.DT.Unit[guid].Frame ~= nil then
-                  DKROT.DT.Unit[guid].Frame:SetAlpha(0)
-                  DKROT.DT.Unit[guid].Frame = nil
-                  DKROT.DT.Unit[guid] = nil
-               end
+      local function updateGUIDInfo(unit)
+         local guid = UnitGUID(unit)
+         if guid ~= nil and updatedGUIDs[guid] == nil then
+            if UnitIsDead(unit) and DKROT.DT.Unit[guid] ~= nil and DKROT.DT.Unit[guid].Frame ~= nil then
+               DKROT.DT.Unit[guid].Frame:SetAlpha(0)
+               DKROT.DT.Unit[guid].Frame = nil
+               DKROT.DT.Unit[guid] = nil
+            end
 
-               if select(1, UnitDebuff(unit, 1, "PLAYER")) ~= nil then
-                  local name, expt
-                  for j= 1, 10 do
-                     name, _, _, _, _, _, expt = UnitDebuff(unit, j, "PLAYER")
-                     if name == nil then break end
-                     if DKROT_Settings.DT.Dots[name] then
-                        if DKROT.DT.Unit[guid] == nil then
-                           local targetName = UnitName(unit)
-                           DKROT.DT.Unit[guid] = {}
-                           DKROT.DT.Unit[guid].Spells = {}
-                           DKROT.DT.Unit[guid].NumDots = 0
-                           DKROT.DT.Unit[guid].Name = select(3, string.find(targetName, "(.-)-")) or targetName
-                        end
+            if select(1, UnitDebuff(unit, 1, "PLAYER")) ~= nil then
+               local name, expt
+               for j= 1, 10 do
+                  name, _, _, _, _, _, expt = UnitDebuff(unit, j, "PLAYER")
+                  if name == nil then break end
+                  if DKROT_Settings.DT.Dots[name] then
+                     if DKROT.DT.Unit[guid] == nil then
+                        local targetName = UnitName(unit)
+                        DKROT.DT.Unit[guid] = {}
+                        DKROT.DT.Unit[guid].Spells = {}
+                        DKROT.DT.Unit[guid].NumDots = 0
+                        DKROT.DT.Unit[guid].Name = select(3, string.find(targetName, "(.-)-")) or targetName
+                     end
 
-                        updatedGUIDs[guid] = true
+                     updatedGUIDs[guid] = true
 
-                        if DKROT.DT.Unit[guid].Spells[name] == nil then
-                           DKROT.DT.Unit[guid].NumDots = DKROT.DT.Unit[guid].NumDots + 1
-                        end
-                        if name == DKROT.spells["Death and Decay"] then
-                           DKROT.DT.Unit[guid].Spells[name] = select(1, GetSpellCooldown(name)) + 10
-                        else
-                           DKROT.DT.Unit[guid].Spells[name] = expt
-                        end
+                     if DKROT.DT.Unit[guid].Spells[name] == nil then
+                        DKROT.DT.Unit[guid].NumDots = DKROT.DT.Unit[guid].NumDots + 1
+                     end
+                     if name == DKROT.spells["Death and Decay"] then
+                        DKROT.DT.Unit[guid].Spells[name] = select(1, GetSpellCooldown(name)) + 10
+                     else
+                        DKROT.DT.Unit[guid].Spells[name] = expt
+                     end
 
-                        if DKROT_Settings.DT.Threat ~= THREAT_OFF then
-                           DKROT.DT.Unit[guid].Threat = select(3, UnitDetailedThreatSituation("player", unit))
-                           if DKROT_Settings.DT.Threat == THREAT_HEALTH then
-                              DKROT.DT.Unit[guid].Threat = (UnitHealth(unit)/UnitHealthMax(unit))*100
-                           end
+                     if DKROT_Settings.DT.Threat ~= DKROT.ThreatMode.Off then
+                        DKROT.DT.Unit[guid].Threat = select(3, UnitDetailedThreatSituation("player", unit))
+                        if DKROT_Settings.DT.Threat == DKROT.ThreatMode.Health then
+                           DKROT.DT.Unit[guid].Threat = (UnitHealth(unit)/UnitHealthMax(unit))*100
                         end
                      end
                   end
                end
             end
          end
+      end
 
-         updatedGUIDs = {}
-         updateGUIDInfo("target")
-         updateGUIDInfo("focus")
-         updateGUIDInfo("pettarget")
-         for i = 1, MAX_BOSS_FRAMES do
-            updateGUIDInfo("boss"..i)
-         end
+      updatedGUIDs = {}
+      updateGUIDInfo("target")
+      updateGUIDInfo("focus")
+      updateGUIDInfo("pettarget")
+      for i = 1, MAX_BOSS_FRAMES do
+         updateGUIDInfo("boss"..i)
       end
    end
 
@@ -768,6 +789,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             else
                icon:SetVertexColor(1, 1, 1, 1)
             end
+
             return GetSpellTexture(move)
          end
 
@@ -864,7 +886,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       -- Determines if Diseases need to be refreshed or applied
       function DKROT:GetDisease()
          -- If settings not to worry about diseases, then break
-         if DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption == DISEASE_NONE then
+         if DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption == DKROT.DiseaseOptions.None then
             return nil
          end
 
@@ -922,7 +944,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Apply Blood Plague
-         if (DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption ~= DISEASE_ONE or outbreak) then
+         if (DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption ~= DKROT.DiseaseOptions.Single or outbreak) then
             if (BPexpires == nil or BPexpires < 3) then
                -- Add Death Grip as first priority until PS is in range
                if DKROT_Settings.DG and (IsSpellInRange(DKROT.spells["Plague Strike"], "target")) == 0 and IsUsableSpell(DKROT.spells["Death Grip"]) then
@@ -1044,8 +1066,27 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             msqCDGrp:AddButton(DKROT.CD[DKROT.CDDisplayList[i]])
          end
       end
-      
+
       local PosPanel = DKROT:SetupPositionPanel(function() DKROT:PositionUpdate() end)
+
+      -- Background Opacity slider
+      local backdropInfo = { parent = DKROT_FramePanel, value = 1, label = "Backdrop Opacity", minValue = 0, maxValue = 1 }
+      DKROT.FramePanel_BackdropOpacity = DKROT:BuildSliderOption(backdropInfo, function()
+         DKROT_Settings.BackdropOpacity = DKROT.FramePanel_BackdropOpacity:GetValue()
+         for idx, frame in pairs(DKROT.MovableFrames) do
+            DKROT:MoveFrame(_G[frame.frame])
+         end
+      end)
+      DKROT.FramePanel_BackdropOpacity:SetPoint("TOPLEFT", DKROT_FramePanel_ViewDD, "BOTTOMLEFT", 15, -10)
+
+      -- Global Opacity override slider
+      local overrideInfo = { parent = DKROT_FramePanel, value = 1, label = "Global Opacity Override", minValue = 0, maxValue = 1 }
+      DKROT.FramePanel_OpacityOverride = DKROT:BuildSliderOption(overrideInfo, function()
+         for idx, frame in pairs(DKROT.MovableFrames) do
+            DKROT_Settings.Location[frame.frame].Opacity = DKROT.FramePanel_OpacityOverride:GetValue()
+         end
+      end)
+      DKROT.FramePanel_OpacityOverride:SetPoint("TOPLEFT", DKROT.FramePanel_BackdropOpacity, "BOTTOMLEFT", 0, -10)
 
       InterfaceOptions_AddCategory(DKROT_Options)
       InterfaceOptions_AddCategory(DKROT_FramePanel)
@@ -1084,8 +1125,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT.MainFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
    DKROT.MainFrame:RegisterEvent("ADDON_LOADED")
    DKROT.MainFrame:RegisterEvent("PLAYER_ENTER_COMBAT")
-   -- DKROT:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
-   -- DKROT:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
    -- Function to be called when events triggered
    local slottimer = 0
@@ -1127,10 +1166,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                      DKROT.DT.Unit[targetguid].NumDots = DKROT.DT.Unit[targetguid].NumDots + 1
                   end
 
-                  if spellName == DKROT.spells["Death and Decay"] then
+                  if spellName == DKROT.spells["Death and Decay"] or spellName == DKROT.spells["Defile"] then
                      DKROT.DT.Unit[targetguid].Spells[spellName] = select(1, GetSpellCooldown(spellName)) + 10
                   else
-                     DKROT.DT.Unit[targetguid].Spells[spellName] = DKROT.DTspells[spellName][2] + DKROT.curtime
+                     DKROT.DT.Unit[targetguid].Spells[spellName] = select(7, UnitDebuff("TARGET", spellName))
                   end
 
                elseif (event == "SPELL_AURA_REMOVED") then
@@ -1152,6 +1191,33 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
    end)
 
+   local function showUI()
+      if UnitHasVehicleUI("player") then
+         return false
+      end
+
+      if not DKROT_Settings.Locked then
+         return true
+      end
+
+      if InCombatLockdown() and DKROT_Settings.VScheme == DKROT_OPTIONS_FRAME_VIEW_NORM then
+         return true
+      end
+
+      if DKROT_Settings.VScheme == DKROT_OPTIONS_FRAME_VIEW_SHOW then
+         return true
+      end
+
+      if DKROT_Settings.VScheme ~= DKROT_OPTIONS_FRAME_VIEW_HIDE 
+         and UnitCanAttack("player", "target") 
+         and not UnitIsDead("target")
+      then
+         return true
+      end
+
+      return false
+   end
+
    -- Main function to run addon
    local DTupdatetimer = 0
    local DTchecktimer = 0
@@ -1162,52 +1228,35 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if (DKROT.curtime - updatetimer >= 0.08) then
          updatetimer = DKROT.curtime
 
-         if (not loaded) and (not mutex) then
-            if launchtime == 0 then launchtime = DKROT.curtime;DKROT:Debug("Launchtime Set") end
+         if not loaded and not mutex then
+            if launchtime == 0 then
+               launchtime = DKROT.curtime
+               DKROT:Debug("Launchtime Set")
+            end
+
             DKROT:Initialize()
          elseif loaded then
             -- Check if visibility conditions are met, if so update the information in the addon
-            if not UnitHasVehicleUI("player") 
-               and (
-                  (InCombatLockdown() and DKROT_Settings.VScheme == DKROT_OPTIONS_FRAME_VIEW_NORM)
-                  or (DKROT_Settings.VScheme == DKROT_OPTIONS_FRAME_VIEW_SHOW)
-                  or not DKROT_Settings.Locked
-                  or (
-                     DKROT_Settings.VScheme ~= DKROT_OPTIONS_FRAME_VIEW_HIDE 
-                     and UnitCanAttack("player", "target") 
-                     and not UnitIsDead("target")
-                  )
-               )
-            then
+            if showUI() then
+               if DKROT.MainFrame:GetAlpha() ~= 1 then
+                  DKROT.MainFrame:SetAlpha(1)
+               end
                DKROT:UpdateUI()
             else
                DKROT.MainFrame:SetAlpha(0)
             end
 
-            if resize ~= nil then
-               x, y = GetCursorPosition()
-               local sizex = (x - mousex + resize:GetWidth())/resize:GetWidth()
-               local sizey = (mousey - y + resize:GetHeight())/resize:GetHeight()
-               if sizex < sizey then
-                  if sizex > 1 then
-                     resize:SetScale(sizex)
-                  end
-               else
-                  if sizey > 1 then
-                     resize:SetScale(sizey)
-                  end
+            if DKROT_Settings.DT.Enable then
+               if (DKROT.curtime - DTchecktimer >= DKROT_Settings.DT.Update) then
+                  DTchecktimer = DKROT.curtime
+                  DKROT:DTCheckTargets()
+               end
+
+               if (DKROT.curtime - DTupdatetimer >= 0.5) then
+                  DTupdatetimer = DKROT.curtime
+                  DKROT:DTUpdateFrames()
                end
             end
-         end
-      end
-      if loaded and DKROT_Settings.DT.Enable then
-         if (DKROT.curtime - DTchecktimer >= DKROT_Settings.DT.Update) then
-            DTchecktimer = DKROT.curtime
-            DKROT:DTCheckTargets()
-         end
-         if (DKROT.curtime - DTupdatetimer >= 0.5) then
-            DTupdatetimer = DKROT.curtime
-            DKROT:DTUpdateFrames()
          end
       end
    end)
@@ -1235,12 +1284,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_FramePanel_TTD:SetChecked(DKROT_Settings.TTD)
          DKROT_FramePanel_Disease:SetChecked(DKROT_Settings.Disease)
          DKROT_FramePanel_Locked:SetChecked(DKROT_Settings.Locked)
-         DKROT_FramePanel_Trans:SetNumber(DKROT_Settings.Trans)
-         DKROT_FramePanel_Trans:SetCursorPosition(0)
-         DKROT_FramePanel_CombatTrans:SetNumber(DKROT_Settings.CombatTrans)
-         DKROT_FramePanel_CombatTrans:SetCursorPosition(0)
-         DKROT_FramePanel_NormalTrans:SetNumber(DKROT_Settings.NormTrans)
-         DKROT_FramePanel_NormalTrans:SetCursorPosition(0)
+         DKROT.FramePanel_BackdropOpacity:InitValue(DKROT_Settings.BackdropOpacity)
 
          -- View Dropdown
          UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_ViewDD, DKROT_Settings.VScheme)
@@ -1248,7 +1292,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_Rune_DD, DKROT_Settings.RuneOrder)
          UIDropDownMenu_SetText(DKROT_FramePanel_Rune_DD, DKROT_OPTIONS_FRAME_RUNE_ORDER[DKROT_Settings.RuneOrder])
-
 
          -- CD/R
          DKROT_CDRPanel_Outbreak_Text:SetText(DKROT.spells["Outbreak"])
@@ -1275,9 +1318,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD, DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption)
 
          local text
-         if DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption == DISEASE_BOTH then
+         if DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption == DKROT.DiseaseOptions.Both then
             text = DKROT_OPTIONS_CDR_DISEASES_DD_BOTH
-         elseif DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption == DISEASE_ONE then
+         elseif DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption == DKROT.DiseaseOptions.Single then
             text = DKROT_OPTIONS_CDR_DISEASES_DD_ONE
          else
             text = DKROT_OPTIONS_CDR_DISEASES_DD_NONE
@@ -1347,10 +1390,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_DTPanel_Trans:SetNumber(DKROT_Settings.DTTrans)
          DKROT_DTPanel_Trans:SetCursorPosition(0)
          UIDropDownMenu_SetSelectedValue(DKROT_DTPanel_DD_Threat, DKROT_Settings.DT.Threat)
-         if DKROT_Settings.DT.Threat == THREAT_OFF then text = DKROT_OPTIONS_DT_THREAT_OFF
-         elseif DKROT_Settings.DT.Threat == THREAT_HEALTH then text = DKROT_OPTIONS_DT_THREAT_HEALTH
-         elseif DKROT_Settings.DT.Threat == THREAT_ANALOG then text = DKROT_OPTIONS_DT_THREAT_ANALOG
-         elseif DKROT_Settings.DT.Threat == THREAT_DIGITAL then text = DKROT_OPTIONS_DT_THREAT_DIGITAL
+         if DKROT_Settings.DT.Threat == DKROT.ThreatMode.Off then text = DKROT_OPTIONS_DT_THREAT_OFF
+         elseif DKROT_Settings.DT.Threat == DKROT.ThreatMode.Health then text = DKROT_OPTIONS_DT_THREAT_HEALTH
+         elseif DKROT_Settings.DT.Threat == DKROT.ThreatMode.Bars then text = DKROT_OPTIONS_DT_THREAT_BARS
+         elseif DKROT_Settings.DT.Threat == DKROT.ThreatMode.Hated then text = DKROT_OPTIONS_DT_THREAT_HATED
          end
          UIDropDownMenu_SetText(DKROT_DTPanel_DD_Threat, text)
 
@@ -1399,11 +1442,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_Settings.Locked = DKROT_FramePanel_Locked:GetChecked()
 
          -- Transparency
-         if DKROT_FramePanel_Trans:GetNumber() >= 0 and DKROT_FramePanel_Trans:GetNumber() <= 1 then
-            DKROT_Settings.Trans = DKROT_FramePanel_Trans:GetNumber()
-         else
-            DKROT_FramePanel_Trans:SetNumber(DKROT_Settings.Trans)
-         end
+         DKROT_Settings.BackdropOpacity = DKROT.FramePanel_BackdropOpacity:GetValue()
+         --[[
          if DKROT_FramePanel_CombatTrans:GetNumber() >= 0 and DKROT_FramePanel_CombatTrans:GetNumber() <= 1 then
             DKROT_Settings.CombatTrans = DKROT_FramePanel_CombatTrans:GetNumber()
          else
@@ -1414,6 +1454,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          else
             DKROT_FramePanel_NormalTrans:SetNumber(DKROT_Settings.NormTrans)
          end
+         ]]--
 
          -- CD/R
          DKROT_Settings.MoveAltInterrupt = DKROT_CDRPanel_MoveAltInterrupt:GetChecked()
@@ -1514,8 +1555,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- General Settings
-      if DKROT_Settings.RuneOrder == nil then  DKROT_Settings.RuneOrder = BBUUFF end
-      if DKROT_Settings.Trans == nil then DKROT_Settings.Trans = 0.5 end
+      if DKROT_Settings.RuneOrder == nil then  DKROT_Settings.RuneOrder = DKROT.RuneOrder.BBUUFF end
+      if DKROT_Settings.BackdropOpacity == nil then DKROT_Settings.BackdropOpacity = 0.5 end
       if DKROT_Settings.CombatTrans == nil then DKROT_Settings.CombatTrans = 1.0 end
       if DKROT_Settings.NormTrans == nil then DKROT_Settings.NormTrans = 1.0 end
       if DKROT_Settings.DTTrans == nil then DKROT_Settings.DTTrans = 1.0 end
@@ -1528,7 +1569,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
       for i=1,#specs do
          if DKROT_Settings.CD[specs[i]] == nil then DKROT_Settings.CD[specs[i]] = {}   end
-         if DKROT_Settings.CD[specs[i]].DiseaseOption == nil then DKROT_Settings.CD[specs[i]].DiseaseOption = DISEASE_BOTH end
+         if DKROT_Settings.CD[specs[i]].DiseaseOption == nil then DKROT_Settings.CD[specs[i]].DiseaseOption = DKROT.DiseaseOptions.Both end
          for j=1,#spots do
             if DKROT_Settings.CD[specs[i]]["DKROT_CDRPanel_DD_"..spots[j]] == nil or
                DKROT_Settings.CD[specs[i]]["DKROT_CDRPanel_DD_"..spots[j]][1] == nil then
@@ -1549,7 +1590,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if DKROT_Settings.DT.Update == nil then DKROT_Settings.DT.Update = 2.5 end
       if DKROT_Settings.DT.Numframes == nil then DKROT_Settings.DT.Numframes = 5 end
       if DKROT_Settings.DT.Warning == nil then DKROT_Settings.DT.Warning = 3 end
-      if DKROT_Settings.DT.Threat == nil then DKROT_Settings.DT.Threat = THREAT_ANALOG end
+      if DKROT_Settings.DT.Threat == nil then DKROT_Settings.DT.Threat = DKROT.ThreatMode.Bars end
       if DKROT_Settings.DT.Dots == nil then
          DKROT_Settings.DT.Dots = {}
          DKROT_Settings.DT.Dots[DKROT.spells["Frost Fever"]] = true
@@ -1598,257 +1639,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    -- Set all settings back to default
    function DKROT_SetDefaults()
-      if DKROT_Settings ~= nil then wipe(DKROT_Settings); DKROT_Settings = nil end
-      DKROT:CheckSettings()
+      if DKROT_Settings ~= nil then
+         wipe(DKROT_Settings)
+         DKROT_Settings = nil
+      end
 
+      DKROT:CheckSettings()
       DKROT:OptionsRefresh()
       DKROT:Debug("SetDefaults Done")
-   end
-
-   function DKROT_Rune_DD_OnLoad()
-      info            = {}
-      info.text       = DKROT_OPTIONS_FRAME_RUNE_ORDER[BBUUFF]
-      info.value      = BBUUFF
-      info.func       = function() DKROT_Settings.RuneOrder = BBUUFF; UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_Rune_DD, DKROT_Settings.RuneOrder); end
-      UIDropDownMenu_AddButton(info)
-
-      info            = {}
-      info.text       = DKROT_OPTIONS_FRAME_RUNE_ORDER[BBFFUU]
-      info.value      = BBFFUU
-      info.func       = function() DKROT_Settings.RuneOrder = BBFFUU; UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_Rune_DD, DKROT_Settings.RuneOrder); end
-      UIDropDownMenu_AddButton(info)
-
-      info            = {}
-      info.text       = DKROT_OPTIONS_FRAME_RUNE_ORDER[UUBBFF]
-      info.value      = UUBBFF
-      info.func       = function() DKROT_Settings.RuneOrder = UUBBFF; UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_Rune_DD, DKROT_Settings.RuneOrder); end
-      UIDropDownMenu_AddButton(info)
-
-      info            = {}
-      info.text       = DKROT_OPTIONS_FRAME_RUNE_ORDER[UUFFBB]
-      info.value      = UUFFBB
-      info.func       = function() DKROT_Settings.RuneOrder = UUFFBB; UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_Rune_DD, DKROT_Settings.RuneOrder); end
-      UIDropDownMenu_AddButton(info)
-
-      info            = {}
-      info.text       = DKROT_OPTIONS_FRAME_RUNE_ORDER[FFUUBB]
-      info.value      = FFUUBB
-      info.func       = function() DKROT_Settings.RuneOrder = FFUUBB; UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_Rune_DD, DKROT_Settings.RuneOrder); end
-      UIDropDownMenu_AddButton(info)
-
-      info            = {}
-      info.text       = DKROT_OPTIONS_FRAME_RUNE_ORDER[FFBBUU]
-      info.value      = FFBBUU
-      info.func       = function() DKROT_Settings.RuneOrder = FFBBUU; UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_Rune_DD, DKROT_Settings.RuneOrder); end
-      UIDropDownMenu_AddButton(info)
-   end
-
-   function DKROT_DTPanel_Threat_OnLoad()
-      info            = {}
-      info.text       = DKROT_OPTIONS_DT_THREAT_OFF
-      info.value      = THREAT_OFF
-      info.func       = function() DKROT_Settings.DT.Threat = THREAT_OFF;UIDropDownMenu_SetSelectedValue(DKROT_DTPanel_DD_Threat, DKROT_Settings.DT.Threat); end
-      UIDropDownMenu_AddButton(info)
-
-      info            = {}
-      info.text       = DKROT_OPTIONS_DT_THREAT_ANALOG
-      info.value      = THREAT_ANALOG
-      info.func       = function() DKROT_Settings.DT.Threat = THREAT_ANALOG;UIDropDownMenu_SetSelectedValue(DKROT_DTPanel_DD_Threat, DKROT_Settings.DT.Threat); end
-      UIDropDownMenu_AddButton(info)
-
-      info            = {}
-      info.text       = DKROT_OPTIONS_DT_THREAT_DIGITAL
-      info.value      = THREAT_DIGITAL
-      info.func       = function() DKROT_Settings.DT.Threat = THREAT_DIGITAL;UIDropDownMenu_SetSelectedValue(DKROT_DTPanel_DD_Threat, DKROT_Settings.DT.Threat); end
-      UIDropDownMenu_AddButton(info)
-
-      info            = {}
-      info.text       = DKROT_OPTIONS_DT_THREAT_HEALTH
-      info.value      = THREAT_HEALTH
-      info.func       = function() DKROT_Settings.DT.Threat = THREAT_HEALTH;UIDropDownMenu_SetSelectedValue(DKROT_DTPanel_DD_Threat, DKROT_Settings.DT.Threat); end
-      UIDropDownMenu_AddButton(info)
-   end
-
-   -- function to handle the View dropdown box
-   function DKROT_FramePanel_ViewDD_OnLoad()
-      info            = {}
-      info.text       = DKROT_OPTIONS_FRAME_VIEW_NORM
-      info.value      = DKROT_OPTIONS_FRAME_VIEW_NORM
-      info.func       = function() DKROT_Settings.VScheme = DKROT_OPTIONS_FRAME_VIEW_NORM;UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_ViewDD, DKROT_Settings.VScheme); end
-      UIDropDownMenu_AddButton(info)
-
-      info            = {}
-      info.text       = DKROT_OPTIONS_FRAME_VIEW_TARGET
-      info.value      = DKROT_OPTIONS_FRAME_VIEW_TARGET
-      info.func       = function() DKROT_Settings.VScheme = DKROT_OPTIONS_FRAME_VIEW_TARGET;UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_ViewDD, DKROT_Settings.VScheme); end
-      UIDropDownMenu_AddButton(info)
-
-      info            = {}
-      info.text       = DKROT_OPTIONS_FRAME_VIEW_SHOW
-      info.value      = DKROT_OPTIONS_FRAME_VIEW_SHOW
-      info.func       = function() DKROT_Settings.VScheme = DKROT_OPTIONS_FRAME_VIEW_SHOW;UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_ViewDD, DKROT_Settings.VScheme); end
-      UIDropDownMenu_AddButton(info)
-
-      info            = {}
-      info.text       = DKROT_OPTIONS_FRAME_VIEW_HIDE
-      info.value      = DKROT_OPTIONS_FRAME_VIEW_HIDE
-      info.func       = function() DKROT_Settings.VScheme = DKROT_OPTIONS_FRAME_VIEW_HIDE;UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_ViewDD, DKROT_Settings.VScheme); end
-      UIDropDownMenu_AddButton(info)
-   end
-
-   -- function to handle the Disease dropdown box
-   function DKROT_Diseases_OnLoad(self)
-      local info = {}
-      info.text = DKROT_OPTIONS_CDR_DISEASES_DD_BOTH
-      info.value = DISEASE_BOTH
-      info.func = function() DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption = DISEASE_BOTH;UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD,  DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption); end
-      UIDropDownMenu_AddButton(info)
-
-      info = {}
-      info.text = DKROT_OPTIONS_CDR_DISEASES_DD_ONE
-      info.value = DISEASE_ONE
-      info.func = function() DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption = DISEASE_ONE;UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD,  DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption); end
-      UIDropDownMenu_AddButton(info)
-
-      info = {}
-      info.text = DKROT_OPTIONS_CDR_DISEASES_DD_NONE
-      info.value = DISEASE_NONE
-      info.func = function() DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption = DISEASE_NONE;UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD,  DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption); end
-      UIDropDownMenu_AddButton(info)
-   end
-
-   -- Initialize the rotation list
-   function DKROT_Rotations_OnLoad(self)
-      for key, rotation in pairs(DKROT.Rotations[DKROT.Current_Spec]) do
-         local info = {}
-         info.text = rotation.name
-         info.value = key
-         info.func = function()
-            DKROT_Settings.CD[DKROT.Current_Spec].Rotation = key
-            UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Rotation, DKROT_Settings.CD[DKROT.Current_Spec].Rotation)
-         end
-         UIDropDownMenu_AddButton(info)
-      end
-
-      -- Select rotation
-      local current_rotation = DKROT_Settings.CD[DKROT.Current_Spec].Rotation
-      if current_rotation == nil then
-         if DKROT.Current_Spec ~= DKROT.SPECS.UNKNOWN then
-            for rotName, rotInfo in pairs(DKROT.Rotations[DKROT.Current_Spec]) do
-               if rotInfo.default == true then
-                  current_rotation = rotName
-                  break
-               end
-            end
-            UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Rotation, current_rotation)
-            UIDropDownMenu_SetText(DKROT_CDRPanel_Rotation, DKROT.Rotations[DKROT.Current_Spec][current_rotation].name)
-         end
-      end
-
-      UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Rotation, current_rotation)
-      UIDropDownMenu_SetText(DKROT_CDRPanel_Rotation, DKROT.Rotations[DKROT.Current_Spec][current_rotation].name)
-   end
-
-   -- function to handle the CD dropdown boxes
-   function DKROT_CDRPanel_DD_OnLoad(self, level)
-      -- If specified level, or base
-      level = level or 1
-
-      -- Template for an item in the dropdown box
-      local function DKROT_CDRPanel_DD_Item (panel, spell, buff)
-         local info = {}
-         info.text = spell .. ((buff and " (Buff)") or "")
-         info.value = spell .. ((buff and " (Buff)") or "")
-         info.func = function()
-            DKROT_Settings.CD[DKROT.Current_Spec][panel:GetName()][1] = spell
-            DKROT_Settings.CD[DKROT.Current_Spec][panel:GetName()][2] = buff
-            UIDropDownMenu_SetSelectedValue(panel, spell .. ((buff and " (Buff)") or ""))
-            CloseDropDownMenus()
-         end
-         return info
-      end
-
-      -- Function to add specs specific CDs
-      local function AddSpecCDs(Spec)
-         for i = 1, #Spec do
-            if (DKROT.Cooldowns.Buffs[Spec[i]] == nil or DKROT.Cooldowns.Buffs[Spec[i]][2]) then
-               UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, Spec[i]), 2)
-            end
-            if DKROT.Cooldowns.Buffs[Spec[i]] ~= nil then
-               UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, Spec[i], true), 2)
-            end
-         end
-      end
-
-      -- If base level
-      if level == 1 then
-         -- Add unique items to dropdown
-         UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_CD_PRIORITY), 1)
-         UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_CD_PRESENCE), 1)
-         UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_FRAME_VIEW_NONE), 1)
-         UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_RACIAL), 1)
-
-         -- Setup nested dropdowns
-         info.hasArrow = true
-         info.notClickable = 1
-
-         -- Spec Specific CDs
-         info.text = DKROT_OPTIONS_CDR_CD_SPEC
-         info.value = {["Level1_Key"] = "Spec";}
-         UIDropDownMenu_AddButton(info)
-
-         -- Normal CDs
-         info.text = DKROT_OPTIONS_CDR_CD_NORMAL
-         info.value = {["Level1_Key"] = "Normal";}
-         UIDropDownMenu_AddButton(info)
-
-         -- Moves
-         info.text = DKROT_OPTIONS_CDR_CD_MOVES
-         info.value = {["Level1_Key"] = "Moves";}
-         UIDropDownMenu_AddButton(info)
-
-         -- Talents
-         info.text = DKROT_OPTIONS_CDR_CD_TALENTS
-         info.value = {["Level1_Key"] = "Talents";}
-         UIDropDownMenu_AddButton(info)
-
-         -- Trinkets
-         info.text = DKROT_OPTIONS_CDR_CD_TRINKETS
-         info.value = {["Level1_Key"] = "Trinkets";}
-         UIDropDownMenu_AddButton(info)
-
-      -- If nested menu
-      elseif level == 2 then
-         -- Check what the "parent" is
-         local key = UIDROPDOWNMENU_MENU_VALUE["Level1_Key"]
-
-         if key == "Spec" then
-            if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
-               AddSpecCDs(DKROT.Cooldowns.UnholyCDs)
-            elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
-               AddSpecCDs(DKROT.Cooldowns.FrostCDs)
-            elseif (DKROT.Current_Spec == DKROT.SPECS.BLOOD) then
-               AddSpecCDs(DKROT.Cooldowns.BloodCDs)
-            end
-
-         elseif key == "Normal" then
-            AddSpecCDs(DKROT.Cooldowns.NormCDs)
-
-         elseif key == "Moves" then
-            for i = 1, #DKROT.Cooldowns.Moves do
-               if GetSpellTexture(DKROT.Cooldowns.Moves[i]) ~= nil then
-                  UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT.Cooldowns.Moves[i]), 2)
-               end
-            end
-
-         elseif key == "Talents" then
-            AddSpecCDs(DKROT.Cooldowns.TalentCDs)
-
-         elseif key == "Trinkets" then
-            UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT1), 2)
-            UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2), 2)
-         end
-      end
    end
 
    function DKROT:PositionUpdate()
@@ -1857,6 +1655,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local x = DKROT.PositionPanel_X:GetValue()
       local y = DKROT.PositionPanel_Y:GetValue()
       local scale = DKROT.PositionPanel_Scale:GetValue()
+      local opacity = DKROT.PositionPanel_Opacity:GetValue()
       local point = UIDropDownMenu_GetSelectedValue(DKROT.PositionPanel_Point)
       local relPoint = UIDropDownMenu_GetSelectedValue(DKROT.PositionPanel_RelPoint)
       local relFrame = UIDropDownMenu_GetSelectedValue(DKROT.PositionPanel_RelFrame)
@@ -1864,6 +1663,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT_Settings.Location[name].X = x
       DKROT_Settings.Location[name].Y = y
       DKROT_Settings.Location[name].Scale = scale
+      DKROT_Settings.Location[name].Opacity = opacity
       DKROT_Settings.Location[name].Point = point
       DKROT_Settings.Location[name].Rel = relFrame
       DKROT_Settings.Location[name].RelPoint = relPoint

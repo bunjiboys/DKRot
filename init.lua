@@ -8,6 +8,28 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT.curtime = 0
    DKROT.GCD = 0
 
+   DKROT.ThreatMode = {
+      Off = 0,
+      Health = 0.1,
+      Bars = 1,
+      Hated = 99
+   }
+
+   DKROT.DiseaseOptions = {
+      Both = 2,
+      Single = 1,
+      None = 0
+   }
+
+   DKROT.RuneOrder = {
+      BBUUFF = 1,
+      BBFFUU = 2,
+      UUBBFF = 3,
+      UUFFBB = 4,
+      FFUUBB = 5,
+      FFBBUU = 6
+   }
+
    DKROT.SPECS = {
       BLOOD = 1,
       FROST = 2,
@@ -79,7 +101,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "CENTER", 
          X = 0,
          Y = -175,
-         Scale = 1
+         Scale = 1,
+         Opacity = 0.8
       },
       ["DKROT.Move"] = {
          Point = "CENTER",
@@ -87,7 +110,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "CENTER",
          X = 0,
          Y = -150,
-         Scale = 1
+         Scale = 1,
+         Opacity = 0.8
       },
       ["DKROT.AOE"] = {
          Point = "BOTTOMLEFT",
@@ -95,7 +119,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "BOTTOMLEFT",
          X = 0,
          Y = 0,
-         Scale = 0.5
+         Scale = 0.5,
+         Opacity = 0.8
       },
       ["DKROT.Interrupt"] = {
          Point = "TOPRIGHT",
@@ -103,7 +128,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "TOPRIGHT",
          X = 0,
          Y = 0,
-         Scale = 0.5
+         Scale = 0.5,
+         Opacity = 0.8
       },
       ["DKROT.CD1"] = {
          Point = "TOPRIGHT",
@@ -111,7 +137,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "TOPLEFT",
          X = -4,
          Y = 1,
-         Scale = 1
+         Scale = 1,
+         Opacity = 0.8
       },
       ["DKROT.CD2"] = {
          Point = "TOPLEFT",
@@ -119,7 +146,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "TOPRIGHT",
          X = 4,
          Y = 1,
-         Scale = 1
+         Scale = 1,
+         Opacity = 0.8
       },
       ["DKROT.CD3"] = {
          Point = "TOPRIGHT",
@@ -127,7 +155,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "TOPLEFT",
          X = -2,
          Y = 0,
-         Scale = 1
+         Scale = 1,
+         Opacity = 0.8
       },
       ["DKROT.CD4"] = {
          Point = "TOPLEFT",
@@ -135,7 +164,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "TOPRIGHT",
          X = 2,
          Y = 0,
-         Scale = 1
+         Scale = 1,
+         Opacity = 0.8
       },
       ["DKROT.RuneBar"] = {
          Point = "BOTTOM",
@@ -143,7 +173,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "TOP",
          X = 0,
          Y = -2,
-         Scale = 1
+         Scale = 1,
+         Opacity = 0.8
       },
       ["DKROT.RuneBarHolder"] = {
          Point = "BOTTOMLEFT",
@@ -151,7 +182,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "BOTTOMRIGHT",
          X = 1,
          Y = -1,
-         Scale = 0.86
+         Scale = 0.86,
+         Opacity = 0.8
       },
       ["DKROT.RunicPower"] = {
          Point = "TOP",
@@ -159,7 +191,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "BOTTOM",
          X = 0,
          Y = -2,
-         Scale = 1
+         Scale = 1,
+         Opacity = 0.8
       },
       ["DKROT.Diseases"]= {
          Point = "TOP",
@@ -167,7 +200,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "BOTTOM",
          X = 0,
          Y = 0,
-         Scale = 1
+         Scale = 1,
+         Opacity = 0.8
       },
       ["DKROT.DT"] = {
          Point = "BOTTOMRIGHT",
@@ -175,7 +209,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "BOTTOMLEFT",
          X = -2,
          Y = 0,
-         Scale = 1
+         Scale = 1,
+         Opacity = 0.8
       },
       ["DKROT.TTD"] = {
          Point = "BOTTOM",
@@ -183,7 +218,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          RelPoint = "TOP",
          X = 0,
          Y = 0,
-         Scale = 1
+         Scale = 1,
+         Opacity = 0.8
       },
    }
 
