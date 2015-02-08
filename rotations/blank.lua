@@ -22,19 +22,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Death Pact
-      if GetSpellTexture(DKROT.spells["Death Pact"]) ~= nil
+      if DKROT:has("Death Pact")
          and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
       then
-         if DKROT:isOffCD(DKROT.spells["Death Pact"]) then
+         if DKROT:isOffCD("Death Pact") then
             return DKROT.spells["Death Pact"], true
          end
       end
 
       -- Blood Tap with >= 11 Charges
-      if GetSpellTexture(DKROT.spells["Blood Tap"])
+      if DKROT:has("Blood Tap")
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 11
-         and DKROT:HasFullyDepletedRunes()
+         and DKROT:FullyDepletedRunes() > 0
       then
          return DKROT.spells["Blood Tap"], true
       end
@@ -45,7 +45,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Death Strike
-      if GetSpellTexture(DKROT.spells["Death Strike"]) then
+      if DKROT:has("Death Strike") then
          if select(1,IsUsableSpell(DKROT.spells["Death Strike"])) then
             return DKROT.spells["Death Strike"]
          end
@@ -68,20 +68,20 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Blood Tap with >= 5 Charges
-      if GetSpellTexture(DKROT.spells["Blood Tap"])
+      if DKROT:has("Blood Tap")
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 5
-         and DKROT:HasFullyDepletedRunes()
+         and DKROT:FullyDepletedRunes() > 0
       then
          return DKROT.spells["Blood Tap"], true
       end
 
       -- Empower Rune Weapon if we have it enabled and we have at least 3 runes depleted
-      if GetSpellTexture(DKROT.spells["Empower Rune Weapon"]) ~= nil
+      if DKROT:has("Empower Rune Weapon")
          and DKROT_Settings.CD[DKROT.Current_Spec].ERW
          and DKROT:DepletedRunes() >= 3
       then
-         if DKROT:isOffCD(DKROT.spells["Empower Rune Weapon"]) then
+         if DKROT:isOffCD("Empower Rune Weapon") then
             return DKROT.spells["Empower Rune Weapon"]
          end
       end

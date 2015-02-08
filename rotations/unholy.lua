@@ -16,34 +16,34 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Raise Dead
-      if UnitExists("pet") ~= true and DKROT:isOffCD(DKROT.spells["Raise Dead"]) then
+      if UnitExists("pet") ~= true and DKROT:isOffCD("Raise Dead") then
          return DKROT.spells["Raise Dead"], true
       end
 
       -- Death Pact
-      if GetSpellTexture(DKROT.spells["Death Pact"]) ~= nil
+      if DKROT:has("Death Pact")
          and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
       then
-         if DKROT:isOffCD(DKROT.spells["Death Pact"]) then
+         if DKROT:isOffCD("Death Pact") then
             return DKROT.spells["Death Pact"], true
          end
       end
 
       -- Soul Reaper
       if (
-            GetSpellTexture(DKROT.spells["Improved Soul Reaper"]) ~= nil
+            DKROT:has("Improved Soul Reaper")
             and UnitHealth("target")/UnitHealthMax("target") < 0.45
          )
          or UnitHealth("target")/UnitHealthMax("target") < 0.35
       then
-         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) then
+         if DKROT:isOffCD("Soul Reaper") then
             return DKROT.spells["Soul Reaper"]
          end
       end
 
       -- Defile
-      if GetSpellTexture(DKROT.spells["Defile"]) ~= nil then
-         if DKROT:isOffCD(DKROT.spells["Defile"]) then
+      if DKROT:has("Defile") then
+         if DKROT:isOffCD("Defile") then
             return DKROT.spells["Defile"], true
          end
       end
@@ -57,7 +57,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       -- Dark Transformation
       if select(4, UnitBuff("PET",DKROT.spells["Shadow Infusion"])) == 5
          and (
-            GetSpellTexture(DKROT.spells["Enhanced Dark Transformation"]) ~= nil
+            DKROT:has("Enhanced Dark Transformation")
             or (unholy <= 0 or death >= 1)
          )
       then
@@ -65,10 +65,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Blood Tap with >= 11 Charges
-      if GetSpellTexture(DKROT.spells["Blood Tap"])
+      if DKROT:has("Blood Tap")
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 11
-         and DKROT:HasFullyDepletedRunes()
+         and DKROT:FullyDepletedRunes() > 0
       then
          return DKROT.spells["Blood Tap"], true
       end
@@ -116,22 +116,22 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Blood Tap with >= 5 Charges
-      if GetSpellTexture(DKROT.spells["Blood Tap"])
+      if DKROT:has("Blood Tap")
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 5
-         and DKROT:HasFullyDepletedRunes()
+         and DKROT:FullyDepletedRunes() > 0
       then
          return DKROT.spells["Blood Tap"], true
       end
 
       -- Empower Rune Weapon
-      if GetSpellTexture(DKROT.spells["Empower Rune Weapon"]) ~= nil and DKROT_Settings.CD[DKROT.Current_Spec].ERW then
-         if DKROT:isOffCD(DKROT.spells["Empower Rune Weapon"]) then
+      if DKROT:has("Empower Rune Weapon") and DKROT_Settings.CD[DKROT.Current_Spec].ERW then
+         if DKROT:isOffCD("Empower Rune Weapon") then
             return DKROT.spells["Empower Rune Weapon"]
          end
       end
 
-      if GetSpellTexture(DKROT.spells["Death Coil"]) and UnitPower("player") >= 30 then
+      if DKROT:has("Death Coil") and UnitPower("player") >= 30 then
          return DKROT.spells["Death Coil"]
       end
 
@@ -160,19 +160,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Death Pact
-      if GetSpellTexture(DKROT.spells["Death Pact"]) ~= nil
+      if DKROT:has("Death Pact")
          and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
       then
-         if DKROT:isOffCD(DKROT.spells["Death Pact"]) then
+         if DKROT:isOffCD("Death Pact") then
             return DKROT.spells["Death Pact"], true
          end
       end
 
       -- Plague Leech if we have enabled it in the rotation, and we have a fully depleted rune
-      if GetSpellTexture(DKROT.spells["Plague Leech"])
+      if DKROT:has("Plague Leech")
          and DKROT_Settings.CD[DKROT.Current_Spec].PL
-         and DKROT:isOffCD(DKROT.spells["Plague Leech"])
-         and DKROT:HasFullyDepletedRunes()
+         and DKROT:isOffCD("Plague Leech")
+         and DKROT:FullyDepletedRunes() > 0
          and (dFF ~= nil and dBP ~= nil and dFF > 0 and dBP > 0)
       then
          return DKROT.spells["Plague Leech"]
@@ -180,34 +180,34 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- Soul Reaper
       if (
-            GetSpellTexture(DKROT.spells["Improved Soul Reaper"]) ~= nil
+            DKROT:has("Improved Soul Reaper")
             and UnitHealth("target")/UnitHealthMax("target") < 0.45
          )
          or UnitHealth("target")/UnitHealthMax("target") < 0.35
       then
-         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) and timeToDie > 5 then
+         if DKROT:isOffCD("Soul Reaper") and timeToDie > 5 then
             return DKROT.spells["Soul Reaper"]
          end
       end
 
       -- Defile
-      if GetSpellTexture(DKROT.spells["Defile"]) ~= nil and timeToDie > 10 then
-         if DKROT:isOffCD(DKROT.spells["Defile"]) then
+      if DKROT:has("Defile") and timeToDie > 10 then
+         if DKROT:isOffCD("Defile") then
             return DKROT.spells["Defile"], true
          end
       end
 
       -- Blood Tap with >= 11 Charges
-      if GetSpellTexture(DKROT.spells["Blood Tap"])
+      if DKROT:has("Blood Tap")
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 11
-         and DKROT:HasFullyDepletedRunes()
+         and DKROT:FullyDepletedRunes() > 0
       then
          return DKROT.spells["Blood Tap"], true
       end
 
       -- Summon Gargoyle
-      if DKROT:isOffCD(DKROT.spells["Summon Gargoyle"]) and timeToDie > 30 then
+      if DKROT:isOffCD("Summon Gargoyle") and timeToDie > 30 then
          if DKROT_Settings.CD[DKROT.Current_Spec].BossCD then
             if DKROT:BossOrPlayer("TARGET") then
                return DKROT.spells["Summon Gargoyle"]
@@ -225,7 +225,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       -- Dark Transformation
       if select(4, UnitBuff("PET",DKROT.spells["Shadow Infusion"])) == 5
          and (
-            GetSpellTexture(DKROT.spells["Enhanced Dark Transformation"]) ~= nil
+            DKROT:has("Enhanced Dark Transformation")
             or (unholy <= 0 or death >= 1)
          )
       then
@@ -239,23 +239,23 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Breath of Sindragosa
-      if GetSpellTexture(DKROT.spells["Breath of Sindragosa"]) ~= nil
+      if DKROT:has("Breath of Sindragosa")
          and UnitPower("player") > 75 
-         and DKROT:isOffCD(DKROT.spells["Breath of Sindragosa"])
+         and DKROT:isOffCD("Breath of Sindragosa")
       then
          return DKROT.spells["Breath of Sindragosa"]
       end
 
       -- Blood Tap if both unholy runes are down
-      if GetSpellTexture(DKROT.spells["Blood Tap"])
+      if DKROT:has("Blood Tap")
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 5
-         and DKROT:HasFullyDepletedRunes()
+         and DKROT:FullyDepletedRunes() > 0
       then
          return DKROT.spells["Blood Tap"], true
       end
 
-      if lunholy <= 0 and DKROT:isOffCD(DKROT.spells["Scourge Strike"]) then
+      if lunholy <= 0 and DKROT:isOffCD("Scourge Strike") then
          return DKROT.spells["Scourge Strike"]
       end
 
@@ -270,19 +270,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
  
       -- Blood Tap with >= 5 Charges
-      if GetSpellTexture(DKROT.spells["Blood Tap"])
+      if DKROT:has("Blood Tap")
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 5
-         and DKROT:HasFullyDepletedRunes()
+         and DKROT:FullyDepletedRunes() > 0
       then
          return DKROT.spells["Blood Tap"], true
       end
 
-      if DKROT:isOffCD(DKROT.spells["Scourge Strike"]) then
+      if DKROT:isOffCD("Scourge Strike") then
          return DKROT.spells["Scourge Strike"]
       end
 
-      if DKROT:isOffCD(DKROT.spells["Festering Strike"]) then
+      if DKROT:isOffCD("Festering Strike") then
          return DKROT.spells["Festering Strike"]
       end
 
@@ -292,8 +292,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Empower Rune Weapon
-      if GetSpellTexture(DKROT.spells["Empower Rune Weapon"]) ~= nil and DKROT_Settings.CD[DKROT.Current_Spec].ERW then
-         if DKROT:isOffCD(DKROT.spells["Empower Rune Weapon"]) then
+      if DKROT:has("Empower Rune Weapon") and DKROT_Settings.CD[DKROT.Current_Spec].ERW then
+         if DKROT:isOffCD("Empower Rune Weapon") then
             return DKROT.spells["Empower Rune Weapon"]
          end
       end
@@ -302,8 +302,148 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       return nil
    end
 
+   local function SFNormal()
+      -- Rune Info
+      local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+      local unholy, lunholy = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+      local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
+      local death = DKROT:DeathRunes()
+      local bloodCharges = select(4, UnitBuff("PLAYER", DKROT.spells["Blood Charge"])) or 0
+      local dFF, dBP = DKROT:GetDiseaseTime()
+      local timeToDie = DKROT:GetTimeToDie()
+      local shadowInf = select(4, UnitBuff("PET", DKROT.spells["Shadow Infusion"]))
+      local doomProc = select(4, UnitBuff("PLAYER", DKROT.spells["Sudden Doom"]))
+      local rp = UnitPower("PLAYER")
+ 
+      -- Horn of Winter
+      if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         return DKROT.spells["Horn of Winter"]
+      end
+
+      -- Raise Dead
+      if UnitExists("pet") ~= true then
+         return DKROT.spells["Raise Dead"], true
+      end
+
+      -- Plague Leech when we have two runes to return and 
+      if DKROT:has("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 and dFF > 0 and dBP > 0 then
+         local start, dur, _ = GetSpellCooldown(DKROT.spells["Outbreak"])
+         if (duration == 0 or ((start + dur) < DKROT.curtime))
+            or (kmProc and not DKROT:isOffCD("Obliterate"))
+         then
+            return DKROT.spells["Plague Leech"]
+         end
+      end
+
+      -- Soul Reaper when below or close to 45% health with improved SR, or close to 35%
+      if DKROT:isOffCD("Soul Reaper") then
+         local hp = DKROT:HealthPct("target")
+         if (DKROT:has("Improved Soul Reaper") and hp < 45.3) or hp < 35.5 then
+            return DKROT.spells["Soul Reaper"]
+         end
+      end
+
+      -- Summon Gargoyle on CD
+      if DKROT:isOffCD("Summon Gargoyle") then
+         return DKROT.spells["Summon Gargoyle"]
+      end
+
+      -- Outbreak when missing one or more diseases
+      if DKROT:isOffCD("Outbreak") and (dFF == 0 or dBP == 0) then
+         return DKROT.spells["Outbreak"]
+      end
+
+      -- Plague Strike if diseases are missing
+      if DKROT:isOffCD("Plague Strike") and (dFF == 0 or dBP == 0) then
+         return DKROT.spells["Plague Strike"]
+      end
+
+      -- Death and Decay / Defile
+      if DKROT:has("Defile") and DKROT:isOffCD("Defile") then
+         return DKROT.spells["Defile"]
+      elseif DKROT:isOffCD("Death and Decay") then
+         return DKROT.spells["Death and Decay"]
+      end
+
+      -- Scourge Strike when Unholy or Death runes are capped
+      if DKROT:isOffCD("Scourge Strike") and (lunholy == 0 or death >= 2) then
+         return DKROT.spells["Scourge Strike"]
+      end
+
+      -- Festering Strike when both blood and frost runes are capped
+      if DKROT:isOffCD("Festering Strike") and lblood == 0 and lfrost == 0 then
+         return DKROT.spells["Festering Strike"]
+      end
+
+      -- Dark Transformation on CD with 5 stacks of Shadow Infusion
+      if DKROT:isOffCD("Dark Transformation") and shadowInf == 5 then
+         return DKROT.spells["Dark Transformation"]
+      end
+
+      -- Blood Tap when we have 10 or more charges
+      if DKROT:has("Blood Tap") and bloodCharges >= 10 and DKROT:FullyDepletedRunes() > 0 then
+         return DKROT.spells["Blood Tap"]
+      end
+
+      -- Death Coil with Sudden Doom or RP almost capped
+      if doomProc or (rp >= 90 and bloodCharges <= 10) then
+         return DKROT.spells["Death Coil"]
+      end
+
+      -- Scourge Strike when Unholy or Death rune is recharged
+      if unholy == 0 or death >= 1 then
+         return DKROT.spells["Scourge Strike"]
+      end
+
+      -- Festering Strike if we have a frost and blood rune ready
+      if blood == 0 and frost == 0 then
+         return DKROT.spells["Festering Strike"]
+      end
+
+      -- Blood Tap if we have 5 or more blood charges
+      if DKROT:has("Blood Tap") and bloodCharges >= 5 then
+         return DKROT.spells["Blood Tap"]
+      end
+
+      -- Death Coil if we have enough RP
+      if rp >= 30 then
+         return DKROT.spells["Death Coil"]
+      end
+
+      -- Empower Rune Weapon when all runes are on CD
+      if DKROT:isOffCD("Empower Rune Weapon") and DKROT:DepletedRunes() == 6 then
+         return DKROT.spells["Empower Rune Weapon"]
+      end
+
+      if DKROT:isOffCD("Army of the Dead") then
+         return DKROT.spells["Army of the Dead"]
+      end
+
+      -- If nothing else is doable
+      return nil
+   end
+
+   local function SFNecroBlight()
+      -- Rune Info
+      local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+      local unholy, lunholy = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+      local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
+      local death = DKROT:DeathRunes()
+      local bloodCharges = select(4, UnitBuff("PLAYER", DKROT.spells["Blood Charge"])) or 0
+      local dFF, dBP = DKROT:GetDiseaseTime()
+      local timeToDie = DKROT:GetTimeToDie()
+      local shadowInf = select(4, UnitBuff("PET", DKROT.spells["Shadow Infusion"]))
+      local doomProc = select(4, UnitBuff("PLAYER", DKROT.spells["Sudden Doom"]))
+      local rp = UnitPower("PLAYER")
+
+      -- If nothing else is doable
+      return nil
+   end
+
    DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'IcyVeins', 'Unholy - Icy Veins', IcyVeins, false)
    DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SimC', 'Unholy - SimCraft', SimC, true)
+   DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SFNormal', 'Unholy - Skullflower', SFNormal, false)
+   -- DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SFNecroBlight', 'Necrotic Blight - Skullflower', SFNecroBlight, false)
 
    -- Function to determine AOE rotation for Unholy Spec
    function DKROT:UnholyAOEMove(icon)
@@ -318,13 +458,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Unholy Blight
-      if GetSpellTexture(DKROT.spells["Unholy Blight"]) and DKROT:isOffCD(DKROT.spells["Unholy Blight"]) then
+      if DKROT:has("Unholy Blight") and DKROT:isOffCD("Unholy Blight") then
          return DKROT.spells["Unholy Blight"]
       end
 
       -- Defile / DND
-      if GetSpellTexture(DKROT.spells["Defile"]) ~= nil then
-         if DKROT:isOffCD(DKROT.spells["Defile"]) then
+      if DKROT:has("Defile") then
+         if DKROT:isOffCD("Defile") then
             return DKROT.spells["Defile"], true
          end
       end
@@ -336,20 +476,20 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Breath of Sindragosa
-      if GetSpellTexture(DKROT.spells["Breath of Sindragosa"]) ~= nil
+      if DKROT:has("Breath of Sindragosa")
          and UnitPower("player") > 75
-         and DKROT:isOffCD(DKROT.spells["Breath of Sindragosa"])
+         and DKROT:isOffCD("Breath of Sindragosa")
       then
          return DKROT.spells["Breath of Sindragosa"]
       end
 
       -- Blood Boil
-      if DKROT:isOffCD(DKROT.spells["Blood Boil"]) then
+      if DKROT:isOffCD("Blood Boil") then
          return DKROT.spells["Blood Boil"]
       end
 
       -- Summon Gargoyle
-      if DKROT:isOffCD(DKROT.spells["Summon Gargoyle"]) then
+      if DKROT:isOffCD("Summon Gargoyle") then
          return DKROT.spells["Summon Gargoyle"]
       end
 

@@ -11,19 +11,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local timeToDie = DKROT:GetTimeToDie()
 
       -- Death Pact
-      if GetSpellTexture(DKROT.spells["Death Pact"]) ~= nil
+      if DKROT:has("Death Pact")
          and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
       then
-         if DKROT:isOffCD(DKROT.spells["Death Pact"]) then
+         if DKROT:isOffCD("Death Pact") then
             return DKROT.spells["Death Pact"], true
          end
       end
 
       -- Bone Shield
-      if GetSpellTexture(DKROT.spells["Bone Shield"]) ~= nil
+      if DKROT:has("Bone Shield")
          and select(7, UnitBuff("player", DKROT.spells["Bone Shield"])) == nil
       then
-         if DKROT:isOffCD(DKROT.spells["Bone Shield"]) then
+         if DKROT:isOffCD("Bone Shield") then
             return DKROT.spells["Bone Shield"], true
          end
       end
@@ -34,17 +34,17 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Defile
-      if GetSpellTexture(DKROT.spells["Defile"]) ~= nil then
-         if DKROT:isOffCD(DKROT.spells["Defile"]) then
+      if DKROT:has("Defile") then
+         if DKROT:isOffCD("Defile") then
             return DKROT.spells["Defile"], true
          end
       end
 
       -- Soul Reaper
-      if lblood <= 2 and GetSpellTexture(DKROT.spells["Soul Reaper"]) ~= nil
+      if lblood <= 2 and DKROT:has("Soul Reaper")
          and UnitHealth("target")/UnitHealthMax("target") < 0.35
       then
-         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) and timeToDie > 5 then
+         if DKROT:isOffCD("Soul Reaper") and timeToDie > 5 then
             return DKROT.spells["Soul Reaper"]
          end
       end
@@ -56,28 +56,28 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Death Strike
-      if GetSpellTexture(DKROT.spells["Death Strike"]) and select(1,IsUsableSpell(DKROT.spells["Death Strike"])) then
+      if DKROT:has("Death Strike") and select(1,IsUsableSpell(DKROT.spells["Death Strike"])) then
          return DKROT.spells["Death Strike"]
       end
 
       -- Breath of Sindragosa
-      if GetSpellTexture(DKROT.spells["Breath of Sindragosa"]) ~= nil and UnitPower("player") > 30 then
-         if DKROT:isOffCD(DKROT.spells["Breath of Sindragosa"]) then
+      if DKROT:has("Breath of Sindragosa") and UnitPower("player") > 30 then
+         if DKROT:isOffCD("Breath of Sindragosa") then
             return DKROT.spells["Breath of Sindragosa"]
          end
       end
 
       -- Blood Tap with >= 11 Charges
-      if GetSpellTexture(DKROT.spells["Blood Tap"])
+      if DKROT:has("Blood Tap")
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 11
-         and DKROT:HasFullyDepletedRunes()
+         and DKROT:FullyDepletedRunes() > 0
       then
          return DKROT.spells["Blood Tap"]
       end
 
       -- Blood Boil if we have a blood rune
-      if GetSpellTexture(DKROT.spells["Blood Boil"]) and blood <= 0 then
+      if DKROT:has("Blood Boil") and blood <= 0 then
          return DKROT.spells["Blood Boil"]
       end
 
@@ -92,20 +92,20 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Blood Tap with >= 5 Charges
-      if GetSpellTexture(DKROT.spells["Blood Tap"])
+      if DKROT:has("Blood Tap")
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 5
-         and DKROT:HasFullyDepletedRunes()
+         and DKROT:FullyDepletedRunes() > 0
       then
          return DKROT.spells["Blood Tap"], true
       end
 
       -- Empower Rune Weapon if we have it enabled and we have at least 3 runes depleted
-      if GetSpellTexture(DKROT.spells["Empower Rune Weapon"]) ~= nil
+      if DKROT:has("Empower Rune Weapon")
          and DKROT_Settings.CD[DKROT.Current_Spec].ERW
          and DKROT:DepletedRunes() >= 3
       then
-         if DKROT:isOffCD(DKROT.spells["Empower Rune Weapon"]) then
+         if DKROT:isOffCD("Empower Rune Weapon") then
             return DKROT.spells["Empower Rune Weapon"]
          end
       end
@@ -125,15 +125,15 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local timeToDie = DKROT:GetTimeToDie()
 
       -- Death Pact
-      if GetSpellTexture(DKROT.spells["Death Pact"]) and healthPct < 50 then
-         if DKROT:isOffCD(DKROT.spells["Death Pact"]) then
+      if DKROT:has("Death Pact") and healthPct < 50 then
+         if DKROT:isOffCD("Death Pact") then
             return DKROT.spells["Death Pact"], true
          end
       end
 
       -- Bone Shield
       if select(7, UnitBuff("player", DKROT.spells["Bone Shield"])) == nil then
-         if DKROT:isOffCD(DKROT.spells["Bone Shield"]) then
+         if DKROT:isOffCD("Bone Shield") then
             return DKROT.spells["Bone Shield"], true
          end
       end
@@ -144,29 +144,29 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Lichborne
-      if GetSpellTexture(DKROT.spells["Lichborne"]) and UnitHealth("PLAYER") < 90 then
-         if DKROT:isOffCD(DKROT.spells["Lichborne"]) then
+      if DKROT:has("Lichborne") and UnitHealth("PLAYER") < 90 then
+         if DKROT:isOffCD("Lichborne") then
             return DKROT.spells["Lichborne"], true
          end
       end
 
       -- Death Strike if we are below 60% health
-      if healthPct < 60 and DKROT:isOffCD(DKROT.spells["Death Strike"]) then
+      if healthPct < 60 and DKROT:isOffCD("Death Strike") then
          return DKROT.spells["Death Strike"]
       end
 
       -- Defile
-      if GetSpellTexture(DKROT.spells["Defile"]) ~= nil then
-         if DKROT:isOffCD(DKROT.spells["Defile"]) then
+      if DKROT:has("Defile") then
+         if DKROT:isOffCD("Defile") then
             return DKROT.spells["Defile"], true
          end
       end
 
       -- Soul Reaper
-      if lblood <= 2 and GetSpellTexture(DKROT.spells["Soul Reaper"]) ~= nil
+      if lblood <= 2 and DKROT:has("Soul Reaper")
          and UnitHealth("target")/UnitHealthMax("target") < 0.35
       then
-         if DKROT:isOffCD(DKROT.spells["Soul Reaper"]) and timeToDie > 5 then
+         if DKROT:isOffCD("Soul Reaper") and timeToDie > 5 then
             return DKROT.spells["Soul Reaper"]
          end
       end
@@ -178,12 +178,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Dancing Rune Weapon
-      if healthPct < 80 and DKROT:isOffCD(DKROT.spells["Dancing Rune Weapon"]) then
+      if healthPct < 80 and DKROT:isOffCD("Dancing Rune Weapon") then
          return DKROT.spells["Dancing Rune Weapon"], true
       end
 
       -- Death Strike
-      if (lunholy <= 0 or lfrost <= 0) and DKROT:isOffCD(DKROT.spells["Death Strike"]) then
+      if (lunholy <= 0 or lfrost <= 0) and DKROT:isOffCD("Death Strike") then
          return DKROT.spells["Death Strike"]
       end
 
@@ -198,10 +198,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Blood Tap with >= 5 Charges
-      if GetSpellTexture(DKROT.spells["Blood Tap"])
+      if DKROT:has("Blood Tap")
          and DKROT_Settings.CD[DKROT.Current_Spec].BT
          and bloodCharges ~= nil and bloodCharges >= 5
-         and DKROT:HasFullyDepletedRunes()
+         and DKROT:FullyDepletedRunes() > 0
       then
          return DKROT.spells["Blood Tap"], true
       end
@@ -212,9 +212,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Empower Rune Weapon if we have it enabled and we have at least 3 runes depleted
-      if GetSpellTexture(DKROT.spells["Empower Rune Weapon"]) ~= nil
+      if DKROT:has("Empower Rune Weapon")
          and DKROT_Settings.CD[DKROT.Current_Spec].ERW
-         and DKROT:isOffCD(DKROT.spells["Empower Rune Weapon"])
+         and DKROT:isOffCD("Empower Rune Weapon")
          and DKROT:DepletedRunes() >= 3
       then
          return DKROT.spells["Empower Rune Weapon"]

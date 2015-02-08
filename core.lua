@@ -507,7 +507,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                end
 
                if spell ~= nil and not notint then
-                  if DKROT:isOffCD(DKROT.spells["Mind Freeze"]) then
+                  if DKROT:isOffCD("Mind Freeze") then
                      DKROT.Interrupt:SetAlpha(getOpacity("DKROT.Interrupt"))
                   end
                end
@@ -745,229 +745,64 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    end
 
    -- Priority System
-   do
-      -- Called to update a priority icon with next move
-      function DKROT:GetNextMove(icon)
-         -- Call correct function based on spec
-         if DKROT_Settings.MoveAltAOE then
-            local aoeNextCast, aoeNocheckRange
-            if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
-               aoeNextCast, aoeNoCheckRange = DKROT:UnholyAOEMove()
-            elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
-               aoeNextCast, aoeNoCheckRange = DKROT:FrostAOEMove()
-            elseif (DKROT.Current_Spec == DKROT.SPECS.BLOOD) then
-               aoeNextCast, aoeNoCheckRange = nil, nil
-            end
-
-            if aoeNextCast ~= nil then
-               DKROT.AOE:SetAlpha(getOpacity("DKROT.AOE"))
-
-               if aoeNoCheckRange ~= nil and aoeNoCheckRange == true then
-                  DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
-               else
-                  DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
-               end
-            end
+   -- Called to update a priority icon with next move
+   function DKROT:GetNextMove(icon)
+      -- Call correct function based on spec
+      if DKROT_Settings.MoveAltAOE then
+         local aoeNextCast, aoeNocheckRange
+         if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
+            aoeNextCast, aoeNoCheckRange = DKROT:UnholyAOEMove()
+         elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
+            aoeNextCast, aoeNoCheckRange = DKROT:FrostAOEMove()
+         elseif (DKROT.Current_Spec == DKROT.SPECS.BLOOD) then
+            aoeNextCast, aoeNoCheckRange = nil, nil
          end
 
-         -- return DKROT.Rotations[DKROT.Current_Spec][DKROT_Settings.CD[DKROT.Current_Spec].Rotation].func(icon)
-         local nextCast, noCheckRange = DKROT.Rotations[DKROT.Current_Spec][DKROT_Settings.CD[DKROT.Current_Spec].Rotation].func()
-         if noCheckRange ~= nil and noCheckRange == true then
-            return GetSpellTexture(nextCast)
-         else
-            return DKROT:GetRangeandIcon(icon, nextCast)
-         end
-      end
+         if aoeNextCast ~= nil then
+            DKROT.AOE:SetAlpha(getOpacity("DKROT.AOE"))
 
-      -- Determines if player is in range with spell and sets colour and icon accordingly
-      -- In: icon: icon in which to change the vertex colour of   move: spellID of spell to be cast next
-      -- Out: returns the texture of the icon (probably unessesary since icon is now being passed in, will look into it more)
-      function DKROT:GetRangeandIcon(icon, move)
-         if move ~= nil then
-            if DKROT_Settings.Range and IsSpellInRange(move, "target") == 0 then
-               icon:SetVertexColor(0.8, 0.05, 0.05, 1)
+            if aoeNoCheckRange ~= nil and aoeNoCheckRange == true then
+               DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
             else
-               icon:SetVertexColor(1, 1, 1, 1)
-            end
-
-            return GetSpellTexture(move)
-         end
-
-         return nil
-      end
-
-      -- Returns the number of available runes of a specific type
-      -- in: runeType: The type of rune to fetch information for, allowDeathRunes: Whether or not to count deathrunes
-      -- out: availableRunes: number of available runes
-      function DKROT:RuneIsAvailable(runeType, allowDeathRunes)
-         allowDeathRunes = allowDeathRunes or false
-
-         local availableRunes = 0
-         for i = 1,6 do
-            local rt = GetRuneType(i)
-            if rt == runeType or (allowDeathRunes == true and rt == 4) then
-               availableRunes = availableRunes + 1
+               DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
             end
          end
-
-         return availableRunes
       end
 
-      -- Returns the total number of Death runes off CD
-      function DKROT:DeathRunes()
-         local count = 0
-         local start, dur, cool
-         for i = 1, 6 do
-            if GetRuneType(i) == 4 then
-               if DKROT:isRuneOffCD(i) then
-                  count = count + 1
-               end
-            end
+      -- return DKROT.Rotations[DKROT.Current_Spec][DKROT_Settings.CD[DKROT.Current_Spec].Rotation].func(icon)
+      local nextCast, noCheckRange = DKROT.Rotations[DKROT.Current_Spec][DKROT_Settings.CD[DKROT.Current_Spec].Rotation].func()
+      if noCheckRange ~= nil and noCheckRange == true then
+         return GetSpellTexture(nextCast)
+      else
+         return DKROT:GetRangeandIcon(icon, nextCast)
+      end
+   end
+
+   -- Determines if player is in range with spell and sets colour and icon accordingly
+   -- In: icon: icon in which to change the vertex colour of   move: spellID of spell to be cast next
+   -- Out: returns the texture of the icon (probably unessesary since icon is now being passed in, will look into it more)
+   function DKROT:GetRangeandIcon(icon, move)
+      if move ~= nil then
+         if DKROT_Settings.Range and IsSpellInRange(move, "target") == 0 then
+            icon:SetVertexColor(0.8, 0.05, 0.05, 1)
+         else
+            icon:SetVertexColor(1, 1, 1, 1)
          end
-         return count
+
+         return GetSpellTexture(move)
       end
 
-      -- Returns the number of depleted runes (runes on CD)
-      function DKROT:DepletedRunes()
-         local count = 6
-         for i = 1, 6 do
-            if DKROT:isRuneOffCD(i) then
-               count = count - 1
-            end
-         end
-         return count
-      end
+      return nil
+   end
 
-      function DKROT:HasFullyDepletedRunes()
-         if DKROT:isRuneOffCD(1) ~= true and DKROT:isRuneOffCD(2) ~= true then
-            return true
-         elseif DKROT:isRuneOffCD(3) ~= true and DKROT:isRuneOffCD(4) ~= true then
-            return true
-         elseif DKROT:isRuneOffCD(5) ~= true and DKROT:isRuneOffCD(6) ~= true then
+   -- Returns if move is off cooldown or not
+   function DKROT:QuickAOESpellCheck(move)
+      if DKROT_Settings.MoveAltAOE and GetSpellTexture(move) ~= nil then
+         if DKROT:isOffCD(move) then
             return true
          end
-
-         return false
       end
-
-      -- Returns if move is off cooldown or not
-      function DKROT:QuickAOESpellCheck(move)
-         if DKROT_Settings.MoveAltAOE and GetSpellTexture(move) ~= nil then
-            if DKROT:isOffCD(move) then
-               return true
-            end
-         end
-         return false
-      end
-
-      function DKROT:GetDiseaseTime()
-         local ff, bp
-
-         local expires = select(7,UnitDebuff("TARGET", DKROT.spells["Frost Fever"], nil, "PLAYER"))
-         if expires ~= nil then
-            ff = expires - DKROT.curtime
-         end
-
-         expires = select(7,UnitDebuff("TARGET", DKROT.spells["Blood Plague"], nil, "PLAYER"))
-         if expires ~= nil then
-            bp = expires - DKROT.curtime
-         end
-
-         expires = select(7, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"], nil, "PLAYER"))
-         if expires ~= nil then
-            local np = expires - DKROT.curtime
-            ff = np
-            bp = np
-         end
-
-         return ff, bp
-      end
-
-      -- Determines if Diseases need to be refreshed or applied
-      function DKROT:GetDisease()
-         -- If settings not to worry about diseases, then break
-         if DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption == DKROT.DiseaseOptions.None then
-            return nil
-         end
-
-         -- Get Duration left on diseases
-         local FFexpires, BPexpires
-         local expires = select(7,UnitDebuff("TARGET", DKROT.spells["Frost Fever"], nil, "PLAYER"))
-         if expires ~= nil then
-            FFexpires = expires - DKROT.curtime
-         end
-
-         expires = select(7,UnitDebuff("TARGET", DKROT.spells["Blood Plague"], nil, "PLAYER"))
-         if expires ~= nil then
-            BPexpires = expires - DKROT.curtime
-         end
-
-         -- Necrotic Plague cannot be refreshed, no reason to even try
-         expires = select(7, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"], nil, "PLAYER"))
-         if expires ~= nil then
-            return nil
-         end
-
-         -- Check if Outbreak is off CD, is known and Player wants to use it in rotation
-         local outbreak = DKROT_Settings.CD[DKROT.Current_Spec].Outbreak and
-            IsSpellKnown(77575) and
-            DKROT:isOffCD(DKROT.spells["Outbreak"])
-
-         -- Check if Unholy Blight is up, is known and Player wants to use it in rotation
-         local unholyblight = DKROT_Settings.CD[DKROT.Current_Spec].UB and
-            IsSpellKnown(115989) and
-            DKROT:isOffCD(DKROT.spells["Unholy Blight"])
-
-         -- Check if Plague Leech is up, is known and Player wants to use it in rotation
-         local plagueleech = DKROT_Settings.CD[DKROT.Current_Spec].PL and
-            IsSpellKnown(123693) and
-            DKROT:isOffCD(DKROT.spells["Plague Leech"])
-
-
-         -- Apply Frost Fever
-         if FFexpires == nil or FFexpires < 2 then
-            if outbreak then -- if can use outbreak, then do it
-               return DKROT.spells["Outbreak"]
-
-            elseif unholyblight then -- if can use Unholy Blight, then do it
-               return DKROT.spells["Unholy Blight"]
-
-            elseif (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) and ((DKROT:RuneCDs(DKROT.SPECS.UNHOLY) <= 0) or DKROT:DeathRunes() >= 1) then -- Unholy: Plague Strike
-               return DKROT.spells["Plague Strike"]
-
-            elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) and ((DKROT:RuneCDs(DKROT.SPECS.FROST) <= 0) or DKROT:DeathRunes() >= 1) then -- Frost: Howling Blast
-               return DKROT.spells["Howling Blast"]
-               
-            elseif ((DKROT:RuneCDs(DKROT.SPECS.FROST) <= 0) or DKROT:DeathRunes() >= 1) then -- Other: Icy Touch
-               return DKROT.spells["Icy Touch"]
-            end
-         end
-
-         -- Apply Blood Plague
-         if (DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption ~= DKROT.DiseaseOptions.Single or outbreak) then
-            if (BPexpires == nil or BPexpires < 3) then
-               -- Add Death Grip as first priority until PS is in range
-               if DKROT_Settings.DG and (IsSpellInRange(DKROT.spells["Plague Strike"], "target")) == 0 and IsUsableSpell(DKROT.spells["Death Grip"]) then
-                  return DKROT.spells["Death Grip"]
-               end
-
-               if plagueleech and BPexpires ~= nil and DKROT:DepletedRunes() > 0 then
-                  return DKROT.spells["Plague Leech"]
-
-               elseif outbreak then -- if can use outbreak, then do it
-                  return DKROT.spells["Outbreak"]
-
-               elseif unholyblight then -- if can use Unholy Blight, then do it
-                  return DKROT.spells["Unholy Blight"]
-
-               elseif ((DKROT:RuneCDs(DKROT.SPECS.UNHOLY) <= 0) or DKROT:DeathRunes() >= 1) then -- if rune availible, then use Plague Strike
-                  return DKROT.spells["Plague Strike"]
-               end
-            end
-         end
-
-         return nil
-      end
+      return false
    end
 
    -- Function to check spec and presence
