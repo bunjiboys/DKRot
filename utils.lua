@@ -167,7 +167,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    -- In: start- when the spell cd started  dur- duration of the cd
    -- Out: returns if the spell is or will be off cd in the next GCD
    function DKROT:isOffCD(spell)
-      local start, dur = GetSpellCooldown(spell)
+      local start, dur = GetSpellCooldown(DKROT.spells[spell])
       return (dur + start - DKROT.curtime - DKROT.GCD <= 0)
    end
 
@@ -267,30 +267,211 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
    end
 
-      -- Gives CD of rune type specified
-      -- In: r: type of rune set to be queried
-      -- Out:  time1: the lowest cd of the 2 runes being queried  time2: the higher of the cds  RT1: returns true if lowest cd rune is a death rune, RT2: same as RT1 except higher CD rune
-      function DKROT:RuneCDs(r)
-         -- Get individual rune numbers
-         local a, b
-         if r == DKROT.SPECS.UNHOLY then a, b = 3, 4
-         elseif r == DKROT.SPECS.FROST then a, b = 5, 6
-         elseif r == DKROT.SPECS.BLOOD then a, b = 1, 2
-         end
+   -- Gives CD of rune type specified
+   -- In: r: type of rune set to be queried
+   -- Out:  time1: the lowest cd of the 2 runes being queried  time2: the higher of the cds  RT1: returns true if lowest cd rune is a death rune, RT2: same as RT1 except higher CD rune
+   function DKROT:RuneCDs(r)
+      -- Get individual rune numbers
+      local a, b
+      if r == DKROT.SPECS.UNHOLY then a, b = 3, 4
+      elseif r == DKROT.SPECS.FROST then a, b = 5, 6
+      elseif r == DKROT.SPECS.BLOOD then a, b = 1, 2
+      end
 
-         -- Get CD of first rune
-         local start, dur, cool = GetRuneCooldown(a)
-         local time1 = (cool and 0) or (dur - (DKROT.curtime - start + DKROT.GCD))
+      -- Get CD of first rune
+      local start, dur, cool = GetRuneCooldown(a)
+      local time1 = (cool and 0) or (dur - (DKROT.curtime - start + DKROT.GCD))
 
-         -- Get CD of second rune
-         local start, dur, cool = GetRuneCooldown(b)
-         local time2 = (cool and 0) or (dur - (DKROT.curtime - start + DKROT.GCD))
+      -- Get CD of second rune
+      local start, dur, cool = GetRuneCooldown(b)
+      local time2 = (cool and 0) or (dur - (DKROT.curtime - start + DKROT.GCD))
 
-         -- if second rune will be off CD before first, then return second then first rune, else vice versa
-         if time1 > time2 then
-            return time2, time1, GetRuneType(b) == 4, GetRuneType(a) == 4
-         else
-            return time1, time2, GetRuneType(a) == 4, GetRuneType(b) == 4
+      -- if second rune will be off CD before first, then return second then first rune, else vice versa
+      if time1 > time2 then
+         return time2, time1, GetRuneType(b) == 4, GetRuneType(a) == 4
+      else
+         return time1, time2, GetRuneType(a) == 4, GetRuneType(b) == 4
+      end
+   end
+
+   -- Helper function to easily check if a spell is known
+   function DKROT:has(spell)
+      return GetSpellTexture(DKROT.spells[spell]) and true or false
+   end
+
+   -- Return the percentage health of the unit
+   function DKROT:HealthPct(unit)
+      return (UnitHealth("player") / UnitHealthMax("player")) * 100
+   end
+
+   -- Returns the number of available runes of a specific type
+   -- in: runeType: The type of rune to fetch information for, allowDeathRunes: Whether or not to count deathrunes
+   -- out: availableRunes: number of available runes
+   function DKROT:RuneIsAvailable(runeType, allowDeathRunes)
+      allowDeathRunes = allowDeathRunes or false
+
+      local availableRunes = 0
+      for i = 1,6 do
+         local rt = GetRuneType(i)
+         if rt == runeType or (allowDeathRunes == true and rt == 4) then
+            availableRunes = availableRunes + 1
          end
       end
+
+      return availableRunes
+   end
+
+   -- Returns the total number of Death runes off CD
+   function DKROT:DeathRunes()
+      local count = 0
+      local tcount = 0
+      local start, dur, cool
+      for i = 1, 6 do
+         if GetRuneType(i) == 4 then
+            tcount = tcount + 1
+            if DKROT:isRuneOffCD(i) then
+               count = count + 1
+            end
+         end
+      end
+      return count, tcount
+   end
+
+   -- Returns the number of depleted runes (runes on CD)
+   function DKROT:DepletedRunes()
+      local count = 6
+      for i = 1, 6 do
+         if DKROT:isRuneOffCD(i) then
+            count = count - 1
+         end
+      end
+      return count
+   end
+
+   function DKROT:FullyDepletedRunes()
+      local count = 0
+
+      if DKROT:isRuneOffCD(1) ~= true and DKROT:isRuneOffCD(2) ~= true then
+         count = count + 1
+      end
+
+      if DKROT:isRuneOffCD(3) ~= true and DKROT:isRuneOffCD(4) ~= true then
+         count = count + 1
+      end
+
+      if DKROT:isRuneOffCD(5) ~= true and DKROT:isRuneOffCD(6) ~= true then
+         count = count + 1
+      end
+
+      return count
+   end
+
+   function DKROT:GetDiseaseTime()
+      local ff, bp = 0, 0
+
+      local expires = select(7,UnitDebuff("TARGET", DKROT.spells["Frost Fever"], nil, "PLAYER"))
+      if expires ~= nil then
+         ff = expires - DKROT.curtime
+      end
+
+      expires = select(7,UnitDebuff("TARGET", DKROT.spells["Blood Plague"], nil, "PLAYER"))
+      if expires ~= nil then
+         bp = expires - DKROT.curtime
+      end
+
+      expires = select(7, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"], nil, "PLAYER"))
+      if expires ~= nil then
+         local np = expires - DKROT.curtime
+         ff = np
+         bp = np
+      end
+
+      return ff, bp
+   end
+
+   -- Determines if Diseases need to be refreshed or applied
+   function DKROT:GetDisease()
+      -- If settings not to worry about diseases, then break
+      if DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption == DKROT.DiseaseOptions.None then
+         return nil
+      end
+
+      -- Get Duration left on diseases
+      local FFexpires, BPexpires
+      local expires = select(7,UnitDebuff("TARGET", DKROT.spells["Frost Fever"], nil, "PLAYER"))
+      if expires ~= nil then
+         FFexpires = expires - DKROT.curtime
+      end
+
+      expires = select(7,UnitDebuff("TARGET", DKROT.spells["Blood Plague"], nil, "PLAYER"))
+      if expires ~= nil then
+         BPexpires = expires - DKROT.curtime
+      end
+
+      -- Necrotic Plague cannot be refreshed, no reason to even try
+      expires = select(7, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"], nil, "PLAYER"))
+      if expires ~= nil then
+         return nil
+      end
+
+      -- Check if Outbreak is off CD, is known and Player wants to use it in rotation
+      local outbreak = DKROT_Settings.CD[DKROT.Current_Spec].Outbreak and
+         IsSpellKnown(77575) and
+         DKROT:isOffCD("Outbreak")
+
+      -- Check if Unholy Blight is up, is known and Player wants to use it in rotation
+      local unholyblight = DKROT_Settings.CD[DKROT.Current_Spec].UB and
+         IsSpellKnown(115989) and
+         DKROT:isOffCD("Unholy Blight")
+
+      -- Check if Plague Leech is up, is known and Player wants to use it in rotation
+      local plagueleech = DKROT_Settings.CD[DKROT.Current_Spec].PL and
+         IsSpellKnown(123693) and
+         DKROT:isOffCD("Plague Leech")
+
+
+      -- Apply Frost Fever
+      if FFexpires == nil or FFexpires < 2 then
+         if outbreak then -- if can use outbreak, then do it
+            return DKROT.spells["Outbreak"]
+
+         elseif unholyblight then -- if can use Unholy Blight, then do it
+            return DKROT.spells["Unholy Blight"]
+
+         elseif (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) and ((DKROT:RuneCDs(DKROT.SPECS.UNHOLY) <= 0) or DKROT:DeathRunes() >= 1) then -- Unholy: Plague Strike
+            return DKROT.spells["Plague Strike"]
+
+         elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) and ((DKROT:RuneCDs(DKROT.SPECS.FROST) <= 0) or DKROT:DeathRunes() >= 1) then -- Frost: Howling Blast
+            return DKROT.spells["Howling Blast"]
+            
+         elseif ((DKROT:RuneCDs(DKROT.SPECS.FROST) <= 0) or DKROT:DeathRunes() >= 1) then -- Other: Icy Touch
+            return DKROT.spells["Icy Touch"]
+         end
+      end
+
+      -- Apply Blood Plague
+      if (DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption ~= DKROT.DiseaseOptions.Single or outbreak) then
+         if (BPexpires == nil or BPexpires < 3) then
+            -- Add Death Grip as first priority until PS is in range
+            if DKROT_Settings.DG and (IsSpellInRange(DKROT.spells["Plague Strike"], "target")) == 0 and IsUsableSpell(DKROT.spells["Death Grip"]) then
+               return DKROT.spells["Death Grip"]
+            end
+
+            if plagueleech and BPexpires ~= nil and DKROT:DepletedRunes() > 0 then
+               return DKROT.spells["Plague Leech"]
+
+            elseif outbreak then -- if can use outbreak, then do it
+               return DKROT.spells["Outbreak"]
+
+            elseif unholyblight then -- if can use Unholy Blight, then do it
+               return DKROT.spells["Unholy Blight"]
+
+            elseif ((DKROT:RuneCDs(DKROT.SPECS.UNHOLY) <= 0) or DKROT:DeathRunes() >= 1) then -- if rune availible, then use Plague Strike
+               return DKROT.spells["Plague Strike"]
+            end
+         end
+      end
+
+      return nil
+   end
 end
