@@ -173,7 +173,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          and DKROT_Settings.CD[DKROT.Current_Spec].PL
          and DKROT:isOffCD("Plague Leech")
          and DKROT:FullyDepletedRunes() > 0
-         and (dFF ~= nil and dBP ~= nil and dFF > 0 and dBP > 0)
+         and (dFF > 0 and dBP > 0)
       then
          return DKROT.spells["Plague Leech"]
       end

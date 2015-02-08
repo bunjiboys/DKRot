@@ -286,7 +286,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if DKROT:has("Plague Leech")
          and DKROT:isOffCD("Plague Leech")
          and DKROT:FullyDepletedRunes() > 0
-         and (dFF ~= nil and dBP ~= nil and dFF > 0 and dBP > 0)
+         and (dFF > 0 and dBP > 0)
          and DKROT_Settings.CD[DKROT.Current_Spec].PL
       then
          return DKROT.spells["Plague Leech"]
@@ -318,7 +318,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
  
       -- Rime Howling Blast if we need to refresh
-      if rimeProc ~= nil and (dFF == nil or dFF < 5) then
+      if rimeProc ~= nil and (dFF < 5) then
          return DKROT.spells["Howling Blast"]
       end
 
@@ -518,7 +518,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if DKROT:has("Plague Leech")
          and DKROT:isOffCD("Plague Leech")
          and DKROT:FullyDepletedRunes() > 0
-         and (dFF ~= nil and dBP ~= nil and dFF > 0 and dBP > 0)
+         and (dFF > 0 and dBP > 0)
          and DKROT_Settings.CD[DKROT.Current_Spec].PL
       then
          return DKROT.spells["Plague Leech"]
@@ -566,7 +566,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Plague Leech when we have two runes to return and 
-      if DKROT:has("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 then
+      if DKROT:has("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 and dFF > 0 and dBP > 0 then
          local start, dur, _ = GetSpellCooldown(DKROT.spells["Outbreak"])
          if (duration == 0 or ((start + dur) < DKROT.curtime))
             or (kmProc and not DKROT:isOffCD("Obliterate"))
@@ -606,17 +606,17 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Outbreak with we're missing diseases
-      if (not dFF or not dBP) and DKROT:isOffCD("Outbreak") then
+      if (dFF == 0 or dBP == 0) and DKROT:isOffCD("Outbreak") then
          return DKROT.spells["Outbreak"]
       end
 
       -- Plague Strike if we cant use outbreak to apply Blood Plague
-      if not dBP and DKROT:isOffCD("Plague Strike") then
+      if dBP == 0 and DKROT:isOffCD("Plague Strike") then
          return DKROT.spells["Plague Strike"]
       end
 
       -- Howling Blast if we cant use outbreak to apply Frost Fever
-      if not dFF and DKROT:isOffCD("Howling Blast") then
+      if dFF == 0 and DKROT:isOffCD("Howling Blast") then
          return DKROT.spells["Howling Blast"]
       end
 
@@ -636,7 +636,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Plague Leech if we have 2 runes depleted
-      if DKROT:has("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 then
+      if DKROT:has("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 and dFF > 0 and dBP > 0 then
          return DKROT.spells["Plague Leech"]
       end
 
@@ -677,7 +677,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Plague Leech when we have a fully depleted rune
-      if DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 then
+      if DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 and dFF > 0 and dBP > 0 then
          return DKROT.spells["Plague Leech"]
       end
 
