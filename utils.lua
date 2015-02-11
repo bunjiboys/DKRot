@@ -2,7 +2,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
 
    -- Register a rotation
-   function DKROT_RegisterRotation(spec, intname, rotname, rotfunc, def)
+   function DKROT_RegisterRotation(spec, intname, rotname, rotfunc, def, spells)
       local currentDefault = DKROT:GetDefaultSpecRotation(spec)
       if currentDefault ~= nil and def == true then
          local specName = select(2, GetSpecializationInfo(spec))
@@ -13,7 +13,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT.Rotations[spec][intname] = {
          name = rotname,
          func = rotfunc,
-         default = def
+         default = def,
+         spells = spells or {}
       }
    end
 
@@ -25,11 +26,21 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       for rotName, rotInfo in pairs(DKROT.Rotations[spec]) do
          if rotInfo.default then
-            return rotName
+            return rotName, rotInfo
          end
       end
 
       return nil
+   end
+
+   -- Get the current selected rotation, or the default if the current is invalid
+   function DKROT:GetCurrentRotation()
+      if DKROT.Rotations[DKROT.Current_Spec][DKROT_Settings.CD[DKROT.Current_Spec].Rotation] == nil then
+         local rotName, rotInfo = DKROT:GetDefaultSpecRotation(DKROT.Current_Spec)
+         return rotName
+      else
+         return DKROT_Settings.CD[DKROT.Current_Spec].Rotation
+      end
    end
 
    -- Get spellID by name
@@ -244,7 +255,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    function DKROT:BossOrPlayer(unit)
       -- Player targets should be considered High Level to allow
       -- for full rotation use in PvP
-      if UnitPlayerControlled(unit) or UnitLevel(unit) == -1 then
+      if DKROT_Settings.CD[DKROT.Current_Spec].BossCD then
+         if UnitPlayerControlled(unit) or UnitLevel(unit) == -1 then
+            return true
+         end
+
+         return false
+      else
          return true
       end
    end
@@ -473,5 +490,32 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       return nil
+   end
+
+   function DKROT:CheckRotationOptions()
+      local curRot = DKROT_Settings.CD[DKROT.Current_Spec].Rotation
+      local active_rot = DKROT.Rotations[DKROT.Current_Spec][curRot]
+      if DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions == nil then
+         DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions = {}
+      end
+
+      if DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[curRot] == nil then
+         DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[curRot] = {}
+         for idx, spell in pairs(active_rot.spells) do
+            DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[curRot][spell] = true
+         end
+      end
+   end
+
+   function DKROT:CanUse(spell)
+      local curRot = DKROT_Settings.CD[DKROT.Current_Spec].Rotation
+      local canUse = DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[curRot][spell]
+
+      -- Default to using, if not set
+      if (canUse == nil or canUse) and DKROT:has(spell) then
+         return true
+      end
+
+      return false
    end
 end

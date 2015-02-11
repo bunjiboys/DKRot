@@ -2,6 +2,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
 
    -- Function to determine rotation for No Spec
+   blankspells = { "Death Pact", "Blood Tap", "Army of the Dead" }
    local function BlankMove()
       -- Rune Info
       local frost = DKROT:RuneCDs(DKROT.SPECS.FROST)
@@ -22,17 +23,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Death Pact
-      if DKROT:has("Death Pact")
-         and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
-      then
+      if DKROT:CanUse("Death Pact") and DKROT:HealthPct("PLAYER") < 30 then
          if DKROT:isOffCD("Death Pact") then
             return DKROT.spells["Death Pact"], true
          end
       end
 
       -- Blood Tap with >= 11 Charges
-      if DKROT:has("Blood Tap")
-         and DKROT_Settings.CD[DKROT.Current_Spec].BT
+      if DKROT:CanUse("Blood Tap")
          and bloodCharges ~= nil and bloodCharges >= 11
          and DKROT:FullyDepletedRunes() > 0
       then
@@ -45,15 +43,15 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Death Strike
-      if DKROT:has("Death Strike") then
-         if select(1,IsUsableSpell(DKROT.spells["Death Strike"])) then
-            return DKROT.spells["Death Strike"]
-         end
+      if select(1,IsUsableSpell(DKROT.spells["Death Strike"])) then
+         return DKROT.spells["Death Strike"]
+      end
 
-      elseif select(1, IsUsableSpell(DKROT.spells["Icy Touch"])) then
+      if select(1, IsUsableSpell(DKROT.spells["Icy Touch"])) then
          return DKROT.spells["Icy Touch"]
+      end
 
-      elseif select(1, IsUsableSpell(DKROT.spells["Plague Strike"])) then
+      if select(1, IsUsableSpell(DKROT.spells["Plague Strike"])) then
          return DKROT.spells["Plague Strike"]
       end
 
@@ -63,13 +61,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Death Coil
-      if DKROT_Settings.CD[DKROT.Current_Spec].RP and UnitPower("player") >= 40 then
+      if UnitPower("player") >= 40 then
          return DKROT.spells["Death Coil"]
       end
 
       -- Blood Tap with >= 5 Charges
-      if DKROT:has("Blood Tap")
-         and DKROT_Settings.CD[DKROT.Current_Spec].BT
+      if DKROT:CanUse("Blood Tap")
          and bloodCharges ~= nil and bloodCharges >= 5
          and DKROT:FullyDepletedRunes() > 0
       then
@@ -77,11 +74,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Empower Rune Weapon if we have it enabled and we have at least 3 runes depleted
-      if DKROT:has("Empower Rune Weapon")
-         and DKROT_Settings.CD[DKROT.Current_Spec].ERW
-         and DKROT:DepletedRunes() >= 3
+      if DKROT:CanUse("Empower Rune Weapon") and DKROT:DepletedRunes() >= 3
       then
-         if DKROT:isOffCD("Empower Rune Weapon") then
+         if DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
             return DKROT.spells["Empower Rune Weapon"]
          end
       end
@@ -90,5 +85,5 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       return nil
    end
 
-   DKROT_RegisterRotation(DKROT.SPECS.UNKNOWN, 'BlankMove', 'No Spec', BlankMove, true)
+   DKROT_RegisterRotation(DKROT.SPECS.UNKNOWN, 'BlankMove', 'No Spec', BlankMove, true, blankspells)
 end

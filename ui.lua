@@ -373,6 +373,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    function DKROT:BuildCheckBox(info, callback)
       local frame = CreateFrame("Frame", info.name, info.parent)
+      frame.value = info.label
       frame:EnableMouse(true)
       frame:SetWidth(250)
       frame:SetHeight(70)
@@ -664,6 +665,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          info.func = function()
             DKROT_Settings.CD[DKROT.Current_Spec].Rotation = key
             UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Rotation, key)
+            DKROT:CheckRotationOptions()
+            DKROT:BuildRotationOptions()
          end
          UIDropDownMenu_AddButton(info)
       end
@@ -786,5 +789,100 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2), 2)
          end
       end
+   end
+
+   --[[
+   -- Not ready for public use yet, not sure this is the correct way to go
+   function DKROT:CreateRotationFrame()
+      local frame = CreateFrame("Frame", "DKROT.RotationSelector", UIParent)
+      frame:EnableMouse(true)
+      frame:SetMovable(true)
+      frame:SetWidth(500)
+      frame:SetHeight(300)
+      frame:SetPoint("CENTER")
+      frame:SetBackdropColor(0, 0, 0, 1)
+      frame:SetBackdrop({
+         bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+         edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+         tile = true, tileSize = 32, edgeSize = 32,
+         insets = { left = 11, right = 12, top = 12, bottom = 11 }
+      })
+
+      -- Title Region for dragging
+      frame.tr = frame:CreateTitleRegion()
+      frame.tr:SetWidth(128)
+      frame.tr:SetHeight(64)
+      frame.tr:SetPoint("TOP", 0, 12)
+
+      -- Header box
+      frame.header = frame:CreateTexture(nil, "ARTWORK")
+      frame.header:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Header")
+      frame.header:SetWidth(256)
+      frame.header:SetHeight(64)
+      frame.header:SetPoint("TOP", 0, 12)
+
+      -- Frame title in header box
+      frame.title = frame:CreateFontString(nil, "ARTWORK")
+      frame.title:SetFontObject("GameFontNormal")
+      frame.title:SetPoint("TOP", frame.header, 0, -14)
+      frame.title:SetText("DKROT - Rotation")
+
+      frame.rotations = {}
+
+      local col = 0
+      local row = 0
+      local curRot = DKROT:GetCurrentRotation()
+      for rotName, rotInfo in pairs(DKROT.Rotations[DKROT.Current_Spec]) do
+         local info = {
+            parent = frame,
+            label = rotInfo.name,
+            checked = (curRot == rotName) and true or false
+         }
+
+         local xOffset, yOffset
+         if (col % 2) == 0 then
+            if col ~= 0 then
+               row = row + 1
+            end
+            xOffset = 10
+         else
+            xOffset = 250
+         end
+         yOffset = ((35 * row) + 20) * -1
+
+         local chk = DKROT:BuildCheckBox(info, function(self)
+            for name, val in pairs(frame.rotations) do
+               print(rotName, name, name == rotName)
+               self:SetChecked((name == rotName) and true or false)
+            end
+         end)
+         chk:SetPoint("TOPLEFT", frame, "TOPLEFT", xOffset, yOffset)
+         frame.rotations[rotName] = chk
+
+         col = col + 1
+      end
+   end
+   ]]--
+
+   function DKROT:BuildRotationOptions()
+      local current_rotation = DKROT_Settings.CD[DKROT.Current_Spec].Rotation
+      local rotation = DKROT.Rotations[DKROT.Current_Spec][current_rotation]
+      local spells = 0
+      for idx, chld in pairs(DKROT.CDRPanel_RotOptions.children) do
+         chld:Hide()
+         chld = nil
+      end
+
+      for idx, spell in pairs(rotation.spells) do
+         local checked = DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[current_rotation][spell]
+         local info = { label = spell, checked = checked or false, parent = DKROT.CDRPanel_RotOptions }
+         local chk = DKROT:BuildCheckBox(info, function(self)
+            DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[current_rotation][spell] = self:GetChecked()
+         end)
+         chk:SetPoint("TOPLEFT", 5, (-35 * spells) - 5)
+         spells = spells + 1
+         table.insert(DKROT.CDRPanel_RotOptions.children, chk)
+      end
+      DKROT.CDRPanel_RotOptions:SetHeight((spells * 35) + 5)
    end
 end
