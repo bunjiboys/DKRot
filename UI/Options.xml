@@ -274,9 +274,9 @@
          </Layer>
          
          <Layer level="ARTWORK">
-            <FontString name="DKROT_CDRPanel_Rotation_Title" inherits="GameFontHighlight" text="DKROT_OPTIONS_CDR_USE_IN_ROTATION">
+            <FontString name="DKROT_CDRPanel_Rotation_Title" inherits="GameFontNormal" text="DKROT_OPTIONS_CDR_USE_IN_ROTATION">
                <Anchors>
-                  <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel" relativePoint="TOPRIGHT" x="-200" y="-40" />
+                  <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel" relativePoint="TOPRIGHT" x="-250" y="-40" />
                </Anchors>
             </FontString>
          </Layer>
@@ -356,81 +356,6 @@
                </OnLoad>
             </Scripts>
          </Button>
-         
-         <!-- Rotation Option-->
-         <Frame name="DKROT_CDRPanel_Rotation" toplevel="true" parent="DKROT_CDRPanel" frameStrata="DIALOG">
-            <Anchors>
-               <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_Rotation_Title" x="-5" y="-12" />
-            </Anchors>
-            
-            <Size><AbsDimension x="190" y="285"/></Size>S
-            <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
-               <TileSize><AbsValue val="32"/></TileSize><EdgeSize><AbsValue val="16"/></EdgeSize>
-            </Backdrop>
-            
-            <Frames>
-               <!--Outbreak -->
-               <CheckButton name="DKROT_CDRPanel_Outbreak" inherits="DKROT_CheckButtonTemplate">
-                  <Anchors>
-                     <Anchor point="TOPLEFT" x="5" y="-5" />
-                  </Anchors>
-               </CheckButton>
-               
-               <!--Ignore Runic Power -->
-               <CheckButton name="DKROT_CDRPanel_IRP" inherits="DKROT_CheckButtonTemplate">
-                  <Anchors>
-                     <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_Outbreak" x="0" y="-35" />
-                  </Anchors>
-                  <Scripts>
-                     <OnLoad>
-                        DKROT_CDRPanel_IRP_Text:SetText(DKROT_OPTIONS_CDR_RP)
-                     </OnLoad>
-                  </Scripts>
-               </CheckButton>
-               
-               <!--DG Icon-->
-               <CheckButton name="DKROT_CDRPanel_DG" inherits="DKROT_CheckButtonTemplate">
-                  <Anchors>
-                     <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_IRP" x="0" y="-35" />
-                  </Anchors>
-               </CheckButton>
-               
-               <!--Unholy Blight-->
-               <CheckButton name="DKROT_CDRPanel_UB" inherits="DKROT_CheckButtonTemplate">
-                  <Anchors>
-                     <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_DG" x="0" y="-35" />
-                  </Anchors>
-               </CheckButton>
-               
-               <!--Plague Leech-->
-               <CheckButton name="DKROT_CDRPanel_PL" inherits="DKROT_CheckButtonTemplate">
-                  <Anchors>
-                     <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_UB" x="0" y="-35" />
-                  </Anchors>
-               </CheckButton>
-               
-               <!--Empower Rune Weapon-->
-               <CheckButton name="DKROT_CDRPanel_ERW" inherits="DKROT_CheckButtonTemplate">
-                  <Anchors>
-                     <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_PL" x="0" y="-35" />
-                  </Anchors>
-               </CheckButton>
-               
-               <!-- Blood Tap -->
-               <CheckButton name="DKROT_CDRPanel_BT" inherits="DKROT_CheckButtonTemplate">
-                  <Anchors>
-                     <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_ERW" x="0" y="-35" />
-                  </Anchors>
-               </CheckButton>
-
-               <!-- Death Pact -->
-               <CheckButton name="DKROT_CDRPanel_DP" inherits="DKROT_CheckButtonTemplate">
-                  <Anchors>
-                     <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_BT" x="0" y="-35" />
-                  </Anchors>
-               </CheckButton>
-            </Frames>
-         </Frame>
          
          <!--Reset -->
          <Button name="DKROT_CDRPanel_Reset" inherits="UIPanelButtonTemplate"  Text="DKROT_OPTIONS_RESET">

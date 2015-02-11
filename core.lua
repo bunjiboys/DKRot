@@ -827,7 +827,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       DKROT:Debug("Check Spec - " .. DKROT.Current_Spec)
-      DKROT:OptionsRefresh()
    end
 
    function DKROT:Initialize()
@@ -869,6 +868,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- DKROT:SetDefaults()
       -- Check Settings
+      DKROT:CheckSpec()
       DKROT:CheckSettings()
       DKROT:Debug("Initialize - Version " .. DKROT_Settings.Version)
 
@@ -923,6 +923,21 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end)
       DKROT.FramePanel_OpacityOverride:SetPoint("TOPLEFT", DKROT.FramePanel_BackdropOpacity, "BOTTOMLEFT", 0, -10)
 
+      DKROT.CDRPanel_RotOptions = CreateFrame("Frame", "DKROT.CDRPanel_RotOptions", DKROT_CDRPanel)
+      DKROT.CDRPanel_RotOptions:SetBackdrop({
+         bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+         edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+         tile = true, tileSize = 32, edgeSize = 16,
+         insets = { left = 5, right = 6, top = 6, bottom = 5 }
+      })
+      DKROT.CDRPanel_RotOptions:SetPoint("TOPLEFT", DKROT_CDRPanel_Rotation_Title, "TOPLEFT", -5, -12)
+      DKROT.CDRPanel_RotOptions:SetWidth(240)
+      DKROT.CDRPanel_RotOptions.children = {}
+      DKROT_CDRPanel:SetScript("OnShow", function()
+         DKROT:BuildRotationOptions()
+      end)
+      DKROT:BuildRotationOptions()
+
       InterfaceOptions_AddCategory(DKROT_Options)
       InterfaceOptions_AddCategory(DKROT_FramePanel)
       InterfaceOptions_AddCategory(DKROT_CDRPanel)
@@ -931,8 +946,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       InterfaceOptions_AddCategory(DKROT_PositionPanel)
       InterfaceOptions_AddCategory(DKROT_ABOUTPanel)
 
-      DKROT_CDRPanel_DG_Text:SetText(DKROT.spells["Death Grip"])
-      DKROT:CheckSpec()
+      -- DKROT_CDRPanel_DG_Text:SetText(DKROT.spells["Death Grip"])
+      DKROT:OptionsRefresh()
 
       -- Initialize all dropdowns
       UIDropDownMenu_Initialize(DKROT_FramePanel_Rune_DD, DKROT_Rune_DD_OnLoad)
@@ -1022,6 +1037,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          elseif e == "PLAYER_TALENT_UPDATE" or e == "ACTIVE_TALENT_GROUP_CHANGED" then
             DKROT:CheckSpec()
+            DKROT:OptionsRefresh()
          end
       end
    end)
@@ -1128,27 +1144,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_Rune_DD, DKROT_Settings.RuneOrder)
          UIDropDownMenu_SetText(DKROT_FramePanel_Rune_DD, DKROT_OPTIONS_FRAME_RUNE_ORDER[DKROT_Settings.RuneOrder])
 
-         -- CD/R
-         DKROT_CDRPanel_Outbreak_Text:SetText(DKROT.spells["Outbreak"])
-         DKROT_CDRPanel_UB_Text:SetText(DKROT.spells["Unholy Blight"])
-         DKROT_CDRPanel_PL_Text:SetText(DKROT.spells["Plague Leech"])
-         DKROT_CDRPanel_ERW_Text:SetText(DKROT.spells["Empower Rune Weapon"])
-         DKROT_CDRPanel_BT_Text:SetText(DKROT.spells["Blood Tap"])
-         DKROT_CDRPanel_DP_Text:SetText(DKROT.spells["Death Pact"])
-         if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
-            DKROT_CDRPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_UNHOLY)
-            DKROT_CDPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_UNHOLY)
-         elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
-            DKROT_CDRPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_FROST)
-            DKROT_CDPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_FROST)
-         elseif (DKROT.Current_Spec == DKROT.SPECS.BLOOD) then
-            DKROT_CDRPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_BLOOD)
-            DKROT_CDPanel_Title_Spec:SetText(DKROT_OPTIONS_SPEC_BLOOD)
-         else
-            DKROT_CDRPanel_Title_Spec:SetText(DKROT_OPTIONS_DKROT_SPEC_None)
-            DKROT_CDPanel_Title_Spec:SetText(DKROT_OPTIONS_DKROT_SPEC_None)
-         end
-
          -- Disease Dropdown
          UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Diseases_DD, DKROT_Settings.CD[DKROT.Current_Spec].DiseaseOption)
 
@@ -1177,18 +1172,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             end
          end
 
-         DKROT_CDRPanel_Outbreak:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].Outbreak)
-         DKROT_CDRPanel_UB:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].UB)
-         DKROT_CDRPanel_PL:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].PL)
-         DKROT_CDRPanel_ERW:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].ERW)
-         DKROT_CDRPanel_BT:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].BT)
-         DKROT_CDRPanel_DP:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].DP)
-         DKROT_CDRPanel_IRP:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].RP)
          DKROT_CDRPanel_MoveAltInterrupt:SetChecked(DKROT_Settings.MoveAltInterrupt)
          DKROT_CDRPanel_MoveAltAOE:SetChecked(DKROT_Settings.MoveAltAOE)
          DKROT_CDRPanel_UseHoW:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].UseHoW)
          DKROT_CDRPanel_BossCD:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].BossCD)
-         DKROT_CDRPanel_DG:SetChecked(DKROT_Settings.DG)
          DKROT_CDRPanel_DD_CD1:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][1])
          DKROT_CDRPanel_DD_CD2:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][2])
          DKROT_CDRPanel_DD_CD3:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][3])
@@ -1278,32 +1265,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Transparency
          DKROT_Settings.BackdropOpacity = DKROT.FramePanel_BackdropOpacity:GetValue()
-         --[[
-         if DKROT_FramePanel_CombatTrans:GetNumber() >= 0 and DKROT_FramePanel_CombatTrans:GetNumber() <= 1 then
-            DKROT_Settings.CombatTrans = DKROT_FramePanel_CombatTrans:GetNumber()
-         else
-            DKROT_FramePanel_CombatTrans:SetNumber(DKROT_Settings.CombatTrans)
-         end
-         if DKROT_FramePanel_NormalTrans:GetNumber() >= 0 and DKROT_FramePanel_NormalTrans:GetNumber() <= 1 then
-            DKROT_Settings.NormTrans = DKROT_FramePanel_NormalTrans:GetNumber()
-         else
-            DKROT_FramePanel_NormalTrans:SetNumber(DKROT_Settings.NormTrans)
-         end
-         ]]--
 
          -- CD/R
          DKROT_Settings.MoveAltInterrupt = DKROT_CDRPanel_MoveAltInterrupt:GetChecked()
          DKROT_Settings.MoveAltAOE = DKROT_CDRPanel_MoveAltAOE:GetChecked()
-         DKROT_Settings.DG = DKROT_CDRPanel_DG:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec].UseHoW = DKROT_CDRPanel_UseHoW:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec].BossCD = DKROT_CDRPanel_BossCD:GetChecked()
-         DKROT_Settings.CD[DKROT.Current_Spec].Outbreak = DKROT_CDRPanel_Outbreak:GetChecked()
-         DKROT_Settings.CD[DKROT.Current_Spec].UB = DKROT_CDRPanel_UB:GetChecked()
-         DKROT_Settings.CD[DKROT.Current_Spec].PL = DKROT_CDRPanel_PL:GetChecked()
-         DKROT_Settings.CD[DKROT.Current_Spec].ERW = DKROT_CDRPanel_ERW:GetChecked()
-         DKROT_Settings.CD[DKROT.Current_Spec].BT = DKROT_CDRPanel_BT:GetChecked()
-         DKROT_Settings.CD[DKROT.Current_Spec].DP = DKROT_CDRPanel_DP:GetChecked()
-         DKROT_Settings.CD[DKROT.Current_Spec].RP = DKROT_CDRPanel_IRP:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec][1] = (DKROT_CDRPanel_DD_CD1:GetChecked())
          DKROT_Settings.CD[DKROT.Current_Spec][2] = (DKROT_CDRPanel_DD_CD2:GetChecked())
          DKROT_Settings.CD[DKROT.Current_Spec][3] = (DKROT_CDRPanel_DD_CD3:GetChecked())
@@ -1396,6 +1363,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if DKROT_Settings.NormTrans == nil then DKROT_Settings.NormTrans = 1.0 end
       if DKROT_Settings.DTTrans == nil then DKROT_Settings.DTTrans = 1.0 end
       if DKROT_Settings.VScheme == nil then DKROT_Settings.VScheme = DKROT_OPTIONS_FRAME_VIEW_NORM end
+
+      -- Check the rotation
+      -- local nextCast, noCheckRange = DKROT.Rotations[DKROT.Current_Spec][DKROT_Settings.CD[DKROT.Current_Spec].Rotation].func()
+      local active_rot = DKROT.Rotations[DKROT.Current_Spec][DKROT_Settings.CD[DKROT.Current_Spec].Rotation]
+      if active_rot == nil then
+         local rotName, rotInfo = DKROT:GetDefaultSpecRotation(DKROT.Current_Spec)
+         DKROT_Settings.CD[DKROT.Current_Spec].Rotation = rotName
+         DKROT:Log("Your settings are configured to use an non-existant rotation.")
+         DKROT:Log("Changing your active rotation to " .. rotInfo["name"])
+      end
+
+      -- Check the rotation options
+      DKROT:CheckRotationOptions()
 
       -- CDs
       if DKROT_Settings.CD == nil then

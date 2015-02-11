@@ -373,6 +373,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    function DKROT:BuildCheckBox(info, callback)
       local frame = CreateFrame("Frame", info.name, info.parent)
+      frame.value = info.label
       frame:EnableMouse(true)
       frame:SetWidth(250)
       frame:SetHeight(70)
@@ -511,8 +512,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    function DKROT_PositionPanel_Point_Select(self, point)
       UIDropDownMenu_SetSelectedValue(UIDROPDOWNMENU_OPEN_MENU, point)
-      -- UIDropDownMenu_SetText(UIDROPDOWNMENU_OPEN_MENU, point)
-
       DKROT:PositionUpdate()
    end
 
@@ -520,12 +519,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local source = UIDropDownMenu_GetSelectedValue(DKROT_PositionPanel_Element)
       local hasDeps = DKROT:CheckFrameDependency(source, element.frame)
       if hasDeps ~= nil and #hasDeps > 0 then
-         --StaticPopup_Show("DKROT_ERROR_DEPENDENCY_VIOLATION", DKROT:GetFrame(source), element.name, table.concat(hasDeps, " > "))
          StaticPopup_Show("DKROT_ERROR_DEPENDENCY_VIOLATION", element.name, table.concat(hasDeps, " > "))
       else
          UIDropDownMenu_SetSelectedValue(UIDROPDOWNMENU_OPEN_MENU, element.frame)
-         -- UIDropDownMenu_SetText(dd, point)
-
          DKROT:PositionUpdate()
       end
    end
@@ -664,6 +660,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          info.func = function()
             DKROT_Settings.CD[DKROT.Current_Spec].Rotation = key
             UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Rotation, key)
+            DKROT:CheckRotationOptions()
+            DKROT:BuildRotationOptions()
          end
          UIDropDownMenu_AddButton(info)
       end
@@ -786,5 +784,27 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2), 2)
          end
       end
+   end
+
+   function DKROT:BuildRotationOptions()
+      local current_rotation = DKROT_Settings.CD[DKROT.Current_Spec].Rotation
+      local rotation = DKROT.Rotations[DKROT.Current_Spec][current_rotation] or DKROT:GetDefaultSpecRotation(DKROT.Current_Spec)
+      local spells = 0
+      for idx, chld in pairs(DKROT.CDRPanel_RotOptions.children) do
+         chld:Hide()
+         chld = nil
+      end
+
+      for idx, spell in pairs(rotation.spells) do
+         local checked = DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[current_rotation][spell]
+         local info = { label = spell, checked = checked or false, parent = DKROT.CDRPanel_RotOptions }
+         local chk = DKROT:BuildCheckBox(info, function(self)
+            DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[current_rotation][spell] = self:GetChecked()
+         end)
+         chk:SetPoint("TOPLEFT", 5, (-35 * spells) - 5)
+         spells = spells + 1
+         table.insert(DKROT.CDRPanel_RotOptions.children, chk)
+      end
+      DKROT.CDRPanel_RotOptions:SetHeight((spells * 35) + 5)
    end
 end
