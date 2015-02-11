@@ -318,7 +318,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    -- Return the percentage health of the unit
    function DKROT:HealthPct(unit)
-      return (UnitHealth("player") / UnitHealthMax("player")) * 100
+      return (UnitHealth(unit) / UnitHealthMax(unit)) * 100
    end
 
    -- Returns the number of available runes of a specific type

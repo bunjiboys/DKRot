@@ -797,7 +797,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       for idx, spell in pairs(rotation.spells) do
          local checked = DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[current_rotation][spell]
-         local info = { label = spell, checked = checked or false, parent = DKROT.CDRPanel_RotOptions }
+         local info = { label = DKROT.spells[spell], checked = checked or false, parent = DKROT.CDRPanel_RotOptions }
          local chk = DKROT:BuildCheckBox(info, function(self)
             DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[current_rotation][spell] = self:GetChecked()
          end)
