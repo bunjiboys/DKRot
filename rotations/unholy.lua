@@ -25,7 +25,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Death Pact
-      if DKROT:CanUse("Death Pact") and (UnitHealth("player") / UnitHealthMax("player")) < 0.30 then
+      if DKROT:CanUse("Death Pact") and DKROT:HealthPct("PLAYER") < 30 then
          if DKROT:isOffCD("Death Pact") then
             return DKROT.spells["Death Pact"], true
          end
@@ -404,10 +404,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       return nil
    end
 
-   DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'IcyVeins', 'Unholy - Icy Veins', IcyVeins, false, ivspells)
-   DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SimC', 'Unholy - SimCraft', SimC, true, scspells)
-   DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SFNormal', 'Unholy - Skullflower', SFNormal, false, sfnspells)
-   -- DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SFNecroBlight', 'Necrotic Blight - Skullflower', SFNecroBlight, false)
+   DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'IcyVeins', 'Icy Veins', IcyVeins, false, ivspells)
+   DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SimC', 'SimCraft', SimC, true, scspells)
+   DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SFNormal', 'Skullflower', SFNormal, false, sfnspells)
+   -- DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'SFNecroBlight', 'Skullflower - Necrotic Blight', SFNecroBlight, false)
 
    -- Function to determine AOE rotation for Unholy Spec
    function DKROT:UnholyAOEMove(icon)
