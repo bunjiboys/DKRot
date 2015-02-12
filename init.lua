@@ -44,6 +44,30 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       RPPM = 4
    }
 
+   DKROT.Talents = {
+      ["Plaguebearer"] = 19165,
+      ["Plague Leech"] = 19166,
+      ["Unholy Blight"] = 19217,
+      ["Lichborne"] = 19218,
+      ["Anti-Magic Zone"] = 19219,
+      ["Purgatory"] = 19220,
+      ["Death's Advance"] = 19221,
+      ["Chilblains"] = 19222,
+      ["Asphyxiate"] = 19223,
+      ["Blood Tap"] = 19224,
+      ["Runic Empowerment"] = 19225,
+      ["Runic Corruption"] = 19229,
+      ["Death Pact"] = 19226,
+      ["Death Siphon"] = 19227,
+      ["Conversion"] = 19228,
+      ["Gorefiend's Grasp"] = 19230,
+      ["Remorseless Winter"] = 19231,
+      ["Desecrated Ground"] = 19232,
+      ["Necrotic Plague"] = 21207,
+      ["Defile"] = 21208,
+      ["Breath of Sindragosa"] = 21209
+   }
+
    DKROT.DTspells = {}
    DKROT.Current_Spec = DKROT.SPECS.UNKNOWN
    DKROT.spells = {}

@@ -1038,6 +1038,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          elseif e == "PLAYER_TALENT_UPDATE" or e == "ACTIVE_TALENT_GROUP_CHANGED" then
             DKROT:CheckSpec()
             DKROT:OptionsRefresh()
+
+            if e == "ACTIVE_TALENT_GROUP_CHANGED" then
+               DKROT:CheckRotationTalents()
+            end
          end
       end
    end)
@@ -1376,6 +1380,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- Check the rotation options
       DKROT:CheckRotationOptions()
+      DKROT:CheckRotationTalents()
 
       -- CDs
       if DKROT_Settings.CD == nil then
