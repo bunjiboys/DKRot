@@ -2,7 +2,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
 
    -- Register a rotation
-   function DKROT_RegisterRotation(spec, intname, rotname, rotfunc, def, spells)
+   function DKROT_RegisterRotation(spec, intname, rotname, rotfunc, def, spells, talents)
       local currentDefault = DKROT:GetDefaultSpecRotation(spec)
       if currentDefault ~= nil and def == true then
          local specName = select(2, GetSpecializationInfo(spec))
@@ -14,7 +14,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          name = rotname,
          func = rotfunc,
          default = def,
-         spells = spells or {}
+         spells = spells or {},
+         talents = talents or {}
       }
    end
 
@@ -180,6 +181,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    function DKROT:isOffCD(spell)
       local start, dur = GetSpellCooldown(DKROT.spells[spell])
       return (dur + start - DKROT.curtime - DKROT.GCD <= 0)
+   end
+
+   function DKROT:GetCD(spell)
+      local start, dur = GetSpellCooldown(DKROT.spells[spell])
+      return dur + start - DKROT.curtime - DKROT.GCD
    end
 
    -- Check to see if a rune is ready to be used
@@ -385,22 +391,25 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    function DKROT:GetDiseaseTime()
       local ff, bp = 0, 0
+      local expires = nil
 
-      local expires = select(7,UnitDebuff("TARGET", DKROT.spells["Frost Fever"], nil, "PLAYER"))
-      if expires ~= nil then
-         ff = expires - DKROT.curtime
-      end
+      if DKROT:HasTalent("Necrotic Plague") then
+         expires = select(7, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"], nil, "PLAYER"))
+         if expires ~= nil then
+            np = expires - DKROT.curtime
+            ff = np
+            bp = np
+         end
+      else
+         expires = select(7, UnitDebuff("TARGET", DKROT.spells["Frost Fever"], nil, "PLAYER"))
+         if expires ~= nil then
+            ff = expires - DKROT.curtime
+         end
 
-      expires = select(7,UnitDebuff("TARGET", DKROT.spells["Blood Plague"], nil, "PLAYER"))
-      if expires ~= nil then
-         bp = expires - DKROT.curtime
-      end
-
-      expires = select(7, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"], nil, "PLAYER"))
-      if expires ~= nil then
-         local np = expires - DKROT.curtime
-         ff = np
-         bp = np
+         expires = select(7, UnitDebuff("TARGET", DKROT.spells["Blood Plague"], nil, "PLAYER"))
+         if expires ~= nil then
+            bp = expires - DKROT.curtime
+         end
       end
 
       return ff, bp
@@ -507,6 +516,23 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
    end
 
+   function DKROT:CheckRotationTalents()
+      local curRot = DKROT_Settings.CD[DKROT.Current_Spec].Rotation
+      local active_rot = DKROT.Rotations[DKROT.Current_Spec][curRot]
+
+      local missing = {}
+      for idx, talent in pairs(active_rot.talents) do
+         if not DKROT:HasTalent(talent) then
+            local talentName = select(2, GetTalentInfoByID(DKROT.Talents[talent]))
+            table.insert(missing, talentName)
+         end
+      end
+
+      if table.getn(missing) > 0 then
+         DKROT:Log("Some of the suggested talents for rotation are missing: " .. table.concat(missing, ", "))
+      end
+   end
+
    function DKROT:CanUse(spell)
       local curRot = DKROT_Settings.CD[DKROT.Current_Spec].Rotation
       local canUse = DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[curRot][spell]
@@ -517,5 +543,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       return false
+   end
+
+   function DKROT:HasTalent(talent)
+      return select(4, GetTalentInfoByID(DKROT.Talents[talent], GetActiveSpecGroup()))
    end
 end

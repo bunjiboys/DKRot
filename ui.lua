@@ -661,6 +661,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             DKROT_Settings.CD[DKROT.Current_Spec].Rotation = key
             UIDropDownMenu_SetSelectedValue(DKROT_CDRPanel_Rotation, key)
             DKROT:CheckRotationOptions()
+            DKROT:CheckRotationTalents()
             DKROT:BuildRotationOptions()
          end
          UIDropDownMenu_AddButton(info)
