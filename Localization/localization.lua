@@ -54,6 +54,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT_OPTIONS_CDR_MOVEALT_DND = "Show DnD Icon"
    DKROT_OPTIONS_CDR_USEHOW = "Maintain Horn of Winter buff"
    DKROT_OPTIONS_CDR_BOSS_CD = "Save long cooldown for boss (ignored in PvP)"
+   DKROT_OPTIONS_CDR_PREPULL = "Show pre-pull priority"
    DKROT_OPTIONS_CDR_PRIORITY = "Priority Icon"
    DKROT_OPTIONS_CDR_CD1 = "Show Left Cooldowns"
    DKROT_OPTIONS_CDR_CD2 = "Show Right Cooldowns"

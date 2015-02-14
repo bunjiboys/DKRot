@@ -344,10 +344,22 @@
             </Scripts>
          </CheckButton>
 
+         <!-- PrePull options -->
+         <CheckButton name="DKROT_CDRPanel_PrePull" inherits="DKROT_CheckButtonTemplate">
+            <Anchors>
+               <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_BossCD" x="0" y="-35" />
+            </Anchors>
+            <Scripts>
+               <OnLoad>
+                  DKROT_CDRPanel_PrePull_Text:SetText(DKROT_OPTIONS_CDR_PREPULL)
+               </OnLoad>
+            </Scripts>
+         </CheckButton>
+
          <!-- Rotation to use -->
          <Button name="DKROT_CDRPanel_Rotation" inherits="DKROT_DropDownTemplate">
             <Anchors>
-               <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_BossCD" x="-16" y="-45" />
+               <Anchor point="TOPLEFT" relativeTo="DKROT_CDRPanel_PrePull" x="-16" y="-45" />
             </Anchors>
             <Scripts>
                <OnLoad>

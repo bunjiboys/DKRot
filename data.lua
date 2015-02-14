@@ -93,6 +93,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          ["Troll"] = GetSpellInfo(26297),-- Berserking
          ["BloodElf"] = GetSpellInfo(28730),-- Arcane Torrent
          ["Goblin"] = GetSpellInfo(69070),-- Rocket Jump
+
+         -- Other
+         ["Draenic Strength Potion"] = GetSpellInfo(156579),
       }
 
       DKROT.DTspells = { -- ID, Duration, Effected by talent
@@ -268,6 +271,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             BT = true,
             UseHoW = true,
             BossCD = true,
+            PrePull = true,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Shadow Infusion"], true},
@@ -296,6 +300,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             BT = true,
             UseHoW = true,
             BossCD = true,
+            PrePull = true,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Pillar of Frost"], nil},
@@ -325,6 +330,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             BT = true,
             UseHoW = true,
             BossCD = true,
+            PrePull = false,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_One"] = {DKROT.spells["Bone Shield"], true},
@@ -355,6 +361,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             BT = true,
             UseHoW = true,
             BossCD = true,
+            PrePull = true,
 
             [1] = true,
             ["DKROT_CDRPanel_DD_CD1_Two"] = {DKROT.spells["Blood Charge"], true},
