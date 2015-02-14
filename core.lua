@@ -1071,8 +1071,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             local prefix, message, channel, sender = ...
             if prefix == "D4" then
                local handler, time, name = ("\t"):split(message)
-               DKROT.PullTimer = GetTime() + tonumber(time)
-               DKROT:Debug("Received a DBM pull timer")
+               if handler == "PT" then
+                  DKROT.PullTimer = GetTime() + tonumber(time)
+                  DKROT:Debug("Received a DBM pull timer")
+               end
             end
          end
       end
