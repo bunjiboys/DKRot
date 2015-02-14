@@ -286,12 +286,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    end
 
    -- Called to update all the frames positions and scales
-   function DKROT:UpdatePosition()
+   function DKROT:PositionUpdateAll()
       for idx, frame in pairs(DKROT.MovableFrames) do
          DKROT:MoveFrame(_G[frame.frame])
       end
 
-      DKROT:Debug("UpdatePosition")
+      DKROT:Debug("PositionUpdateAll")
    end
 
    function DKROT_UnlockUI()
@@ -747,15 +747,22 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    -- Priority System
    -- Called to update a priority icon with next move
    function DKROT:GetNextMove(icon)
+      local rotation = DKROT.Rotations[DKROT.Current_Spec][DKROT_Settings.CD[DKROT.Current_Spec].Rotation]
+
       -- Call correct function based on spec
       if DKROT_Settings.MoveAltAOE then
          local aoeNextCast, aoeNocheckRange
-         if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
-            aoeNextCast, aoeNoCheckRange = DKROT:UnholyAOEMove()
-         elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
-            aoeNextCast, aoeNoCheckRange = DKROT:FrostAOEMove()
-         elseif (DKROT.Current_Spec == DKROT.SPECS.BLOOD) then
-            aoeNextCast, aoeNoCheckRange = nil, nil
+
+         if rotation.aoe ~= nil then
+            aoeNextCast, aoeNoCheckRange = rotation.aoe()
+         else
+            if (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) then
+               aoeNextCast, aoeNoCheckRange = DKROT:UnholyAOEMove()
+            elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) then
+               aoeNextCast, aoeNoCheckRange = DKROT:FrostAOEMove()
+            elseif (DKROT.Current_Spec == DKROT.SPECS.BLOOD) then
+               aoeNextCast, aoeNoCheckRange = nil, nil
+            end
          end
 
          if aoeNextCast ~= nil then
@@ -769,8 +776,20 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
       end
 
-      -- return DKROT.Rotations[DKROT.Current_Spec][DKROT_Settings.CD[DKROT.Current_Spec].Rotation].func(icon)
-      local nextCast, noCheckRange = DKROT.Rotations[DKROT.Current_Spec][DKROT_Settings.CD[DKROT.Current_Spec].Rotation].func()
+      -- If we arent in combat yet, and we have a pre-pull timer up, show the prepull rotation
+      -- if the user has opted to
+      if DKROT_Settings.CD[DKROT.Current_Spec].PrePull and not InCombatLockdown() and DKROT.PullTimer > DKROT.curtime then
+         local nextPrePullCast, isItem = rotation.prepull()
+         if nextPrePullCast ~= nil then
+            if isItem then
+               return select(10, GetItemInfo(nextPrePullCast))
+            else
+               return GetSpellTexture(nextPrePullCast)
+            end
+         end
+      end
+
+      local nextCast, noCheckRange = rotation.func()
       if noCheckRange ~= nil and noCheckRange == true then
          return GetSpellTexture(nextCast)
       else
@@ -964,6 +983,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       mutex = nil
       loaded = true
 
+      -- Register AddonMessages for DBM pull timer support
+      RegisterAddonMessagePrefix("D4")
+
       collectgarbage()
    end
 
@@ -975,6 +997,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT.MainFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
    DKROT.MainFrame:RegisterEvent("ADDON_LOADED")
    DKROT.MainFrame:RegisterEvent("PLAYER_ENTER_COMBAT")
+   DKROT.MainFrame:RegisterEvent("CHAT_MSG_ADDON")
 
    -- Function to be called when events triggered
    local slottimer = 0
@@ -1041,6 +1064,15 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
             if e == "ACTIVE_TALENT_GROUP_CHANGED" then
                DKROT:CheckRotationTalents()
+            end
+
+         -- Handle messages from BigWigs / DBM for pull timers
+         elseif  e == "CHAT_MSG_ADDON" then
+            local prefix, message, channel, sender = ...
+            if prefix == "D4" then
+               local handler, time, name = ("\t"):split(message)
+               DKROT.PullTimer = GetTime() + tonumber(time)
+               DKROT:Debug("Received a DBM pull timer")
             end
          end
       end
@@ -1180,6 +1212,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_CDRPanel_MoveAltAOE:SetChecked(DKROT_Settings.MoveAltAOE)
          DKROT_CDRPanel_UseHoW:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].UseHoW)
          DKROT_CDRPanel_BossCD:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].BossCD)
+         DKROT_CDRPanel_PrePull:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec].PrePull)
          DKROT_CDRPanel_DD_CD1:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][1])
          DKROT_CDRPanel_DD_CD2:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][2])
          DKROT_CDRPanel_DD_CD3:SetChecked(DKROT_Settings.CD[DKROT.Current_Spec][3])
@@ -1239,7 +1272,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_ABOUTHTML:SetSpacing(2);
 
          DKROT:Debug("OptionsRefresh")
-         DKROT:UpdatePosition()
+         DKROT:PositionUpdateAll()
 
          if DKROT.LockDialog == true and DKROT_Settings.Locked == true then
             DKROT_LockUI()
@@ -1275,6 +1308,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_Settings.MoveAltAOE = DKROT_CDRPanel_MoveAltAOE:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec].UseHoW = DKROT_CDRPanel_UseHoW:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec].BossCD = DKROT_CDRPanel_BossCD:GetChecked()
+         DKROT_Settings.CD[DKROT.Current_Spec].PrePull = DKROT_CDRPanel_PrePull:GetChecked()
          DKROT_Settings.CD[DKROT.Current_Spec][1] = (DKROT_CDRPanel_DD_CD1:GetChecked())
          DKROT_Settings.CD[DKROT.Current_Spec][2] = (DKROT_CDRPanel_DD_CD2:GetChecked())
          DKROT_Settings.CD[DKROT.Current_Spec][3] = (DKROT_CDRPanel_DD_CD3:GetChecked())
@@ -1453,7 +1487,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- DKROT:OptionsRefresh()
-      DKROT:UpdatePosition()
+      DKROT:PositionUpdateAll()
       DKROT:Debug("SetLocationDefault Done")
    end
 

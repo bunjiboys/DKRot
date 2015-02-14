@@ -7,6 +7,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    DKROT.curtime = 0
    DKROT.GCD = 0
+   DKROT.PullTimer = 0
 
    DKROT.ThreatMode = {
       Off = 0,

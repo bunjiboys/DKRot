@@ -2,7 +2,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
 
    -- Register a rotation
-   function DKROT_RegisterRotation(spec, intname, rotname, rotfunc, def, spells, talents)
+   function DKROT_RegisterRotation_old(spec, intname, rotname, rotfunc, def, spells, talents)
       local currentDefault = DKROT:GetDefaultSpecRotation(spec)
       if currentDefault ~= nil and def == true then
          local specName = select(2, GetSpecializationInfo(spec))
@@ -15,7 +15,30 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          func = rotfunc,
          default = def,
          spells = spells or {},
-         talents = talents or {}
+         talents = talents or {},
+         prepull = DKROT['DefaultPrePull'],
+         aoe = nil
+      }
+   end
+
+   function DKROT_RegisterRotation(spec, rotation)
+      local currentDefault = DKROT:GetDefaultSpecRotation(spec)
+      local def = rotation["DefaultRotation"]
+      if currentDefault ~= nil and def == true then
+         local specName = select(2, GetSpecializationInfo(spec))
+         local defSpecName = DKROT.Rotations[spec][currentDefault].name
+         DKROT:Log("Cannot register " .. rotation["Name"] .. " as the new default spec rotation for '" .. specName .. "' as there is already a default rotation (" .. defSpecName .. ") registered. Registering as non-default")
+         def = false
+      end
+
+      DKROT.Rotations[spec][rotation["InternalName"]] = {
+         name = rotation["Name"],
+         func = rotation["MainRotation"],
+         default = def,
+         spells = rotation["ToggleSpells"],
+         talents = rotation["SuggestedTalents"],
+         prepull = rotation["PrePull"] or DKROT['DefaultPrePull'],
+         aoe = rotation["AOERotation"] or nil
       }
    end
 
@@ -547,5 +570,35 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    function DKROT:HasTalent(talent)
       return select(4, GetTalentInfoByID(DKROT.Talents[talent], GetActiveSpecGroup()))
+   end
+
+   function DKROT:HasItemInBags(item)
+      for bag = 0, NUM_BAG_SLOTS do
+         for slot = 1, GetContainerNumSlots(bag) do
+            if item == GetContainerItemID(bag, slot) then
+               return true
+            end
+         end
+      end
+
+      return false
+   end
+
+   function DKROT:DefaultPrePull()
+      -- Army of the Dead if more than 5 seconds are left on the timer
+      if DKROT.PullTimer - DKROT.curtime >= 5 and DKROT:isOffCD("Army of the Dead") then
+         return DKROT.spells["Army of the Dead"]
+      end
+
+      -- Use strength pot if we havent already
+      if UnitBuff("PLAYER", DKROT.spells["Draenic Strength Potion"]) == nil then
+         if DKROT:HasItemInBags(109219) then
+            return 109219, true
+         end
+      end
+
+      if DKROT:HasTalent("Death's Advance") and DKROT:isOffCD("Death's Advance") then
+         return DKROT.spells["Death's Advance"]
+      end
    end
 end
