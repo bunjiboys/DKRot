@@ -409,7 +409,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local necroblight = {
       Name = "Necrotic Blight (Skullflower)",
       InternalName = "SFNecroBlight",
-      ToggleSpells = { "Death Pact", "Plague Leech", "Soul Reaper", "Unholy Blight", "Summon Gargoyle", "Outbreak", "Blood Tap", "Empower Rune Weapon" },
+      ToggleSpells = { "Death Pact", "Plague Leech", "Soul Reaper", "Death and Decay", "Unholy Blight", "Summon Gargoyle", "Outbreak", "Blood Tap", "Empower Rune Weapon" },
       SuggestedTalents = { "Necrotic Plague", "Unholy Blight" },
       DefaultRotation = false,
       MainRotation = function()
@@ -487,7 +487,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- DND
-         if DKROT:isOffCD("Death and Decay") then
+         if DKROT:CanUse("Death and Decay") and DKROT:isOffCD("Death and Decay") then
             return DKROT.spells["Death and Decay"], true
          end
 

@@ -206,6 +206,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       return (dur + start - DKROT.curtime - DKROT.GCD <= 0)
    end
 
+   function DKROT:isItemOffCD(item)
+      local start, dur = GetItemCooldown(item)
+      return (dur + start - DKROT.curtime - DKROT.GCD <= 0)
+   end
+
    function DKROT:GetCD(spell)
       local start, dur = GetSpellCooldown(DKROT.spells[spell])
       return dur + start - DKROT.curtime - DKROT.GCD
@@ -592,7 +597,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- Use strength pot if we havent already
       if UnitBuff("PLAYER", DKROT.spells["Draenic Strength Potion"]) == nil then
-         if DKROT:HasItemInBags(109219) then
+         if DKROT:HasItemInBags(109219) and DKROT:isItemOffCD(109219) then
             return 109219, true
          end
       end
