@@ -617,4 +617,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       return false
    end
+
+   function DKROT:BloodlustActive()
+      for idx, buff in pairs({"Bloodlust", "Heroism", "Time Warp", "Ancient Hysteria" }) do
+         if UnitBuff("PLAYER", DKROT.spells[buff]) then
+            return true
+         end
+      end
+
+      return false
+   end
 end

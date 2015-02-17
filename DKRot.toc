@@ -30,6 +30,7 @@ rotations\blank.lua
 rotations\blood.lua
 rotations\frost.lua
 rotations\unholy.lua
+rotations\zwart.lua
 
 # Core addon functionality
 core.lua
