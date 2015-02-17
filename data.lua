@@ -96,6 +96,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Other
          ["Draenic Strength Potion"] = GetSpellInfo(156579),
+         ["Bloodlust"] = GetSpellInfo(2825),
+         ["Heroism"] = GetSpellInfo(32182),
+         ["Time Warp"] = GetSpellInfo(145534),
+         ["Ancient Hysteria"] = GetSpellInfo(90355),
+         ["Sated"] = GetSpellInfo(57724),
       }
 
       DKROT.DTspells = { -- ID, Duration, Effected by talent

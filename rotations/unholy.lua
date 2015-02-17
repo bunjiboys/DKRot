@@ -1,6 +1,5 @@
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
-   -- DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, 'IcyVeins', 'Icy Veins', IcyVeins, false, ivspells)
 
    local icyveins = {
       Name = "Icy Veins",
