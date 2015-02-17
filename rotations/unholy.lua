@@ -445,15 +445,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper when below or close to 45% health with improved SR, or close to 35%
-         if DKROT:CanUse("Soul Reaper") and DKROT:isOffCD("Soul Reaper") then
-            local hp = DKROT:HealthPct("target")
-            if (DKROT:has("Improved Soul Reaper") and hp < 45.3) or hp < 35.5 then
-               return DKROT.spells["Soul Reaper"]
-            end
+         if DKROT:CanUse("Soul Reaper") and DKROT:isOffCD("Soul Reaper") and DKROT:CanSoulReaper() then
+            return DKROT.spells["Soul Reaper"]
          end
 
          -- Blood Tap if we need a rune for Soul Reaper
-         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (frost > 0 and death < 1) then
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (frost > 0 and death < 1) and DKROT:CanSoulReaper() then
             return DKROT.spells["Blood Tap"]
          end
 
@@ -465,10 +462,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Unholy Blight if we dont have diseases active
-         if DKROT:CanUse("Unholy Blight") and DKROT:isOffCD("Unholy Blight") then
-            if dFF == 0 or dBP == 0 then
-               return DKROT.spells["Unholy Blight"]
-            end
+         if DKROT:CanUse("Unholy Blight") and DKROT:isOffCD("Unholy Blight") and (dFF == 0 or dBP == 0) then
+            return DKROT.spells["Unholy Blight"]
          end
          
          -- Outbreak if we are missing a disease
@@ -486,24 +481,23 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             return DKROT.spells["Defile"], true
          end
 
-         -- DND
-         if DKROT:CanUse("Death and Decay") and DKROT:isOffCD("Death and Decay") then
+         -- DnD
+         if DKROT:CanUse("Death and Decay") and DKROT:isOffCD("Death and Decay") and lunholy == 0 then
             return DKROT.spells["Death and Decay"], true
          end
 
          -- Festering Strike
-         if DKROT:isOffCD("Festering Strike") then
+         if lblood == 0 and lfrost == 0 then
             return DKROT.spells["Festering Strike"]
          end
 
          -- Scourge Strike
-         if DKROT:isOffCD("Scourge Strike") then
+         if lunholy == 0 then
             return DKROT.spells["Scourge Strike"]
          end
 
          -- Festering Strike if the remaining time on Necrotic Plague is less than the cooldown remaining on Unholy Blight
          if DKROT:isOffCD("Festering Strike") and DKROT:HasTalent("Necrotic Plague") and DKROT:HasTalent("Unholy Blight") then
-            --local ubStart, ubDur = GetSpellCooldown(DKROT.spells["Unholy Blight"])
             local ubcd = DKROT:GetCD(DKROT.spells["Unholy Blight"])
 
             if dFF < (ubcd / 2) then

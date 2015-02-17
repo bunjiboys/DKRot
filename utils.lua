@@ -606,4 +606,15 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          return DKROT.spells["Death's Advance"]
       end
    end
+   
+   -- Is the target in soul reaper range
+   function DKROT:CanSoulReaper()
+      local hp = DKROT:HealthPct("TARGET")
+      local timeToDie = DKROT:GetTimeToDie()
+      if timeToDie >= 5 and ((DKROT:has("Improved Soul Reaper") and hp < 45.3) or hp < 35.5) then
+         return true
+      end
+
+      return false
+   end
 end
