@@ -16,9 +16,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
          local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
          local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
-         local timeToDie = DKROT:GetTimeToDie()
          local rp = UnitPower("PLAYER")
-         local timeToDie = DKROT:GetTimeToDie()
     
          -- Horn of Winter
          if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
@@ -33,11 +31,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and UnitHealth("target")/UnitHealthMax("target") < 0.35
-         then
-            if DKROT:isOffCD("Soul Reaper") and timeToDie > 5 then
-               return DKROT.spells["Soul Reaper"]
-            end
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return DKROT.spells["Soul Reaper"]
          end
 
          -- Defile
@@ -143,7 +138,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local blood, lblood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
          local death = DKROT:DeathRunes()
          local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
-         local timeToDie = DKROT:GetTimeToDie()
          local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
          local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
     
@@ -162,13 +156,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper")
-            and (death >= 1 or frost <= 0)
-            and UnitHealth("target")/UnitHealthMax("target") < 0.35
-         then
-            if DKROT:isOffCD("Soul Reaper") and timeToDie > 5 then
-               return DKROT.spells["Soul Reaper"]
-            end
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return DKROT.spells["Soul Reaper"]
          end
 
          -- Defile
@@ -273,7 +262,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
          local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
          local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
-         local timeToDie = DKROT:GetTimeToDie()
 
          -- Horn of Winter
          if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
@@ -296,10 +284,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and UnitHealth("target")/UnitHealthMax("target") < 0.35 then
-            if DKROT:isOffCD("Soul Reaper") and timeToDie > 5 then
-               return DKROT.spells["Soul Reaper"]
-            end
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return DKROT.spells["Soul Reaper"]
          end
 
          -- Defile
@@ -404,7 +390,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
          local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
          local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
-         local timeToDie = DKROT:GetTimeToDie()
          local rp = UnitPower("PLAYER")
 
          -- Horn of Winter
@@ -420,10 +405,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and UnitHealth("target")/UnitHealthMax("target") < 0.35 then
-            if DKROT:isOffCD("Soul Reaper") and timeToDie > 5 then
-               return DKROT.spells["Soul Reaper"]
-            end
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return DKROT.spells["Soul Reaper"]
          end
 
          -- Blood Tap with >= 11 Charges
@@ -542,7 +525,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"])) or 0
          local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
          local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
-         local timeToDie = DKROT:GetTimeToDie()
          local rp = UnitPower("PLAYER")
     
          -- Horn of Winter
@@ -569,10 +551,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and UnitHealth("target")/UnitHealthMax("target") < 0.355 then
-            if DKROT:isOffCD("Soul Reaper") and timeToDie > 5 then
-               return DKROT.spells["Soul Reaper"]
-            end
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return DKROT.spells["Soul Reaper"]
          end
 
          -- Defile
@@ -657,7 +637,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"])) or 0
          local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
          local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
-         local timeToDie = DKROT:GetTimeToDie()
          local rp = UnitPower("PLAYER")
 
          -- Pillar of Frost if its available
@@ -759,7 +738,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"])) or 0
          local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
          local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
-         local timeToDie = DKROT:GetTimeToDie()
          local rp = UnitPower("PLAYER")
     
          -- Horn of Winter
@@ -780,7 +758,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and DKROT:isOffCD("Soul Reaper") and DKROT:HealthPct("TARGET") < 0.355 then
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
             return DKROT.spells["Soul Reaper"]
          end
 
@@ -854,7 +832,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"])) or 0
          local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
          local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
-         local timeToDie = DKROT:GetTimeToDie()
          local rp = UnitPower("PLAYER")
 
          -- Pillar of Frost if its available

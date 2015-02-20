@@ -14,7 +14,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local blood, lblood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
          local death = DKROT:DeathRunes()
          local bloodCharges = select(4,UnitBuff("player", DKROT.spells["Blood Charge"]))
-         local timeToDie = DKROT:GetTimeToDie()
 
          -- Death Pact
          if DKROT:CanUse("Death Pact") and DKROT:HealthPct("PLAYER") < 30 then
@@ -41,10 +40,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper
-         if lblood <= 2 and DKROT:has("Soul Reaper") and DKROT:HealthPct("TARGET") < 35 then
-            if DKROT:isOffCD("Soul Reaper") and timeToDie > 5 then
-               return DKROT.spells["Soul Reaper"]
-            end
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return DKROT.spells["Soul Reaper"]
          end
 
          -- Diseases
@@ -118,7 +115,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local death = DKROT:DeathRunes()
          local bloodCharges = select(4,UnitBuff("player", DKROT.spells["Blood Charge"]))
          local healthPct = (UnitHealth("PLAYER") / UnitHealthMax("PLAYER")) * 100
-         local timeToDie = DKROT:GetTimeToDie()
 
          -- Death Pact
          if DKROT:has("Death Pact") and healthPct < 50 then
@@ -157,10 +153,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper
-         if lblood <= 2 and DKROT:CanUse("Soul Reaper") and DKROT:HealthPct("TARGET") < 35 then
-            if DKROT:isOffCD("Soul Reaper") and timeToDie > 5 then
-               return DKROT.spells["Soul Reaper"]
-            end
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return DKROT.spells["Soul Reaper"]
          end
 
          -- Diseases
