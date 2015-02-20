@@ -424,7 +424,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       if DKROT_Settings.TTD then
          DKROT.TTD:SetAlpha(getOpacity("DKROT.TTD"))
          local ttd = DKROT:GetTimeToDie()
-         if ttd == 99999 then
+         if not ttd then
             if DKROT_Settings.Locked ~= true then
                DKROT.TTD.Text:SetText(DKROT:FormatTTD(math.random(60, 700)))
             else

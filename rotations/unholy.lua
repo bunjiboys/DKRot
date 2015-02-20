@@ -13,7 +13,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local unholy, lunholy = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
          local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
          local death = DKROT:DeathRunes()
-         local timeToDie = DKROT:GetTimeToDie()
          local bloodCharges = select(4, UnitBuff("PLAYER", DKROT.spells["Blood Charge"]))
          local shadowInfusion = select(4, UnitBuff("PET", DKROT.spells["Shadow Infusion"])) or 0
          local suddenDoom = select(4, UnitBuff("PLAYER", DKROT.spells["Sudden Doom"]))
@@ -37,17 +36,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and (
-               (
-                  DKROT:has("Improved Soul Reaper")
-                  and DKROT:HealthPct("TARGET") < 45
-               )
-               or DKROT:HealthPct("TARGET") < 35
-            )
-         then
-            if DKROT:isOffCD("Soul Reaper") then
-               return DKROT.spells["Soul Reaper"]
-            end
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return DKROT.spells["Soul Reaper"]
          end
 
          -- Defile
@@ -174,18 +164,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and (
-               (DKROT:has("Improved Soul Reaper") and DKROT:HealthPct("TARGET") < 45)
-               or DKROT:HealthPct("TARGET") < 35
-            )
-         then
-            if DKROT:isOffCD("Soul Reaper") and timeToDie > 5 then
-               return DKROT.spells["Soul Reaper"]
-            end
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return DKROT.spells["Soul Reaper"]
          end
 
          -- Defile
-         if DKROT:CanUse("Defile") and timeToDie > 10 and DKROT:isOffCD("Defile") then
+         if DKROT:CanUse("Defile") and timeToDie and timeToDie > 10 and DKROT:isOffCD("Defile") then
             return DKROT.spells["Defile"], true
          end
 
@@ -195,7 +179,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Summon Gargoyle
-         if DKROT:CanUse("Summon Gargoyle") and DKROT:isOffCD("Summon Gargoyle") and timeToDie > 30 then
+         if DKROT:CanUse("Summon Gargoyle") and DKROT:isOffCD("Summon Gargoyle") and timeToDie and timeToDie > 30 then
             if DKROT:BossOrPlayer("TARGET") then
                return DKROT.spells["Summon Gargoyle"]
             end
@@ -289,7 +273,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local death = DKROT:DeathRunes()
          local bloodCharges = select(4, UnitBuff("PLAYER", DKROT.spells["Blood Charge"])) or 0
          local dFF, dBP = DKROT:GetDiseaseTime()
-         local timeToDie = DKROT:GetTimeToDie()
          local shadowInf = select(4, UnitBuff("PET", DKROT.spells["Shadow Infusion"]))
          local doomProc = select(4, UnitBuff("PLAYER", DKROT.spells["Sudden Doom"]))
          local rp = UnitPower("PLAYER")
@@ -315,11 +298,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper when below or close to 45% health with improved SR, or close to 35%
-         if DKROT:CanUse("Soul Reaper") and DKROT:isOffCD("Soul Reaper") then
-            local hp = DKROT:HealthPct("target")
-            if (DKROT:has("Improved Soul Reaper") and hp < 45.3) or hp < 35.5 then
-               return DKROT.spells["Soul Reaper"]
-            end
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return DKROT.spells["Soul Reaper"]
          end
 
          -- Summon Gargoyle on CD
@@ -444,7 +424,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Soul Reaper when below or close to 45% health with improved SR, or close to 35%
-         if DKROT:CanUse("Soul Reaper") and DKROT:isOffCD("Soul Reaper") and DKROT:CanSoulReaper() then
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
             return DKROT.spells["Soul Reaper"]
          end
 
@@ -454,7 +434,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Summon Gargoyle
-         if DKROT:CanUse("Summon Gargoyle") and DKROT:isOffCD("Summon Gargoyle") and timeToDie > 20 then
+         if DKROT:CanUse("Summon Gargoyle") and DKROT:isOffCD("Summon Gargoyle") and timeToDie and timeToDie > 20 then
             if DKROT:BossOrPlayer("TARGET") then
                return DKROT.spells["Summon Gargoyle"]
             end
@@ -485,7 +465,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             return DKROT.spells["Death and Decay"], true
          end
 
-         -- Festering Strike
+         -- Festering Strike and both blood and frost runes are capped
          if lblood == 0 and lfrost == 0 then
             return DKROT.spells["Festering Strike"]
          end
@@ -499,7 +479,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if DKROT:isOffCD("Festering Strike") and DKROT:HasTalent("Necrotic Plague") and DKROT:HasTalent("Unholy Blight") then
             local ubcd = DKROT:GetCD(DKROT.spells["Unholy Blight"])
 
-            if dFF < (ubcd / 2) then
+            if dFF < ubcd and ((dFF < 20) or not (bd and fd)) then
                return DKROT.spells["Festering Strike"]
             end
          end
@@ -547,7 +527,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Empower Rune Weapon
-         if DKROT:CanUse("Empower Rune Weapon") and DKROT:isOffCD("Empower Rune Weapon") then
+         if DKROT:CanUse("Empower Rune Weapon") and DKROT:isOffCD("Empower Rune Weapon") and DKROT:FullyDepletedRunes() >= 3 then
             return DKROT.spells["Empower Rune Weapon"]
          end
 

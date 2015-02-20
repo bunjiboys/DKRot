@@ -267,7 +267,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                maxHealth = curHealth,
                startTime = now,
                lastUpdate = now,
-               ttd = 99999
+               ttd = nil
             }
 
          else
@@ -275,7 +275,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             local dps = diff / (now - DKROT.TimeToDie.Targets[target].startTime)
 
             local ttd = diff > 0 and DKROT:round(curHealth / dps, 1) or 99999
-            DKROT.TimeToDie.Targets[target].ttd = ttd < 3600 and ttd or 99999
+            DKROT.TimeToDie.Targets[target].ttd = ttd < 1800 and ttd or nil
             DKROT.TimeToDie.Targets[target].lastUpdate = now
          end
 
@@ -283,7 +283,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          return DKROT.TimeToDie.Targets[target].ttd
       end
 
-      return 99999
+      return nil
    end
 
    function DKROT:BossOrPlayer(unit)
@@ -309,7 +309,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    end
 
    function DKROT:FormatTTD(ttd)
-      if ttd > 60 then
+      if ttd and ttd > 60 then
          local minutes = math.floor(ttd / 60)
          local seconds = ttd - (minutes * 60)
          return string.format("|cffC41F3B%dm %ds|r", minutes, seconds)
@@ -611,7 +611,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    function DKROT:CanSoulReaper()
       local hp = DKROT:HealthPct("TARGET")
       local timeToDie = DKROT:GetTimeToDie()
-      if timeToDie >= 5 and ((DKROT:has("Improved Soul Reaper") and hp < 45.3) or hp < 35.5) then
+
+      if DKROT:isOffCD("Soul Reaper") 
+         and timeToDie and timeToDie >= 5 
+         and ((DKROT:has("Improved Soul Reaper") and hp < 45.5) or hp < 35.5)
+      then
          return true
       end
 
