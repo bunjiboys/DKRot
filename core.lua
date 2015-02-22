@@ -769,9 +769,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             DKROT.AOE:SetAlpha(getOpacity("DKROT.AOE"))
 
             if aoeNoCheckRange ~= nil and aoeNoCheckRange == true then
-               DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
+               DKROT.AOE.Icon:SetTexture(GetSpellTexture(DKROT.spells[aoeNextCast]))
             else
-               DKROT.AOE.Icon:SetTexture(GetSpellTexture(aoeNextCast))
+               DKROT.AOE.Icon:SetTexture(GetSpellTexture(DKROT.spells[aoeNextCast]))
             end
          end
       end
@@ -791,7 +791,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       local nextCast, noCheckRange = rotation.func()
       if noCheckRange ~= nil and noCheckRange == true then
-         return GetSpellTexture(nextCast)
+         return GetSpellTexture(DKROT.spells[nextCast])
       else
          return DKROT:GetRangeandIcon(icon, nextCast)
       end
@@ -808,7 +808,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             icon:SetVertexColor(1, 1, 1, 1)
          end
 
-         return GetSpellTexture(move)
+         return GetSpellTexture(DKROT.spells[move])
       end
 
       return nil
