@@ -105,7 +105,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Empower Rune Weapon
-         if DKROT:CanUse("Empower Rune Weapon") and DKROT:isOffCD("Empower Rune Weapon") then
+         if DKROT:CanUse("Empower Rune Weapon") and DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
             return "Empower Rune Weapon"
          end
 
@@ -143,7 +143,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Raise Dead
-         if UnitExists("pet") ~= true then
+         if UnitExists("pet") ~= true and DKROT:isOffCD("Raise Dead") then
             return "Raise Dead", true
          end
 
@@ -250,7 +250,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Empower Rune Weapon
-         if DKROT:CanUse("Empower Rune Weapon") and DKROT:isOffCD("Empower Rune Weapon") then
+         if DKROT:CanUse("Empower Rune Weapon") and DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
             return "Empower Rune Weapon"
          end
 
@@ -283,16 +283,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Raise Dead
-         if UnitExists("pet") ~= true then
+         if UnitExists("pet") ~= true and DKROT:isOffCD("Raise Dead") then
             return "Raise Dead", true
          end
 
-         -- Plague Leech when we have two runes to return and 
-         if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 and dFF > 0 and dBP > 0 then
-            local start, dur, _ = GetSpellCooldown(DKROT.spells["Outbreak"])
-            if (dur == 0 or ((start + dur) < DKROT.curtime))
-               or (kmProc and not DKROT:isOffCD("Obliterate"))
-            then
+         -- Plague Leech when we have two runes to return and Outbreak is about to come off cooldown or
+         -- diseases are about to drop off
+         if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() > 0 and dFF > 0 and dBP > 0 then
+            if DKROT:GetCD(DKROT.spells["Outbreak"]) < 1.5 or (dFF < 5 or dBP < 5) then
                return "Plague Leech"
             end
          end
@@ -319,21 +317,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             return "Plague Strike"
          end
 
-         -- Death and Decay / Defile
+         -- Defile
          if DKROT:CanUse("Defile") and DKROT:isOffCD("Defile") then
             return "Defile"
-         elseif DKROT:isOffCD("Death and Decay") then
-            return "Death and Decay"
-         end
-
-         -- Scourge Strike when Unholy or Death runes are capped
-         if DKROT:isOffCD("Scourge Strike") and (lunholy == 0 or death >= 2) then
-            return "Scourge Strike"
          end
 
          -- Festering Strike when both blood and frost runes are capped
          if DKROT:isOffCD("Festering Strike") and lblood == 0 and lfrost == 0 then
             return "Festering Strike"
+         end
+
+         -- Scourge Strike when Unholy runes are capped
+         if DKROT:isOffCD("Scourge Strike") and lunholy == 0 then
+            return "Scourge Strike"
          end
 
          -- Dark Transformation on CD with 5 stacks of Shadow Infusion
@@ -347,7 +343,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Death Coil with Sudden Doom or RP almost capped
-         if doomProc or (rp >= 90 and bloodCharges <= 10) then
+         if doomProc or (rp >= 80 and bloodCharges <= 10) then
             return "Death Coil"
          end
 
@@ -373,7 +369,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Empower Rune Weapon when all runes are on CD
          if DKROT:CanUse("Empower Rune Weapon") and DKROT:isOffCD("Empower Rune Weapon") and DKROT:DepletedRunes() == 6 then
-            return "Empower Rune Weapon"
+            if DKROT:BossOrPlayer("TARGET") then
+               return "Empower Rune Weapon"
+            end
          end
 
          if DKROT:CanUse("Army of the Dead") and DKROT:isOffCD("Army of the Dead") then
@@ -411,7 +409,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Raise Dead
-         if UnitExists("pet") ~= true then
+         if UnitExists("pet") ~= true and DKROT:isOffCD("Raise Dead") then
             return "Raise Dead", true
          end
 
@@ -528,7 +526,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Empower Rune Weapon
          if DKROT:CanUse("Empower Rune Weapon") and DKROT:isOffCD("Empower Rune Weapon") and DKROT:FullyDepletedRunes() >= 3 then
-            return "Empower Rune Weapon"
+            if DKROT:BossOrPlayer("TARGET") then
+               return "Empower Rune Weapon"
+            end
          end
 
          -- Nothing else can be done
