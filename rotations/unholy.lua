@@ -290,7 +290,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          -- Plague Leech when we have two runes to return and Outbreak is about to come off cooldown or
          -- diseases are about to drop off
          if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() > 0 and dFF > 0 and dBP > 0 then
-            if DKROT:GetCD(DKROT.spells["Outbreak"]) < 1.5 or (dFF < 5 or dBP < 5) then
+            if DKROT:GetCD("Outbreak") < 1.5 or (dFF < 5 or dBP < 5) then
                return "Plague Leech"
             end
          end
@@ -475,7 +475,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Festering Strike if the remaining time on Necrotic Plague is less than the cooldown remaining on Unholy Blight
          if DKROT:isOffCD("Festering Strike") and DKROT:HasTalent("Necrotic Plague") and DKROT:HasTalent("Unholy Blight") then
-            local ubcd = DKROT:GetCD(DKROT.spells["Unholy Blight"])
+            local ubcd = DKROT:GetCD("Unholy Blight")
 
             if dFF < ubcd and ((dFF < 20) or not (bd and fd)) then
                return "Festering Strike"
