@@ -691,7 +691,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local info = {}
 
       -- Template for an item in the dropdown box
-      local function DKROT_CDRPanel_DD_Item (panel, spell, buff)
+      local function DKROT_CDRPanel_DD_Item(panel, spell, buff)
          local info = {}
          info.text = spell .. ((buff and " (Buff)") or "")
          info.value = spell .. ((buff and " (Buff)") or "")
@@ -710,6 +710,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             if (DKROT.Cooldowns.Buffs[Spec[i]] == nil or DKROT.Cooldowns.Buffs[Spec[i]][2]) then
                UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, Spec[i]), 2)
             end
+
             if DKROT.Cooldowns.Buffs[Spec[i]] ~= nil then
                UIDropDownMenu_AddButton(DKROT_CDRPanel_DD_Item(self, Spec[i], true), 2)
             end

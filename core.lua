@@ -251,9 +251,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                end
             end
          end
+
          -- if the icon is nil, then just hide the frame
          if frame.Icon:GetTexture() == nil then
             frame:SetAlpha(0)
+         else
+            frame:SetAlpha(1)
          end
       else
          cdLoc = DKROT_OPTIONS_FRAME_VIEW_NONE
@@ -521,8 +524,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       for i = 1, #DKROT.CDDisplayList do
          local idx = ceil(i/2)
          if DKROT_Settings.CD[DKROT.Current_Spec][idx] then
-            DKROT.CD[idx]:SetAlpha(getOpacity("DKROT.CD" .. idx))
             DKROT:UpdateIcon(DKROT.CDDisplayList[i], DKROT.CD[DKROT.CDDisplayList[i]])
+            DKROT.CD[idx]:SetAlpha(getOpacity("DKROT.CD" .. idx))
          else
             DKROT.CD[idx]:SetAlpha(0)
          end
