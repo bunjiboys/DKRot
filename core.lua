@@ -239,7 +239,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             local icon = DKROT:GetRangeandIcon(frame.Icon, cdLoc)
             frame.Icon:SetTexture(icon)
             if icon ~= nil then
-               start, dur, active =  GetSpellCooldown(cdLoc)
+               start, dur, active =  GetSpellCooldown(DKROT.spells[cdLoc])
                local t = ceil(start + dur - DKROT.curtime)
                if active == 1 and dur > 7 then
                   if DKROT_Settings.CDS then

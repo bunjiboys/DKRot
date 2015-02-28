@@ -74,7 +74,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT_OPTIONS_CDR_CD_TRINKETS_SLOT2 = "Trinket Slot 2"
    DKROT_OPTIONS_CDR_RACIAL = "Racial"
 
-   DKROT_OPTIONS_DT = "Disease Tracker Options"
+   DKROT_OPTIONS_DT = "Disease Tracker"
    DKROT_OPTIONS_DT_ENABLE = "Enable"
    DKROT_OPTIONS_DT_CCOLOURS = "Show Class Colours"
    DKROT_OPTIONS_DT_TARGET = "Include Target"
