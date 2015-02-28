@@ -219,10 +219,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Racials
          elseif cdLoc == DKROT_OPTIONS_CDR_RACIAL then
-            local icon = DKROT:GetRangeandIcon(frame.Icon, DKROT.spells[PLAYER_RACE])
+            local icon = DKROT:GetRangeandIcon(frame.Icon, PLAYER_RACE)
             frame.Icon:SetTexture(icon)
             if icon ~= nil then
-               start, dur, active =  GetSpellCooldown(DKROT.spells[PLAYER_RACE])
+               start, dur, active = GetSpellCooldown(DKROT.spells[PLAYER_RACE])
                local t = ceil(start + dur - DKROT.curtime)
                if active == 1 and dur > 7 then
                   if DKROT_Settings.CDS then
@@ -805,7 +805,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    -- Out: returns the texture of the icon (probably unessesary since icon is now being passed in, will look into it more)
    function DKROT:GetRangeandIcon(icon, move)
       if move ~= nil then
-         if DKROT_Settings.Range and IsSpellInRange(move, "target") == 0 then
+         if DKROT_Settings.Range and IsSpellInRange(DKROT.spells[move], "target") == 0 then
             icon:SetVertexColor(0.8, 0.05, 0.05, 1)
          else
             icon:SetVertexColor(1, 1, 1, 1)
