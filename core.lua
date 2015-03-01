@@ -56,6 +56,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       -- Easy access to settings variables
       local cdLoc = DKROT_Settings.CD[DKROT.Current_Spec][location] and DKROT_Settings.CD[DKROT.Current_Spec][location][1] or nil
+      cdLoc = (DKROT.spells[cdLoc] ~= nil and DKROT.spells[cdLoc] or cdLoc)
+      print(cdLoc)
       local cdIsBuff = DKROT_Settings.CD[DKROT.Current_Spec][location][IS_BUFF]
 
       -- If the option is not set to nothing
@@ -239,7 +241,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             local icon = DKROT:GetRangeandIcon(frame.Icon, cdLoc)
             frame.Icon:SetTexture(icon)
             if icon ~= nil then
-               start, dur, active =  GetSpellCooldown(DKROT.spells[cdLoc])
+               start, dur, active =  GetSpellCooldown(cdLoc)
                local t = ceil(start + dur - DKROT.curtime)
                if active == 1 and dur > 7 then
                   if DKROT_Settings.CDS then
@@ -804,14 +806,15 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    -- In: icon: icon in which to change the vertex colour of   move: spellID of spell to be cast next
    -- Out: returns the texture of the icon (probably unessesary since icon is now being passed in, will look into it more)
    function DKROT:GetRangeandIcon(icon, move)
+      move = (DKROT.spells[move] ~= nil and DKROT.spells[move] or move)
       if move ~= nil then
-         if DKROT_Settings.Range and IsSpellInRange(DKROT.spells[move], "target") == 0 then
+         if DKROT_Settings.Range and IsSpellInRange(move, "target") == 0 then
             icon:SetVertexColor(0.8, 0.05, 0.05, 1)
          else
             icon:SetVertexColor(1, 1, 1, 1)
          end
 
-         return GetSpellTexture(DKROT.spells[move])
+         return GetSpellTexture(move)
       end
 
       return nil

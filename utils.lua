@@ -487,19 +487,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       -- Apply Frost Fever
       if FFexpires == nil or FFexpires < 2 then
          if outbreak then -- if can use outbreak, then do it
-            return DKROT.spells["Outbreak"]
+            return "Outbreak"
 
          elseif unholyblight then -- if can use Unholy Blight, then do it
-            return DKROT.spells["Unholy Blight"]
+            return "Unholy Blight"
 
          elseif (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) and ((DKROT:RuneCDs(DKROT.SPECS.UNHOLY) <= 0) or DKROT:DeathRunes() >= 1) then -- Unholy: Plague Strike
-            return DKROT.spells["Plague Strike"]
+            return "Plague Strike"
 
          elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) and ((DKROT:RuneCDs(DKROT.SPECS.FROST) <= 0) or DKROT:DeathRunes() >= 1) then -- Frost: Howling Blast
-            return DKROT.spells["Howling Blast"]
+            return "Howling Blast"
             
          elseif ((DKROT:RuneCDs(DKROT.SPECS.FROST) <= 0) or DKROT:DeathRunes() >= 1) then -- Other: Icy Touch
-            return DKROT.spells["Icy Touch"]
+            return "Icy Touch"
          end
       end
 
@@ -508,20 +508,20 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if (BPexpires == nil or BPexpires < 3) then
             -- Add Death Grip as first priority until PS is in range
             if DKROT_Settings.DG and (IsSpellInRange(DKROT.spells["Plague Strike"], "target")) == 0 and IsUsableSpell(DKROT.spells["Death Grip"]) then
-               return DKROT.spells["Death Grip"]
+               return "Death Grip"
             end
 
             if plagueleech and BPexpires ~= nil and DKROT:DepletedRunes() > 0 then
-               return DKROT.spells["Plague Leech"]
+               return "Plague Leech"
 
             elseif outbreak then -- if can use outbreak, then do it
-               return DKROT.spells["Outbreak"]
+               return "Outbreak"
 
             elseif unholyblight then -- if can use Unholy Blight, then do it
-               return DKROT.spells["Unholy Blight"]
+               return "Unholy Blight"
 
             elseif ((DKROT:RuneCDs(DKROT.SPECS.UNHOLY) <= 0) or DKROT:DeathRunes() >= 1) then -- if rune availible, then use Plague Strike
-               return DKROT.spells["Plague Strike"]
+               return "Plague Strike"
             end
          end
       end
