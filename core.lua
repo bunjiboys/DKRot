@@ -57,7 +57,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       -- Easy access to settings variables
       local cdLoc = DKROT_Settings.CD[DKROT.Current_Spec][location] and DKROT_Settings.CD[DKROT.Current_Spec][location][1] or nil
       cdLoc = (DKROT.spells[cdLoc] ~= nil and DKROT.spells[cdLoc] or cdLoc)
-      print(cdLoc)
       local cdIsBuff = DKROT_Settings.CD[DKROT.Current_Spec][location][IS_BUFF]
 
       -- If the option is not set to nothing
