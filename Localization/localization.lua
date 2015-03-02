@@ -106,4 +106,5 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT_ABOUT_BODY = "DKRot was initially forked from the CLC DK addon on Nov. 28 2014. CLC DK author did a great job building an awesome addon, but I felt the development had stagnated so I decided to fork the addon and start implementing features I've been missing in the addon.<br /><br />If you have any issues, comments or other feedback, please head on over to http://www.curse.com/addons/wow/dkrot and leave a comment"
    DKROT_ABOUT_AUTHOR = "Author: Jardo US-Hyjal (WoD)"
    DKROT_ABOUT_VERSION = "Version: " .. GetAddOnMetadata("DKRot", "Version")
+   DKROT_OPTIONS_EXPORT = "Bug Report Export"
 end

@@ -631,4 +631,100 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       return false
    end
+
+   function DKROT_Export()
+      local talents = {}
+      for tier = 1, GetMaxTalentTier() do
+         local talentID = select(2, GetTalentRowSelectionInfo(tier))
+         local id, name = GetTalentInfoByID(talentID)
+         table.insert(talents, {["id"] = id, ["name"] = name})
+      end
+      local data = {
+         Settings = DKROT_Settings,
+         Talents = talents,
+         Locale = GetLocale(),
+         Spec = select(2, GetSpecializationInfo(GetSpecialization()))
+      }
+      local encoded = DKROT.Base64:encode(DataDumper(data))
+
+      local frame = CreateFrame("Frame", "DKROT.Export", UIParent, "DialogBoxFrame")
+      frame:SetSize(600, 400)
+      frame:SetBackdrop({
+         bgFile = [[Interface\FrameGeneral\UI-Background-Rock]],
+         edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]],
+         tile = true, tileSize = 256, edgeSize = 16,
+         insets = { left = 4, right = 4, top = 4, bottom = 4 }
+      })
+      frame:RegisterForDrag("LeftButton")
+      frame:SetPoint("CENTER")
+      frame:SetMovable(true)
+
+      local scroll = CreateFrame("ScrollFrame", "DKROT.Export.Scroll", frame, UIPanelScrollFrameTemplate)
+      scroll:SetSize(580, 340)
+      scroll:SetPoint("TOP", 0, -20)
+      scroll:SetPoint("LEFT", 10, 0)
+      scroll:SetPoint("RIGHT", -10, 0)
+      scroll:SetPoint("BOTTOM", 0, 60)
+
+      local edit = CreateFrame("EditBox", "DKROT.Export.Edit", scroll)
+      edit:SetMultiLine(true)
+      edit:SetAutoFocus(true)
+      edit:SetFontObject(GameFontHighlightSmall)
+      edit:EnableMouse(true)
+      edit:SetBackdrop({
+         bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+         edgeFile = "Interface\\ChatFrame\\ChatFrameBackground",
+         tile = true, tileSize = 1, edgeSize = 2,
+      })
+      edit:SetBackdropColor(0, 0, 0, 0.5)
+      edit:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.80)
+      edit:SetTextInsets(4, 4, 4, 4)
+      edit:SetText(encoded)
+      edit:HighlightText(0, -1)
+      edit:SetWidth(584)
+
+      scroll:SetScrollChild(edit)
+
+      edit:SetScript("OnEscapePressed", function() edit:ClearFocus() end)
+      edit:SetScript("OnEnterPressed", function(self) edit:ClearFocus() end)
+      frame:SetScript("OnLeave", function() edit:ClearFocus() end)
+      frame:SetScript("OnMouseDown", function() frame:StartMoving() end)
+      frame:SetScript("OnMouseUp", function() frame:StopMovingOrSizing() end)
+
+      frame:Show()
+   end
+
+   -- The base64 code below is courtesy of Alex Kloss (http://lua-users.org/wiki/BaseSixtyFour)
+   -- Lua 5.1+ base64 v3.0 (c) 2009 by Alex Kloss <alexthkloss@web.de>
+   -- licensed under the terms of the LGPL2
+   DKROT.Base64 = {}
+   DKROT.Base64.chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+   function DKROT.Base64:encode(data)
+      return ((data:gsub('.', function(x)
+                  local r ,b='',x:byte()
+                  for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
+                  return r;
+         end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+               if (#x < 6) then return '' end
+               local c=0
+               for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
+               return DKROT.Base64.chars:sub(c+1,c+1)
+         end)..({ '', '==', '=' })[#data%3+1])
+   end
+
+   function DKROT.Base64:decode(data)
+       data = string.gsub(data, '[^'.. DKROT.Base64.chars ..'=]', '')
+       return (data:gsub('.', function(x)
+           if (x == '=') then return '' end
+           local r,f='',(DKROT.Base64.chars:find(x)-1)
+           for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
+           return r;
+       end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
+           if (#x ~= 8) then return '' end
+           local c=0
+           for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
+           return string.char(c)
+       end))
+   end
 end

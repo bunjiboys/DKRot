@@ -874,6 +874,15 @@
             <FontString inherits="GameFontHighlightSmall" />
             <FontStringHeader1 inherits="GameFontNormal" />
          </SimpleHTML>
+         <Button name="DKROT_AboutPanel_Export" inherits="UIPanelButtonTemplate"  Text="DKROT_OPTIONS_EXPORT">
+            <Size x="130" y="22" />
+            <Anchors>
+               <Anchor point="BOTTOMRIGHT"><Offset><AbsDimension x="-15" y="15" /></Offset></Anchor>
+            </Anchors>
+            <Scripts>
+               <OnClick>DKROT_Export()</OnClick>
+            </Scripts>
+         </Button>
       </Frames>
    </Frame>
 </Ui>

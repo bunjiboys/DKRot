@@ -1164,6 +1164,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT:Debug("Slash Command Used")
    end
 
+   SLASH_DKROTBUG1 = '/dkrotbug'
+   SlashCmdList["DKROTBUG"] = function()
+      DKROT_Export()
+   end
+
    -- Update the Blizzard interface Options with settings
    function DKROT:OptionsRefresh()
       if DKROT_Settings ~= nil and DKROT_Settings.Version ~= nil and DKROT_Settings.Version == DKROT_VERSION then
