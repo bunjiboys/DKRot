@@ -639,11 +639,22 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local id, name = GetTalentInfoByID(talentID)
          table.insert(talents, {["id"] = id, ["name"] = name})
       end
+
+      local trinket1 = GetInventoryItemID("PLAYER", 13)
+      local trinket2 = GetInventoryItemID("PLAYER", 14)
+
       local data = {
          Settings = DKROT_Settings,
          Talents = talents,
          Locale = GetLocale(),
-         Spec = select(2, GetSpecializationInfo(GetSpecialization()))
+         Spec = select(2, GetSpecializationInfo(GetSpecialization())),
+         Rotation = DKROT:GetCurrentRotation(),
+         Version = GetAddOnMetadata("DKROT", "Version"),
+         Trinkets = {
+            slot1 = { id = trinket1, select(1, GetItemInfo(trinket1)) },
+            slot2 = { id = trinket2, select(1, GetItemInfo(trinket2)) }
+         }
+
       }
       local encoded = DKROT.Base64:encode(DataDumper(data))
 
