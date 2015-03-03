@@ -76,7 +76,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    function DKROT:UseHoW()
       local battleShout = select(1, GetSpellInfo(6673))
       local trueShotAura = select(1, GetSpellInfo(19506))
-      
+
       if UnitBuff("PLAYER", DKROT.spells["Horn of Winter"]) ~= nil
          or UnitBuff("PLAYER", battleShout) ~= nil
          or UnitBuff("PLAYER", trueShotAura) ~= nil
@@ -86,7 +86,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       return true
    end
-   
+
    -- Chat log function
    function DKROT:Log(message)
       DEFAULT_CHAT_FRAME:AddMessage("|cFFC41F3BDKRot:|r " .. message)
@@ -131,7 +131,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          if element.frame == target then
             local relFrame = select(2, _G[element.frame]:GetPoint()):GetName()
-            
+
             if relFrame == "UIParent" then
                return nil
             end
@@ -178,14 +178,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          else
             print(string.rep("   ", level) .. k .. " = " .. tostring(v))
          end
-         
+
       end
    end
 
    function DKROT:SpellKnown(spell)
       return GetSpellTexture(spell) and true or false
    end
- 
+
    -- In: timeleft - seconds
    -- Out: formated string of hours, minutes and seconds
    function DKROT:formatTime(timeleft)
@@ -497,7 +497,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          elseif (DKROT.Current_Spec == DKROT.SPECS.FROST) and ((DKROT:RuneCDs(DKROT.SPECS.FROST) <= 0) or DKROT:DeathRunes() >= 1) then -- Frost: Howling Blast
             return "Howling Blast"
-            
+
          elseif ((DKROT:RuneCDs(DKROT.SPECS.FROST) <= 0) or DKROT:DeathRunes() >= 1) then -- Other: Icy Touch
             return "Icy Touch"
          end
@@ -606,14 +606,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          return DKROT.spells["Death's Advance"]
       end
    end
-   
+
    -- Is the target in soul reaper range
    function DKROT:CanSoulReaper()
       local hp = DKROT:HealthPct("TARGET")
       local timeToDie = DKROT:GetTimeToDie()
 
-      if DKROT:isOffCD("Soul Reaper") 
-         and timeToDie and timeToDie >= 5 
+      if DKROT:isOffCD("Soul Reaper")
+         and timeToDie and timeToDie >= 5
          and ((DKROT:has("Improved Soul Reaper") and hp < 45.5) or hp < 35.5)
       then
          return true
@@ -670,16 +670,46 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       frame:SetPoint("CENTER")
       frame:SetMovable(true)
 
-      local scroll = CreateFrame("ScrollFrame", "DKROT.Export.Scroll", frame, UIPanelScrollFrameTemplate)
-      scroll:SetSize(580, 340)
-      scroll:SetPoint("TOP", 0, -20)
-      scroll:SetPoint("LEFT", 10, 0)
-      scroll:SetPoint("RIGHT", -10, 0)
-      scroll:SetPoint("BOTTOM", 0, 60)
+      local title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+      title:SetPoint("TOP", 0, -10)
+      title:SetFontObject(GameFontHighlight)
+      title:SetText("DKROT Export")
 
-      local edit = CreateFrame("EditBox", "DKROT.Export.Edit", scroll)
+      local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+      desc:SetPoint("BOTTOMLEFT", 10, 55)
+      desc:SetFontObject(GameFontNormal)
+      desc:SetText("Please copy/paste the above data to the form at http://dkrot.bunjiboys.dk/ and copy the\nresulting URL to the bug report on Curse.com")
+      desc:SetJustifyH("LEFT")
+
+      local scroll = CreateFrame("ScrollFrame", "DKROT.Export.Scroll", frame, FauxPanelScrollFrameTemplate)
+      scroll:SetPoint("TOP", title, "BOTTOM", 0, -5)
+      scroll:SetPoint("LEFT", 10, 0)
+      scroll:SetPoint("RIGHT", -40, 0)
+      scroll:SetPoint("BOTTOM", 0, 90)
+      scroll:EnableMouseWheel(true)
+
+      local scrollbar = CreateFrame("Slider", nil, scroll, "UIPanelScrollBarTemplate")
+      scrollbar:SetPoint("TOPLEFT", scroll, "TOPRIGHT", 4, -16)
+      scrollbar:SetPoint("BOTTOMLEFT", scroll, "BOTTOMRIGHT", 4, 16)
+      scrollbar:SetMinMaxValues(1, 200)
+      scrollbar:SetValueStep(10)
+      scrollbar.scrollStep = 10
+      scrollbar:SetValue(0)
+      scrollbar:SetWidth(16)
+      scrollbar:SetScript("OnValueChanged", function (self, value)
+         self:GetParent():SetVerticalScroll(value)
+      end)
+
+      local scrollbg = scrollbar:CreateTexture(nil, "BACKGROUND")
+      scrollbg:SetAllPoints(scrollbar)
+      scrollbg:SetTexture(0, 0, 0, 0.4)
+      frame.scrollbar = scrollbar
+
+      local edit = CreateFrame("EditBox", "DKROT.Export.Edit", frame)
+      edit:SetPoint("TOPLEFT", scroll, "TOPLEFT", 0, 0)
+      edit:SetPoint("BOTTOMRIGHT", scroll, "BOTTOMRIGHT", 0, 0)
       edit:SetMultiLine(true)
-      edit:SetAutoFocus(true)
+      edit:SetAutoFocus(false)
       edit:SetFontObject(GameFontHighlightSmall)
       edit:EnableMouse(true)
       edit:SetBackdrop({
@@ -692,17 +722,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       edit:SetTextInsets(4, 4, 4, 4)
       edit:SetText(encoded)
       edit:HighlightText(0, -1)
-      edit:SetWidth(584)
+      edit:SetSize(560, 330)
 
       scroll:SetScrollChild(edit)
 
       edit:SetScript("OnEscapePressed", function() edit:ClearFocus() end)
-      edit:SetScript("OnEnterPressed", function(self) edit:ClearFocus() end)
-      frame:SetScript("OnLeave", function() edit:ClearFocus() end)
       frame:SetScript("OnMouseDown", function() frame:StartMoving() end)
       frame:SetScript("OnMouseUp", function() frame:StopMovingOrSizing() end)
+      scroll:SetScript("OnScrollRangeChanged", function(self, x, y)
+         scrollbar:SetMinMaxValues(0, y)
+      end)
 
       frame:Show()
+      edit:SetFocus()
    end
 
    -- The base64 code below is courtesy of Alex Kloss (http://lua-users.org/wiki/BaseSixtyFour)
