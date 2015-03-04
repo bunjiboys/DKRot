@@ -178,6 +178,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
                elseif trinket.type == DKROT.TrinketType.Stacking then
                   local start, dur, active = GetItemCooldown(trinketID)
+                  local timeLeft = DKROT:round(start + dur - DKROT.curtime)
                   local _, _, icon, stacks, _, dur, expTime = UnitBuff("PLAYER", select(1, GetSpellInfo(trinket.spell)))
 
                   if icon ~= nil then
@@ -192,7 +193,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                      frame.Icon:SetTexture(GetItemIcon(trinketID))
                      if active then
                         frame.Icon:SetVertexColor(0.5, 0.5, 0.5, 1)
-                        frame.Time:SetText(DKROT:formatTime(t))
+                        frame.Time:SetText(DKROT:formatTime(timeLeft))
 
                         if DKROT_Settings.CDS then
                            frame.c:SetCooldown(start, dur)
