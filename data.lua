@@ -10,6 +10,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          ["Blood Boil"] = GetSpellInfo(50842), -- lvl56
          ["Blood Plague"] = GetSpellInfo(55078),
          ["Dark Simulacrum"] = GetSpellInfo(77606), -- lvl85, Cata
+         ["Dark Succor"] = GetSpellInfo(101568),
          ["Death and Decay"] = GetSpellInfo(43265), -- lvl60
          ["Death Coil"] = GetSpellInfo(47541),
          ["Death Grip"] = GetSpellInfo(49576),
@@ -123,6 +124,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             DKROT.spells["Army of the Dead"],
             DKROT.spells["Blood Charge"],
             DKROT.spells["Chilblains"],
+            DKROT.spells["Dark Succor"],
             DKROT.spells["Dark Simulacrum"],
             DKROT.spells["Death and Decay"],
             DKROT.spells["Death Grip"],
@@ -180,6 +182,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             [DKROT.spells["Blood Charge"]] = {"player", false},
             [DKROT.spells["Chilblains"]] = {"target", false},
             [DKROT.spells["Conversion"]] = {"player", false},
+            [DKROT.spells["Dark Succor"]] = {"player", false},
             [DKROT.spells["Dark Simulacrum"]] = {"target", true},
             [DKROT.spells["Death's Advance"]] = {"player", true},
             [DKROT.spells["Horn of Winter"]] = {"player", true},
