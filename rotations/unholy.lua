@@ -477,8 +477,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if DKROT:isOffCD("Festering Strike") and DKROT:HasTalent("Necrotic Plague") and DKROT:HasTalent("Unholy Blight") then
             local ubcd = DKROT:GetCD("Unholy Blight")
 
-            if dFF < ubcd and ((dFF < 20) or not (bd and fd)) then
-               return "Festering Strike"
+            if dFF < ubcd and ((dFF < 20) or not (bd or fd)) then
+               if timeToDie == nil or timeToDie > dFF then
+                  return "Festering Strike"
+               end
             end
          end
 

@@ -274,7 +274,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             value = 1.0,
             label = DKROT_OPTIONS_POSITION_SCALE,
             minValue = 0.5,
-            maxValue = 1.5,
+            maxValue = 5.0,
          },
          opacity = {
             parent = DKROT_PositionPanel,
