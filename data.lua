@@ -142,6 +142,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          TalentCDs ={
             DKROT.spells["Anti-Magic Zone"],
             DKROT.spells["Asphyxiate"],
+            DKROT.spells["Breath of Sindragosa"],
             DKROT.spells["Conversion"],
             DKROT.spells["Death's Advance"],
             DKROT.spells["Death Pact"],
@@ -180,6 +181,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             [DKROT.spells["Anti-Magic Shell"]] = {"player", true},
             [DKROT.spells["Asphyxiate"]] = {"target", true},
             [DKROT.spells["Blood Charge"]] = {"player", false},
+            [DKROT.spells["Breath of Sindragosa"]] = {"player", true},
             [DKROT.spells["Chilblains"]] = {"target", false},
             [DKROT.spells["Conversion"]] = {"player", false},
             [DKROT.spells["Dark Succor"]] = {"player", false},
