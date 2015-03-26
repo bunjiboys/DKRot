@@ -1,6 +1,6 @@
 ## Interface: 60100
 ## Author: bunjiboys (Jardo@US-Hyjal)
-## Version: 1.0.0
+## Version: 1.0.1
 ## Title: DKRot
 ## Notes: Death Knight Rotation assistance, based on CLC DK
 ## OptionalDeps: Masque
