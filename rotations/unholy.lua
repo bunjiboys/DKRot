@@ -123,7 +123,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       InternalName = "SimC",
       ToggleSpells = { "Death Pact", "Plague Leech", "Soul Reaper", "Defile", "Summon Gargoyle", "Breath of Sindragosa", "Outbreak", "Blood Tap", "Empower Rune Weapon" },
       SuggestedTalents = { "Plague Leech", "Defile" },
-      DefaultRotation = true,
+      DefaultRotation = false,
       MainRotation = function()
          -- Rune Info
          local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
@@ -388,7 +388,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       InternalName = "SFNecroBlight",
       ToggleSpells = { "Death Pact", "Plague Leech", "Soul Reaper", "Death and Decay", "Unholy Blight", "Summon Gargoyle", "Outbreak", "Blood Tap", "Empower Rune Weapon" },
       SuggestedTalents = { "Necrotic Plague", "Unholy Blight" },
-      DefaultRotation = false,
+      DefaultRotation = true,
       MainRotation = function()
          -- Rune Info
          local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
@@ -401,6 +401,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local shadowInf = select(4, UnitBuff("PET", DKROT.spells["Shadow Infusion"]))
          local doomProc = select(4, UnitBuff("PLAYER", DKROT.spells["Sudden Doom"]))
          local npStacks = select(4, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"])) or 0
+         local ub = select(4, UnitBuff("PLAYER", DKROT.spells["Unholy Blight"]))
          local rp = UnitPower("PLAYER")
     
          -- Horn of Winter
@@ -427,7 +428,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Blood Tap if we need a rune for Soul Reaper
-         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (frost > 0 and death < 1) and DKROT:CanSoulReaper() then
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (frost > 0 and death < 1) and DKROT:CanSoulReaper(true) then
             return "Blood Tap"
          end
 
@@ -444,12 +445,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
          
          -- Outbreak if we are missing a disease
-         if DKROT:CanUse("Outbreak") and DKROT:isOffCD("Outbreak") and (dFF == 0 or dBP == 0) then
+         if DKROT:CanUse("Outbreak") and DKROT:isOffCD("Outbreak") and (dFF == 0 or dBP == 0) and ub == nil then
             return "Outbreak"
          end
 
          -- Plague Strike, if we are missing diseases and Outbreak if on CD
-         if DKROT:isOffCD("Plague Strike") and (dFF == 0 or dBP == 0) then
+         if DKROT:isOffCD("Plague Strike") and (dFF == 0 or dBP == 0) and ub == nil then
             return "Plague Strike"
          end
 

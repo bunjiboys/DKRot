@@ -608,15 +608,15 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    end
 
    -- Is the target in soul reaper range
-   function DKROT:CanSoulReaper()
+   function DKROT:CanSoulReaper(ignoreCD)
       local hp = DKROT:HealthPct("TARGET")
       local timeToDie = DKROT:GetTimeToDie()
+      local impSR = DKROT:has("Improved Soul Reaper")
 
-      if DKROT:isOffCD("Soul Reaper")
-         and timeToDie and timeToDie >= 5
-         and ((DKROT:has("Improved Soul Reaper") and hp < 45.5) or hp < 35.5)
-      then
-         return true
+      if timeToDie and timeToDie >= 5 and ((impSR and hp < 45.5) or hp < 35.5) then
+         if ignoreID or DKROT:isOffCD("Soul Reaper") then
+            return true
+         end
       end
 
       return false

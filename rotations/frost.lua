@@ -251,7 +251,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       InternalName = "SimC2H",
       ToggleSpells = { "Death Pact", "Plague Leech", "Soul Reaper", "Defile", "Breath of Sindragosa", "Outbreak", "Blood Tap", "Empower Rune Weapon" },
       SuggestedTalents = { },
-      DefaultRotation = true,
+      DefaultRotation = false,
       MainRotation = function()
          -- Rune Info
          local frost, lfrost, fd = DKROT:RuneCDs(DKROT.SPECS.FROST)
@@ -514,7 +514,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       InternalName = "SF2H",
       ToggleSpells = { "Pillar of Frost", "Plague Leech", "Soul Reaper", "Defile", "Outbreak", "Blood Tap", "Empower Rune Weapon", "Army of the Dead" },
       SuggestedTalents = { "Plague Leech", "Defile", "Blood Tap" },
-      DefaultRotation = false,
+      DefaultRotation = true,
       MainRotation = function()
          -- Rune Info
          local frost, lfrost, fd = DKROT:RuneCDs(DKROT.SPECS.FROST)
