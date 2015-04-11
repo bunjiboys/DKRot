@@ -4,7 +4,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local icyveins = {
       Name = "Icy Veins",
       InternalName = "IcyVeins",
-      ToggleSpells = { "Death Pact", "Defile", "Breath of Sindragosa", "Blood Tap", "Empower Rune Weapon" },
+      ToggleSpells = { "Outbreak", "Death Pact", "Defile", "Breath of Sindragosa", "Blood Tap", "Empower Rune Weapon" },
       SuggestedTalents = { },
       DefaultRotation = false,
       MainRotation = function()
@@ -104,7 +104,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local simcraft = {
       Name = "SimCraft",
       InternalName = "SimC",
-      ToggleSpells = { "Death Pact", "Lichborne", "Defile", "Dancing Rune Weapon", "Breath of Sindragosa", "Blood Tap", "Empower Rune Weapon" },
+      ToggleSpells = { "Outbreak", "Death Pact", "Lichborne", "Defile", "Dancing Rune Weapon", "Breath of Sindragosa", "Blood Tap", "Empower Rune Weapon" },
       SuggestedTalents = { },
       DefaultRotation = true,
       MainRotation = function()

@@ -469,27 +469,27 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Check if Outbreak is off CD, is known and Player wants to use it in rotation
-      local outbreak = DKROT_Settings.CD[DKROT.Current_Spec].Outbreak and
-         IsSpellKnown(77575) and
-         DKROT:isOffCD("Outbreak")
+      local outbreak = DKROT_Settings.CD[DKROT.Current_Spec].Outbreak
+         and IsSpellKnown(77575)
+         and DKROT:isOffCD("Outbreak")
+         and DKROT:CanUse("Outbreak")
 
       -- Check if Unholy Blight is up, is known and Player wants to use it in rotation
-      local unholyblight = DKROT_Settings.CD[DKROT.Current_Spec].UB and
-         IsSpellKnown(115989) and
-         DKROT:isOffCD("Unholy Blight")
+      local unholyblight = DKROT_Settings.CD[DKROT.Current_Spec].UB
+         and IsSpellKnown(115989)
+         and DKROT:isOffCD("Unholy Blight")
 
       -- Check if Plague Leech is up, is known and Player wants to use it in rotation
-      local plagueleech = DKROT_Settings.CD[DKROT.Current_Spec].PL and
-         IsSpellKnown(123693) and
-         DKROT:isOffCD("Plague Leech")
-
+      local plagueleech = DKROT_Settings.CD[DKROT.Current_Spec].PL
+         and IsSpellKnown(123693)
+         and DKROT:isOffCD("Plague Leech")
 
       -- Apply Frost Fever
       if FFexpires == nil or FFexpires < 2 then
          if outbreak then -- if can use outbreak, then do it
             return "Outbreak"
 
-         elseif unholyblight then -- if can use Unholy Blight, then do it
+         elseif unholyblight and DKROT:CanUse("Unholy Blight") then -- if can use Unholy Blight, then do it
             return "Unholy Blight"
 
          elseif (DKROT.Current_Spec == DKROT.SPECS.UNHOLY) and ((DKROT:RuneCDs(DKROT.SPECS.UNHOLY) <= 0) or DKROT:DeathRunes() >= 1) then -- Unholy: Plague Strike

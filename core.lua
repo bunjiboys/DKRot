@@ -495,8 +495,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT.AOE:SetAlpha(0)
       DKROT.Interrupt:SetAlpha(0)
       if DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][1] ~= DKROT_OPTIONS_FRAME_VIEW_NONE then
-         DKROT.Move:SetAlpha(getOpacity("DKROT.Move"))
          DKROT:UpdateIcon("DKROT_CDRPanel_DD_Priority", DKROT.Move)
+         DKROT.Move:SetAlpha(getOpacity("DKROT.Move"))
 
          -- If Priority on Main Icon
          if DKROT_Settings.CD[DKROT.Current_Spec]["DKROT_CDRPanel_DD_Priority"][1] == DKROT_OPTIONS_CDR_CD_PRIORITY then
