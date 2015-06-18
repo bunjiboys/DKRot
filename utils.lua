@@ -1,26 +1,6 @@
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
 
-   -- Register a rotation
-   function DKROT_RegisterRotation_old(spec, intname, rotname, rotfunc, def, spells, talents)
-      local currentDefault = DKROT:GetDefaultSpecRotation(spec)
-      if currentDefault ~= nil and def == true then
-         local specName = select(2, GetSpecializationInfo(spec))
-         local defSpecName = DKROT.Rotations[spec][currentDefault].name
-         DKROT:Log("Cannot register " .. rotname .. " as the new default spec rotation for '" .. specName .. "' as there is already a default rotation (" .. defSpecName .. ") registered. Registering as non-default")
-         def = false
-      end
-      DKROT.Rotations[spec][intname] = {
-         name = rotname,
-         func = rotfunc,
-         default = def,
-         spells = spells or {},
-         talents = talents or {},
-         prepull = DKROT['DefaultPrePull'],
-         aoe = nil
-      }
-   end
-
    function DKROT_RegisterRotation(spec, rotation)
       local currentDefault = DKROT:GetDefaultSpecRotation(spec)
       local def = rotation["DefaultRotation"]

@@ -146,6 +146,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             DKROT.spells["Conversion"],
             DKROT.spells["Death's Advance"],
             DKROT.spells["Death Pact"],
+            DKROT.spells["Defile"],
             DKROT.spells["Desecrated Ground"],
             DKROT.spells["Gorefiend's Grasp"],
             DKROT.spells["Lichborne"],
