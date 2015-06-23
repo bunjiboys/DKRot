@@ -3,6 +3,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    function DKROT_RegisterRotation(spec, rotation)
       local currentDefault = DKROT:GetDefaultSpecRotation(spec)
+      print (currentDefault)
       local def = rotation["DefaultRotation"]
       if currentDefault ~= nil and def == true then
          local specName = select(2, GetSpecializationInfo(spec))
@@ -715,6 +716,47 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       frame:Show()
       edit:SetFocus()
+   end
+
+   function DKROT:GetRuneTotals()
+      local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+      local unholy, lunholy = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+      local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
+      local death = DKROT:DeathRunes()
+      local runes = { }
+
+      if lfrost == 0 then runes["frost"] = 2 elseif frost == 0 then runes["frost"] = 1 else runes["frost"] = 0 end
+      if lunholy == 0 then runes["unholy"] = 2 elseif unholy == 0 then runes["unholy"] = 1 else runes["unholy"] = 0 end
+      if lblood == 0 then runes["blood"] = 2 elseif blood == 0 then runes["blood"] = 1 else runes["blood"] = 0 end
+      runes["death"] = death
+
+      return runes
+   end
+
+   function DKROT:TierBonus(searchTier)
+      local tierMask = 0
+
+      for tier, iids in pairs(DKROT.TierItems) do
+         local pieces = 0
+
+         for idx, iid in pairs(iids) do
+            if IsEquippedItem(iid) then
+               pieces = pieces + 1
+            end
+         end
+
+         if pieces >= 4 then
+            tierMask = bit.bor(tierMask, DKROT.Tiers[tier .. "_4p"], DKROT.Tiers[tier .. "_2p"])
+         elseif pieces >= 2 then
+            tierMask = bit.bor(tierMask, DKROT.Tiers[tier .. "_2p"])
+         end
+      end
+
+      if bit.band(tierMask, searchTier) > 0 then
+         return true
+      end
+
+      return false
    end
 
    -- The base64 code below is courtesy of Alex Kloss (http://lua-users.org/wiki/BaseSixtyFour)

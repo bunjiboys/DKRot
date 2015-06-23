@@ -45,6 +45,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       RPPM = 4
    }
 
+   DKROT.Tiers = {
+       NO_TIER = 0x0000,
+       TIER17_2p = 0x0001,
+       TIER17_4p = 0x0002,
+       TIER18_2p = 0x0004,
+       TIER18_4p = 0x0008
+   }
+
+   DKROT.TierItems = {
+       TIER17 = { 115535, 115536, 115537, 115539, 115539 },
+       TIER18 = { 124317, 124327, 124332, 124338, 124344 }
+   }
+
    DKROT.Talents = {
       ["Plaguebearer"] = 19165,
       ["Plague Leech"] = 19166,

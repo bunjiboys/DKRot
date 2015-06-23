@@ -1,519 +1,230 @@
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
-
---[[
-   local icyveins = {
-      Name = "Icy Veins - Two-Hand",
-      InternalName = "IcyVeins2H",
-      ToggleSpells = { "Death Pact", "Plague Leech", "Soul Reaper", "Defile", "Breath of Sindragosa", "Outbreak", "Blood Tap", "Empower Rune Weapon" },
-      SuggestedTalents = { },
-      DefaultRotation = false,
-      MainRotation = function()
-         -- Rune Info
-         local frost, lfrost, fd = DKROT:RuneCDs(DKROT.SPECS.FROST)
-         local unholy, lunholy, ud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
-         local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
-         local death = DKROT:DeathRunes()
-         local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
-         local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
-         local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
-         local rp = UnitPower("PLAYER")
-    
-         -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
-            return "Horn of Winter"
-         end
-
-         -- Death Pact
-         if DKROT:CanUse("Death Pact") and (UnitHealth("player") / UnitHealthMax("player")) < 0.30 then
-            if DKROT:isOffCD("Death Pact") then
-               return "Death Pact", true
-            end
-         end
-
-         -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
-            return "Soul Reaper"
-         end
-
-         -- Defile
-         if DKROT:CanUse("Defile") and DKROT:isOffCD("Defile") then
-            return "Defile", true
-         end
-
-         -- Diseases
-         local disease = DKROT:GetDisease()
-         if disease ~= nil then
-            return disease
-         end
-
-         -- Breath of Sindragosa
-         if DKROT:CanUse("Breath of Sindragosa") and UnitPower("player") > 30 then
-            if DKROT:isOffCD("Breath of Sindragosa") then
-               return "Breath of Sindragosa"
-            end
-         end
-
-         -- Obliterate with killing machine or runes overcaped
-         if DKROT:has("Obliterate") and select(1, IsUsableSpell(DKROT.spells["Obliterate"]))
-            and (kmproc or (lfrost <= 0 or lunholy <= 0 or (lblood <= 0 and lbd)))
-         then
-            return "Obliterate"
-         end
-
-         -- Blood Tap with >= 11 Charges
-         if DKROT:CanUse("Blood Tap")
-            and DKROT_Settings.CD[DKROT.Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 11
-            and DKROT:FullyDepletedRunes() > 0
-         then
-            return "Blood Tap", true
-         end
-
-         -- Frost Strike if rp overcaped
-         if DKROT_Settings.CD[DKROT.Current_Spec].RP and UnitPower("player") > 76 then
-            return "Frost Strike"
-         end
-
-         -- Obliterate
-         if DKROT:has("Obliterate") then
-            if select(1,IsUsableSpell(DKROT.spells["Obliterate"])) then
-               return "Obliterate"
-            end
-         else
-            -- Howling Blast
-            if frost <= 0 then
-               return "Howling Blast"
-            end
-
-            -- Plague Strike
-            if unholy <= 0 then
-               return "Plague Strike"
-            end
-         end
-
-         -- Rime Howling Blast
-         if rimeProc then
-            return "Howling Blast"
-         end
-
-         -- Frost Strike
-         if DKROT_Settings.CD[DKROT.Current_Spec].RP and rp >= 25 then
-            return "Frost Strike"
-         end
-
-         -- Blood Tap with >= 5 Charges
-         if DKROT:CanUse("Blood Tap")
-            and DKROT_Settings.CD[DKROT.Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 5
-            and DKROT:FullyDepletedRunes() > 0
-         then
-            return "Blood Tap", true
-         end
-
-         -- Empower Rune Weapon if we have it enabled and we have at least 3 runes depleted
-         if DKROT:CanUse("Empower Rune Weapon")
-            and DKROT_Settings.CD[DKROT.Current_Spec].ERW
-            and DKROT:DepletedRunes() >= 3
-         then
-            if DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
-               return "Empower Rune Weapon"
-            end
-         end
-
-         -- If nothing else can be done
-         return nil
+   
+   local function dw_def_tier18_4p()
+      -- Rune Info
+      local frost, lfrost, fd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+      local unholy, lunholy, ud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+      local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
+      local death, tdeath = DKROT:DeathRunes()
+      local dFF, dBP = DKROT:GetDiseaseTime()
+      local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"])) or 0
+      local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
+      local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
+      local rp = UnitPower("PLAYER")
+ 
+      -- Horn of Winter
+      if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         return "Horn of Winter"
       end
-   }
-      
-   local icyveinsdw = {
-      Name = "Icy Veins - Dual Wield",
-      InternalName = "IcyVeinsDualWield",
-      ToggleSpells = { "Death Pact", "Plague Leech", "Soul Reaper", "Defile", "Breath of Sindragosa", "Outbreak", "Blood Tap", "Empower Rune Weapon" },
-      SuggestedTalents = { },
-      DefaultRotation = false,
-      MainRotation = function()
-         -- Rune Info
-         local frost, lfrost = DKROT:RuneCDs(DKROT.SPECS.FROST)
-         local unholy, lunholy, ud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
-         local blood, lblood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
-         local death = DKROT:DeathRunes()
-         local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
-         local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
-         local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
-    
-         -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
-            return "Horn of Winter"
-         end
 
-         -- Death Pact
-         if DKROT:CanUse("Death Pact")
-            and (UnitHealth("player") / UnitHealthMax("player")) < 0.30
-         then
-            if DKROT:isOffCD("Death Pact") then
-               return "Death Pact", true
-            end
+      -- Pillar of Frost on CD
+      if DKROT:CanUse("Pillar of Frost") and DKROT:isOffCD("Pillar of Frost") then
+         if DKROT:BossOrPlayer("TARGET") then
+            return "Pillar of Frost"
          end
-
-         -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
-            return "Soul Reaper"
-         end
-
-         -- Defile
-         if DKROT:CanUse("Defile") then
-            if DKROT:isOffCD("Defile") then
-               return "Defile", true
-            end
-         end
-
-         -- Breath of Sindragosa
-         if DKROT:CanUse("Breath of Sindragosa") and UnitPower("player") > 30 then
-            if DKROT:isOffCD("Breath of Sindragosa") then
-               return "Breath of Sindragosa"
-            end
-         end
-
-         -- Blood Tap with >= 11 Charges
-         if DKROT:CanUse("Blood Tap")
-            and DKROT_Settings.CD[DKROT.Current_Spec].BT
-            and bloodCharges ~= nil and bloodCharges >= 11
-            and DKROT:FullyDepletedRunes() > 0
-         then
-            return "Blood Tap", true
-         end
-
-         -- Frost Strike if Killing Machine is procced
-         if UnitPower("player") >= 25 and kmProc then
-            return "Frost Strike"
-         end
-
-         -- Frost Strike if RP capped
-         if UnitPower("player") > 88 then
-            return "Frost Strike"
-         end
-
-         -- Diseases
-         local disease = DKROT:GetDisease()
-         if disease ~= nil then
-            return disease
-         end
-
-         -- Howling Blast with both frost or both death off cooldown
-         if lblood <= 0 or lfrost <= 0 then
-            return "Howling Blast"
-         end
-
-         -- Obliterate when Killing Machine is procced and both Unholy Runes are off cooldown
-         if select(1,IsUsableSpell(DKROT.spells["Obliterate"])) and lunholy <= 0 and kmProc then
-            return "Obliterate"
-         end
-
-         -- Howling Blast if Rime procced
-         if rimeProc then
-            return "Howling Blast"
-         end
-
-         -- Obliterate when second Unholy Rune is nearly off cooldown
-         if lunholy <= 2 and not ud and (frost <= 0 or blood <= 0) then
-            return "Obliterate"
-         end
-
-         -- Howling Blast
-         if death >= 1 or frost <= 0 then
-            return "Howling Blast"
-         end
-
-         -- Blood Tap with >= 5 Charges
-         if DKROT:CanUse("Blood Tap") and bloodCharges ~= nil and bloodCharges >= 5 and DKROT:FullyDepletedRunes() > 0 then
-            return "Blood Tap", true
-         end
-
-         -- Frost Strike
-         if UnitPower("player") > 39 then
-            return "Frost Strike"
-         end
-
-         -- Empower Rune Weapon if we have it enabled and we have at least two fully depleted runes
-         if DKROT:CanUse("Empower Rune Weapon") and DKROT:FullyDepletedRunes() >= 2 then
-            if DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
-               return "Empower Rune Weapon"
-            end
-         end
-
-         -- If nothing else can be done
-         return nil
       end
-   }
 
-   local simcraft = {
-      Name = "SimCraft - Two-Hand",
-      InternalName = "SimC2H",
-      ToggleSpells = { "Death Pact", "Plague Leech", "Soul Reaper", "Defile", "Breath of Sindragosa", "Outbreak", "Blood Tap", "Empower Rune Weapon" },
-      SuggestedTalents = { },
-      DefaultRotation = false,
-      MainRotation = function()
-         -- Rune Info
-         local frost, lfrost, fd = DKROT:RuneCDs(DKROT.SPECS.FROST)
-         local unholy, lunholy, ud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
-         local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
-         local death = DKROT:DeathRunes()
-         local dFF, dBP = DKROT:GetDiseaseTime()
-         local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
-         local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
-         local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
-
-         -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
-            return "Horn of Winter"
-         end
-    
-         -- Death Pact
-         if DKROT:CanUse("Death Pact") and (UnitHealth("player") / UnitHealthMax("player")) < 0.30 then
-            if DKROT:isOffCD("Death Pact") then
-               return "Death Pact", true
-            end
-         end
-
-         -- Plague Leech if we have enabled it in the rotation, and we have a fully depleted rune
-         if DKROT:CanUse("Plague Leech")
-            and DKROT:isOffCD("Plague Leech")
-            and DKROT:FullyDepletedRunes() > 0 and (dFF > 0 and dBP > 0)
-         then
-            return "Plague Leech"
-         end
-
-         -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
-            return "Soul Reaper"
-         end
-
-         -- Defile
-         if DKROT:CanUse("Defile") and DKROT:isOffCD("Defile") then
-            return "Defile"
-         end
-
-         -- Blood Tap with >= 11 Charges
-         if DKROT:CanUse("Blood Tap") and bloodCharges ~= nil and bloodCharges >= 11 and DKROT:FullyDepletedRunes() > 0 then
-            return "Blood Tap", true
-         end
-    
-         -- Rime Howling Blast if we need to refresh
-         if rimeProc ~= nil and (dFF < 5) then
-            return "Howling Blast"
-         end
-
-         -- Diseases
-         local disease = DKROT:GetDisease()
-         if disease ~= nil then
-            return disease
-         end
-
-         -- Breath of Sindragosa
-         if DKROT:CanUse("Breath of Sindragosa") and UnitPower("player") > 75 then
-            if DKROT:isOffCD("Breath of Sindragosa") then
-               return "Breath of Sindragosa"
-            end
-         end
-
-         -- Obliterate with killing machine or runes overcaped
-         if DKROT:has("Obliterate")
-            and select(1,IsUsableSpell(DKROT.spells["Obliterate"]))
-            and (kmProc or (lfrost <= 0 or lunholy <= 0 or (lblood <= 0 and lbd)))
-         then
-            return "Obliterate"
-         end
-
-         -- Frost Strike if rp overcaped
-         if UnitPower("player") > 76 then
-            return "Frost Strike"
-         end
-    
-         -- Howling Blast if Rime is procced
-         if rimeProc ~= nil then
-            return "Howling Blast"
-         end
-
-         -- Obliterate
-         if select(1,IsUsableSpell(DKROT.spells["Obliterate"])) then
-            return "Obliterate"
-         else
-            -- Howling Blast
-            if frost <= 0 then
-               return "Howling Blast"
-            end
-
-            --Plague Strike
-            if unholy <= 0 then
-               return "Plague Strike"
-            end
-         end
-
-         -- Frost Strike
-         if UnitPower("player") >= 25 then
-            return "Frost Strike"
-         end
-
-         -- Blood Tap with >= 5 Charges
-         if DKROT:CanUse("Blood Tap")
-            and bloodCharges ~= nil and bloodCharges >= 5
-            and DKROT:FullyDepletedRunes() > 0
-         then
-            return "Blood Tap", true
-         end
-
-         -- Empower Rune Weapon if we have it enabled and we have at least 3 runes depleted
-         if DKROT:CanUse("Empower Rune Weapon") and DKROT:FullyDepletedRunes() >= 2 then
-            if DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
-               return "Empower Rune Weapon"
-            end
-         end
-
-         -- If nothing else can be done
-         return nil
+      -- Soul Reaper
+      if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+         return "Soul Reaper"
       end
-   }
 
-   local simcraftdw = {
-      Name = "SimCraft - Dual Wield",
-      InternalName = "SimCDualWield",
-      ToggleSpells = { "Death Pact", "Plague Leech", "Soul Reaper", "Defile", "Breath of Sindragosa", "Outbreak", "Blood Tap", "Empower Rune Weapon" },
-      SuggestedTalents = { },
-      DefaultRotation = false,
-      MainRotation = function()
-         -- Rune Info
-         local frost, lfrost, fd = DKROT:RuneCDs(DKROT.SPECS.FROST)
-         local unholy, lunholy, ud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
-         local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
-         local death = DKROT:DeathRunes()
-         local dFF, dBP = DKROT:GetDiseaseTime()
-         local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
-         local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
-         local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
-         local rp = UnitPower("PLAYER")
-
-         -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
-            return "Horn of Winter"
-         end
-    
-         -- Death Pact
-         if DKROT:CanUse("Death Pact") and (UnitHealth("player") / UnitHealthMax("player")) < 0.30 then
-            if DKROT:isOffCD("Death Pact") then
-               return "Death Pact", true
-            end
-         end
-
-         -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
-            return "Soul Reaper"
-         end
-
-         -- Blood Tap with >= 11 Charges
-         if DKROT:CanUse("Blood Tap")
-            and bloodCharges ~= nil and bloodCharges >= 11
-            and DKROT:FullyDepletedRunes() > 0
-         then
-            return "Blood Tap", true
-         end
-
-         -- Breath of Sindragosa
-         if DKROT:CanUse("Breath of Sindragosa") and rp > 75 then
-            if DKROT:isOffCD("Breath of Sindragosa") then
-               return "Breath of Sindragosa"
-            end
-         end
-
-         -- Defile
-         if DKROT:CanUse("Defile") and DKROT:isOffCD("Defile") then
-            return "Defile"
-         end
-    
-         -- Howling Blast as long as it wont cap out RP
-         if DKROT:isOffCD("Howling Blast") and rp < 88 then
-            return "Howling Blast"
-         end
-
-         -- Obliterate when it wont cap RP
-         if DKROT:has("Obliterate")
-            and select(1, IsUsableSpell(DKROT.spells["Obliterate"]))
-            and rp < 76
-         then
-            return "Obliterate"
-         end
-
-         -- Frost Strike w/Killing Machine and high RP
-         if kmProc and rp >= 50 and DKROT:isOffCD("Frost Strike") then
-            return "Frost Strike"
-         end
-    
-         -- Howling Blast if we have at least one full frost or death rune up
-         if frost <= 0 or death > 0 then
-            return "Howling Blast"
-         end
-
-         -- Diseases
-         local disease = DKROT:GetDisease()
-         if disease ~= nil then
-            return disease
-         end
-    
-         -- Howling Blast if Rime is procced
-         if rimeProc then
-            return "Howling Blast"
-         end
-
-         -- Frost Strike
-         if rp > 76 then
-            return "Frost Strike"
-         end
-
-         if unholy <= 0 and kmProc and DKROT:isOffCD("Obliterate") then
-            return "Obliterate"
-         end
-
-         if DKROT:isOffCD("Howling Blast") then
-            return "Howling Blast"
-         end
-
-         -- Blood Tap with >= 5 Charges
-         if DKROT:CanUse("Blood Tap")
-            and bloodCharges ~= nil and bloodCharges >= 5
-            and DKROT:FullyDepletedRunes() > 0
-         then
-            return "Blood Tap", true
-         end
-
-         -- Plague Leech if we have enabled it in the rotation, and we have a fully depleted rune
-         if DKROT:CanUse("Plague Leech")
-            and DKROT:isOffCD("Plague Leech")
-            and DKROT:FullyDepletedRunes() > 0
-            and (dFF > 0 and dBP > 0)
-         then
-            return "Plague Leech"
-         end
-
-         -- Empower Rune Weapon if we have it enabled and we have at least 2 runes fully depleted
-         if DKROT:CanUse("Empower Rune Weapon") and DKROT:FullyDepletedRunes() >= 2 then
-            if DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
-               return "Empower Rune Weapon"
-            end
-         end
-
-         if rp >= 25 then
-            return "Frost Strike"
-         end
-
-         -- If nothing else can be done
-         return nil
+      -- Blood Tap if we have more than 10 stacks
+      if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (frost > 0 and death < 1) and DKROT:CanSoulReaper(true) then
+          return "Blood Tap"
       end
-   }
---]]
 
-   local skullflower = {
+      -- Frost Strike with Killing Machine
+      if kmProc and rp >= 25 then
+         return "Frost Strike"
+      end
+
+      -- Obliterate if we have an unholy rune
+      if DKROT:isOffCD("Obliterate") or kmProc then
+          return "Obliterate"
+      end
+
+      -- Defile
+      if DKROT:isOffCD("Defile") then
+          return "Defile"
+      end
+
+      -- Blood Tap
+      if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and not DKROT:isOffCD("Defile") then
+          return "Blood Tap"
+      end
+
+      -- Frost Strike with Killing Machine or Runic Power is above 88
+      if rp >= 88 then
+         return "Frost Strike"
+      end
+
+      -- Howling Blast if we have either a death or a frost rune, or Rime is procced
+      if DKROT:isOffCD("Howling Blast") and ((death == 0 or frost == 0) or rimeProc) then
+          return "Howling Blast"
+      end
+
+      -- Blood Tap if we have over 10 charges and depleted runes
+      if DKROT:CanUse("Blood Tap") and bloodCharges >= 10 and DKROT:FullyDepletedRunes() > 0 then
+          return "Blood Tap"
+      end
+
+      -- Frost Strike with Killing Machine or Runic Power is above 76
+      if rp >= 76 then
+         return "Frost Strike"
+      end
+
+      -- Outbreak if we are missing blood plague
+      if DKROT:CanUse("Outbreak") and dBP == 0 and DKROT:isOffCD("Outbreak") then
+          return "Outbreak"
+      end
+
+      -- Plague Strike if we're missing blood plague
+      if DKROT:isOffCD("Plague Strike") and dBP == 0 then
+         return "Plague Strike"
+      end
+
+      -- Howling Blast if we have 2 or more death+frost runes
+      if death >= 2 or lfrost == 0 or (death == 1 and frost == 0) then
+          return "Howling Blast"
+      end
+
+      -- Blood Tap if we have enough charges and depleted runes
+      if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and DKROT:FullyDepletedRunes() > 0 then
+          return "Blood Tap"
+      end
+
+      -- Plague Leech when we have a fully depleted rune
+      if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 and dFF > 0 and dBP > 0 then
+         return "Plague Leech"
+      end
+
+      -- Empower Rune Weapon if all runes are depleted and we are out of RP
+      if DKROT:CanUse("Empower Rune Weapon") and rp < 25 and DKROT:DepletedRunes() == 6 then
+         if DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
+            return "Empower Rune Weapon"
+         end
+      end
+
+      -- If nothing else can be done
+      return nil
+   end
+
+   local function dw_def()
+      -- Rune Info
+      local frost, lfrost, fd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+      local unholy, lunholy, ud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+      local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
+      local death, tdeath = DKROT:DeathRunes()
+      local dFF, dBP = DKROT:GetDiseaseTime()
+      local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"])) or 0
+      local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
+      local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
+      local rp = UnitPower("PLAYER")
+ 
+      -- Horn of Winter
+      if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         return "Horn of Winter"
+      end
+
+      -- Pillar of Frost on CD
+      if DKROT:CanUse("Pillar of Frost") and DKROT:isOffCD("Pillar of Frost") then
+         if DKROT:BossOrPlayer("TARGET") then
+            return "Pillar of Frost"
+         end
+      end
+
+      -- Blood Tap with 10 or more charges and RP over 76 or rp over 20 with KM proc
+      if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (rp >= 76 or (rp >= 20 and kmProc))  then
+         return "Blood Tap"
+      end
+
+      -- Soul Reaper
+      if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+         return "Soul Reaper"
+      end
+
+      -- Blood Tap if we have more than 10 stacks
+      if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (frost > 0 and death < 1) and DKROT:CanSoulReaper(true) then
+          return "Blood Tap"
+      end
+
+      -- Defile 
+      if DKROT:isOffCD("Defile") then
+          return "Defile"
+      end
+
+      -- Blood Tap if needed for defile
+      if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and not DKROT:isOffCD("Defile") then
+          return "Blood Tap"
+      end
+
+      -- Frost Strike with Killing Machine and over 88 RP
+      if kmProc and rp >= 88 then
+         return "Frost Strike"
+      end
+
+      -- Howling Blast if we have a death or frost rune or missing frost fever
+      if (death >= 1 or frost == 0) or dFF == 0 then
+          return "Howling Blast"
+      end
+
+      -- Plague Strike if blood plague is missing
+      if dBP == 0 and DKROT:isOffCD("Plague Strike") then
+          return "Plague Strike"
+      end
+
+      -- Howling Blast if Rime is active
+      if rimeProc and DKROT:isOffCD("Howling Blast") then
+          return "Howling Blast"
+      end
+
+      -- Frost Strike if we have Tier17 2p bonus and runic power is over 50
+      -- and there's less than 5 seconds left on Piller of Frost CD
+      if DKROT:TierBonus(DKROT.Tiers.TIER17_2p) and rp >= 50 and DKROT:GetCD("Pillar of Frost") < 5 then
+          return "Frost Strike"
+      end
+
+      -- Frost Strike if we have more than 76 RP
+      if rp >= 76 then
+          return "Frost Strike"
+      end
+
+      -- Obliterate if we have an unholy rune and Killing Machine is NOT up
+      if DKROT:isOffCD("Obliterate") and not kmProc then
+          return "Obliterate"
+      end
+
+      -- Howling Blast if death + frost runes combined is more than 2 runes
+      if death >= 2 or lfrost == 0 or (death == 1 and frost == 0) then
+          return "Howling Blast"
+      end
+
+      -- Blood Tap
+      if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 then
+          return "Blood Tap"
+      end
+
+      -- Plague Leech when we have a fully depleted rune
+      if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 and dFF > 0 and dBP > 0 then
+         return "Plague Leech"
+      end
+
+      -- Empower Rune Weapon if all runes are depleted and we are out of RP
+      if DKROT:CanUse("Empower Rune Weapon") and rp < 25 and DKROT:DepletedRunes() == 6 then
+         if DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
+            return "Empower Rune Weapon"
+         end
+      end
+
+      -- If nothing else can be done
+      return nil
+   end
+
+   local twohand = {
       Name = "Two-Hand",
-      InternalName = "SF2H",
+      InternalName = "FROST2H",
       ToggleSpells = { "Pillar of Frost", "Plague Leech", "Soul Reaper", "Defile", "Outbreak", "Blood Tap", "Empower Rune Weapon", "Army of the Dead" },
       SuggestedTalents = { "Plague Leech", "Defile", "Blood Tap" },
       DefaultRotation = true,
@@ -784,13 +495,20 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
    }
 
-   local skullflowerdw = {
-      Name = "Dual Wield - Defile",
-      InternalName = "BWDefAoE",
+   local dw_def = {
+      Name = "DW - Defile",
+      InternalName = "FROSTDWDEF",
       ToggleSpells = { "Pillar of Frost", "Plague Leech", "Soul Reaper", "Defile", "Outbreak", "Blood Tap", "Empower Rune Weapon", "Army of the Dead" },
       SuggestedTalents = { "Plague Leech", "Defile", "Blood Tap" },
       DefaultRotation = false,
       MainRotation = function()
+         if DKROT:TierBonus(DKROT.Tiers.TIER18_4p) then
+            return dw_def_tier18_4p()
+         else
+            return dw_def()
+         end
+      end,
+      AOERotation = function()
          -- Rune Info
          local frost, lfrost, fd = DKROT:RuneCDs(DKROT.SPECS.FROST)
          local unholy, lunholy, ud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
@@ -814,24 +532,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             end
          end
 
-         -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
-            return "Soul Reaper"
-         end
-
-         -- Blood Tap if we have more than 10 stacks
-         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (frost > 0 and death < 1) and DKROT:CanSoulReaper(true) then
-             return "Blood Tap"
-         end
-
          -- Frost Strike with Killing Machine
          if kmProc and rp >= 25 then
             return "Frost Strike"
          end
 
          -- Obliterate if we have an unholy rune
-         if DKROT:isOffCD("Obliterate") or kmProc then
+         if DKROT:isOffCD("Obliterate") then
              return "Obliterate"
+         end
+
+         -- Blood Boil
+         if dBP > 0 and DKROT:isOffCD("Blood Boil") then
+             return "Blood Boil"
          end
 
          -- Defile
@@ -839,39 +552,24 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
              return "Defile"
          end
 
+         -- Howling Blast
+         if DKROT:isOffCD("Howling Blast") then
+             return "Howling Blast"
+         end
+
+         -- Blood Tap if we have more than 10 stacks
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 10 and DKROT:FullyDepletedRunes() > 0 then
+             return "Blood Tap"
+         end
+
          -- Frost Strike with Killing Machine or Runic Power is above 88
          if rp >= 88 then
             return "Frost Strike"
          end
 
-         -- Howling Blast if we have either a death or a frost rune, or Rime is procced
-         if DKROT:isOffCD("Howling Blast") and ((death == 0 or frost == 0) or rimeProc) then
-             return "Howling Blast"
-         end
-
-         -- Blood Tap if we have over 10 charges and depleted runes
-         if DKROT:CanUse("Blood Tap") and bloodCharges >= 10 and DKROT:FullyDepletedRunes() > 0 then
-             return "Blood Tap"
-         end
-
-         -- Frost Strike with Killing Machine or Runic Power is above 76
-         if rp >= 76 then
-            return "Frost Strike"
-         end
-
-         -- Outbreak if we are missing blood plague
-         if DKROT:CanUse("Outbreak") and dBP == 0 and DKROT:isOffCD("Outbreak") then
-             return "Outbreak"
-         end
-
          -- Plague Strike if we're missing blood plague
-         if DKROT:isOffCD("Plague Strike") and dBP == 0 then
+         if DKROT:isOffCD("Plague Strike") and dBP == 0 and lunholy == 0 then
             return "Plague Strike"
-         end
-
-         -- Howling Blast if we have 2 or more death+frost runes
-         if death >= 2 or lfrost == 0 or (death == 1 and frost == 0) then
-             return "Howling Blast"
          end
 
          -- Blood Tap if we have enough charges and depleted runes
@@ -879,9 +577,138 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
              return "Blood Tap"
          end
 
+         -- Frost Strike if possible
+         if rp >= 25 then
+             return "Frost Strike"
+         end
+ 
          -- Plague Leech when we have a fully depleted rune
          if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 and dFF > 0 and dBP > 0 then
             return "Plague Leech"
+         end
+
+         -- Plague Strike if we're missing blood plague
+         if DKROT:isOffCD("Plague Strike") and dBP == 0 and unholy == 0 then
+            return "Plague Strike"
+         end
+
+         -- Empower Rune Weapon if all runes are depleted and we are out of RP
+         if DKROT:CanUse("Empower Rune Weapon") and rp < 25 and DKROT:DepletedRunes() == 6 then
+            if DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
+               return "Empower Rune Weapon"
+            end
+         end
+
+         -- If nothing else can be done
+         return nil
+      end
+   }
+
+   local dw_np = {
+      Name = "DW - Necrotic Plague",
+      InternalName = "FROSTDWNP",
+      ToggleSpells = { "Pillar of Frost", "Soul Reaper", "Outbreak", "Blood Tap", "Empower Rune Weapon", "Army of the Dead" },
+      SuggestedTalents = { "Unholy Blight", "Necrotic Plague", "Blood Tap" },
+      DefaultRotation = false,
+      MainRotation = function()
+         -- Rune Info
+         local frost, lfrost, fd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+         local unholy, lunholy, ud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+         local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
+         local death, tdeath = DKROT:DeathRunes()
+         local dFF, dBP = DKROT:GetDiseaseTime()
+         local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"])) or 0
+         local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
+         local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
+         local rp = UnitPower("PLAYER")
+         local npStacks = select(4, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"])) or 0
+    
+         -- Horn of Winter
+         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+            return "Horn of Winter"
+         end
+
+         -- Pillar of Frost on CD
+         if DKROT:CanUse("Pillar of Frost") and DKROT:isOffCD("Pillar of Frost") then
+            if DKROT:BossOrPlayer("TARGET") then
+               return "Pillar of Frost"
+            end
+         end
+
+         -- Soul Reaper
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return "Soul Reaper"
+         end
+
+         -- Blood Tap if needed for Soul Reaper
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5
+            and DKROT:CanSoulReaper() and not DKROT:isOffCD("Soul Reaper")
+            and DKROT:FullyDepletedRunes() > 0
+         then
+            return "Blood Tap"
+         end
+
+         -- Frost Strike if Killing Machine is up
+         if rp >= 25 and kmProc then
+            return "Frost Strike"
+         end
+
+         -- Obliterate if we have at least one full unholy rune or Killing Machine is up
+         if DKROT:isOffCD("Obliterate") and (unholy == 0 or kmProc) then
+            return "Obliterate"
+         end
+
+         -- Frost Strike if we have more than 88 RP
+         if rp >= 88 then
+            return "Frost Strike"
+         end
+
+         -- Howling Blast if we have a death or frost rune, or Rime is up
+         if (death >= 1 or frost == 0) or rimeProc then
+            return "Howling Blast"
+         end
+
+         -- Blood Tap if we have more than 10 charges
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and DKROT:FullyDepletedRunes() > 0 then
+            return "Blood Tap"
+         end
+
+         -- Frost Strike if we have more than 76 RP
+         if rp >= 76 then
+            return "Frost Strike"
+         end
+
+         -- Applying diseases if missing
+         if (dFF == 0 or dBP == 0) or npStacks <= 10 then
+            -- Unholy Blight
+            if DKROT:isOffCD("Unholy Blight") then
+               return "Unholy Blight"
+            end
+
+            -- Outbreak if we're missing disease on target
+            if DKROT:isOffCD("Outbreak") then
+               return "Outbreak"
+            end
+
+            -- Plague Strike if we're missing disease on target
+            if DKROT:isOffCD("Plague Strike") and npStacks == 0 then
+               return "Plague Strike"
+            end
+         end
+
+         -- Howling Blast if death + frost runes combines to more than 2 runes
+         if death >= 2 or lfrost == 0 or (death == 1 and frost == 0) then
+            return "Howling Blast"
+         end
+
+         -- Outbreak if Necrotic Plague is not fully stacked
+         if DKROT:CanUse("Outbreak") and DKROT:isOffCD("Outbreak") and npStacks <= 14 then
+            return "Outbreak"
+         end
+
+         -- Blood Tap if we can
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and DKROT:FullyDepletedRunes() > 0 then
+            return "Blood Tap"
          end
 
          -- Empower Rune Weapon if all runes are depleted and we are out of RP
@@ -990,14 +817,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
    }
 
-   --[[
-   DKROT_RegisterRotation(DKROT.SPECS.FROST, icyveins)
-   DKROT_RegisterRotation(DKROT.SPECS.FROST, icyveinsdw)
-   DKROT_RegisterRotation(DKROT.SPECS.FROST, simcraft)
-   DKROT_RegisterRotation(DKROT.SPECS.FROST, simcraftdw)
-   --]]
-   DKROT_RegisterRotation(DKROT.SPECS.FROST, skullflower)
-   DKROT_RegisterRotation(DKROT.SPECS.FROST, skullflowerdw)
+   DKROT_RegisterRotation(DKROT.SPECS.FROST, twohand)
+   DKROT_RegisterRotation(DKROT.SPECS.FROST, dw_def)
+   DKROT_RegisterRotation(DKROT.SPECS.FROST, dw_np)
 
    -- Function to determine AOE rotation for Frost Spec
    function DKROT:FrostAOEMove()
