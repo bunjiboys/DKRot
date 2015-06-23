@@ -866,7 +866,7 @@
       
       <Frames>
          <SimpleHTML name="DKROT_ABOUTHTML">
-            <Size x="420" y="140" />
+            <Size x="500" y="140" />
             <Anchors>
                <Anchor point="TOPLEFT" x="20" y="-50" />
                <Anchor point="BOTTOMRIGHT" x="-20" y="50" />

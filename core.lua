@@ -1281,7 +1281,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_DTPanel_DOTS_NP:SetChecked(DKROT_Settings.DT.Dots[DKROT.spells["Necrotic Plague"]])
 
          -- About Options
-         DKROT_ABOUTHTML:SetText("<html><body><p>" .. DKROT_ABOUT_BODY .. "</p></body></html>");
+         DKROT_ABOUTHTML:SetText("<html><body><p>" .. DKROT_ABOUT_BODY .. "</p><br /><p>" .. DKROT_ABOUT_ROTATION_INFO .. "</p></body></html>");
          DKROT_ABOUTHTML:SetSpacing(2);
 
          DKROT:Debug("OptionsRefresh")
