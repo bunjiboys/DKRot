@@ -3,7 +3,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    function DKROT_RegisterRotation(spec, rotation)
       local currentDefault = DKROT:GetDefaultSpecRotation(spec)
-      print (currentDefault)
       local def = rotation["DefaultRotation"]
       if currentDefault ~= nil and def == true then
          local specName = select(2, GetSpecializationInfo(spec))
