@@ -608,7 +608,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       Name = "DW - Necrotic Plague",
       InternalName = "FROSTDWNP",
       ToggleSpells = { "Pillar of Frost", "Soul Reaper", "Outbreak", "Blood Tap", "Empower Rune Weapon", "Army of the Dead" },
-      SuggestedTalents = { "Unholy Blight", "Necrotic Plague", "Blood Tap" },
+      SuggestedTalents = { "Plague Leech", "Necrotic Plague", "Blood Tap" },
       DefaultRotation = false,
       MainRotation = function()
          -- Rune Info
@@ -680,11 +680,6 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Applying diseases if missing
          if (dFF == 0 or dBP == 0) or npStacks <= 10 then
-            -- Unholy Blight
-            if DKROT:isOffCD("Unholy Blight") then
-               return "Unholy Blight"
-            end
-
             -- Outbreak if we're missing disease on target
             if DKROT:isOffCD("Outbreak") then
                return "Outbreak"
@@ -761,7 +756,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Defile
-         if DKROT:isOffCD("Defile") then
+         if DKROT:HasTalent("Defile") and DKROT:isOffCD("Defile") then
              return "Defile"
          end
 
