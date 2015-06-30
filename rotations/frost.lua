@@ -635,6 +635,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             end
          end
 
+         -- Plague Leech if we have two or more runes depleted or Outbreak is about to come up
+         if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech")
+            and (npStacks > 0 or (dBP > 0 and dFF > 0)) and (
+               DKROT:FullyDepletedRunes() >= 2
+               or (
+                  DKROT:FullyDepletedRunes() > 0
+                  and DKROT:GetCD("Outbreak") < 1.5
+               )
+            )
+         then
+             return "Plague Leech"
+         end
+
          -- Soul Reaper
          if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
             return "Soul Reaper"
@@ -669,7 +682,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Blood Tap if we have more than 10 charges
-         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and DKROT:FullyDepletedRunes() > 0 then
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 10 and DKROT:FullyDepletedRunes() > 0 then
             return "Blood Tap"
          end
 
@@ -678,17 +691,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             return "Frost Strike"
          end
 
-         -- Applying diseases if missing
-         if (dFF == 0 or dBP == 0) or npStacks <= 10 then
-            -- Outbreak if we're missing disease on target
-            if DKROT:isOffCD("Outbreak") then
-               return "Outbreak"
-            end
+         -- Outbreak if necrotic plague isnt ticking
+         if npStacks == 0 and DKROT:CanUse("Outbreak") and DKROT:isOffCD("Outbreak") then
+             return "Outbreak"
+         end
 
-            -- Plague Strike if we're missing disease on target
-            if DKROT:isOffCD("Plague Strike") and npStacks == 0 then
-               return "Plague Strike"
-            end
+         -- Plague Strike if necrotic plague isnt ticking
+         if npStacks == 0 and DKROT:isOffCD("Plague Strike") then
+             return "Plague Strike"
          end
 
          -- Howling Blast if death + frost runes combines to more than 2 runes
