@@ -248,13 +248,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          [115759] = { spell = 126679, type = DKROT.TrinketType.OnUse, cooldown = 60 }, -- Primal Gladiator's Badge of Victory (A)
          [118882] = { spell = 177189, type = DKROT.TrinketType.OnUse, cooldown = 90 }, -- Scabbard of Kyanos
          [118884] = { spell = 176460, type = DKROT.TrinketType.OnUse, cooldown = 120 }, -- Kyb's Foolish Perseverance
-         [113978] = { spell = 177102, type = DKROT.TrinketType.Stacking, duration = 10 }, -- Battering Talisman
          [112318] = { spell = 162915, type = DKROT.TrinketType.Stacking, duration = 20 }, -- Skull of War
          [112319] = { spell = 162917, type = DKROT.TrinketType.Stacking, duration = 20 }, -- Knight's Badge
          [113645] = { spell = 177040, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Tectus' Beating Heart
          [113861] = { spell = 177053, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Evergaze Arcane Eidolon
          [113893] = { spell = 177056, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Blast Furnace Door
          [113983] = { spell = 177096, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Forgemaster's Insignia 
+         [113987] = { spell = 177102, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Battering Talisman
          [116292] = { spell = 176974, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Mote of the Mountain
          [119193] = { spell = 177042, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Horn of Screaming Spirits 
       }
