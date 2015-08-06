@@ -64,9 +64,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          -- Frost Only
          ["Freezing Fog"] = GetSpellInfo(59052), -- lvl70
          ["Frost Strike"] = GetSpellInfo(49143),
+         ["Frozen Wake"] = GetSpellInfo(187894), -- tier18 2p crit damage buff
          ["Howling Blast"] = GetSpellInfo(49184),
          ["Killing Machine"] = GetSpellInfo(51124), -- lvl63
          ["Obliterate"] = GetSpellInfo(49020), -- lvl58
+         ["Obliteration"] = GetSpellInfo(187893), -- tier18 2p haste buff
          ["Pillar of Frost"] = GetSpellInfo(51271), -- lvl68
 
          -- Unholy Only
@@ -81,27 +83,27 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          ["Summon Gargoyle"] = GetSpellInfo(49206), -- lvl74
 
          -- Racials
-         ["Human"] = GetSpellInfo(59752),-- Every Man for Himself
-         ["Dwarf"] = GetSpellInfo(20594),-- Stoneform
-         ["NightElf"] = GetSpellInfo(58984),-- Shadowmeld
-         ["Gnome"] = GetSpellInfo(20589),-- Escape Artist
          ["Draenei"] = GetSpellInfo(28880),-- Gift of the Naaru
+         ["Dwarf"] = GetSpellInfo(20594),-- Stoneform
+         ["Gnome"] = GetSpellInfo(20589),-- Escape Artist
+         ["Human"] = GetSpellInfo(59752),-- Every Man for Himself
+         ["NightElf"] = GetSpellInfo(58984),-- Shadowmeld
          ["Worgen"] = GetSpellInfo(68992),-- Darkflight
 
+         ["BloodElf"] = GetSpellInfo(28730),-- Arcane Torrent
+         ["Goblin"] = GetSpellInfo(69070),-- Rocket Jump
          ["Orc"] = GetSpellInfo(33697),-- Blood Fury
          ["Scourge"] = GetSpellInfo(7744),-- Will of the Forsaken
          ["Tauren"] = GetSpellInfo(20549),-- War Stomp
          ["Troll"] = GetSpellInfo(26297),-- Berserking
-         ["BloodElf"] = GetSpellInfo(28730),-- Arcane Torrent
-         ["Goblin"] = GetSpellInfo(69070),-- Rocket Jump
 
          -- Other
-         ["Draenic Strength Potion"] = GetSpellInfo(156579),
-         ["Bloodlust"] = GetSpellInfo(2825),
-         ["Heroism"] = GetSpellInfo(32182),
-         ["Time Warp"] = GetSpellInfo(145534),
          ["Ancient Hysteria"] = GetSpellInfo(90355),
+         ["Bloodlust"] = GetSpellInfo(2825),
+         ["Draenic Strength Potion"] = GetSpellInfo(156579),
+         ["Heroism"] = GetSpellInfo(32182),
          ["Sated"] = GetSpellInfo(57724),
+         ["Time Warp"] = GetSpellInfo(145534),
       }
 
       DKROT.DTspells = { -- ID, Duration, Effected by talent
@@ -167,7 +169,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          },
          FrostCDs = {
             DKROT.spells["Freezing Fog"],
+            DKROT.spells["Frozen Wake"],
             DKROT.spells["Killing Machine"],
+            DKROT.spells["Obliteration"],
             DKROT.spells["Pillar of Frost"],
          },
          UnholyCDs = {
@@ -188,9 +192,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             [DKROT.spells["Dark Succor"]] = {"player", false},
             [DKROT.spells["Dark Simulacrum"]] = {"target", true},
             [DKROT.spells["Death's Advance"]] = {"player", true},
+            [DKROT.spells["Frozen Wake"]] = {"player", false},
             [DKROT.spells["Horn of Winter"]] = {"player", true},
             [DKROT.spells["Icebound Fortitude"]] = {"player", true},
             [DKROT.spells["Lichborne"]] = {"player", true},
+            [DKROT.spells["Obliteration"]] = {"player", false},
             [DKROT.spells["Remorseless Winter"]] = {"player", true},
             [DKROT.spells["Remorseless Winter"]] = {"target", true},
             [DKROT.spells["Runic Corruption"]] = {"player", false},
