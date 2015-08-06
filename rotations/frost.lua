@@ -1,3 +1,4 @@
+-- vim: set ts=3 sw=3 foldmethod=indent
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
    
@@ -607,7 +608,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local dw_np = {
       Name = "DW - Necrotic Plague",
       InternalName = "FROSTDWNP",
-      ToggleSpells = { "Pillar of Frost", "Soul Reaper", "Outbreak", "Blood Tap", "Empower Rune Weapon", "Army of the Dead" },
+      ToggleSpells = { "Pillar of Frost", "Soul Reaper", "Outbreak", "Blood Tap", "Empower Rune Weapon", "Army of the Dead", "Plague Leech" },
       SuggestedTalents = { "Plague Leech", "Necrotic Plague", "Blood Tap" },
       DefaultRotation = false,
       MainRotation = function()
@@ -637,12 +638,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Plague Leech if we have two or more runes depleted or Outbreak is about to come up
          if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech")
-            and (npStacks > 0 or (dBP > 0 and dFF > 0)) and (
-               DKROT:FullyDepletedRunes() >= 2
-               or (
-                  DKROT:FullyDepletedRunes() > 0
-                  and DKROT:GetCD("Outbreak") < 1.5
-               )
+            and dBP >= 0 and DKROT:FullyDepletedRunes() > 0 and (
+               DKROT:FullyDepletedRunes() >= 2 or dBP < 3 or DKROT:GetCD("Outbreak") < 1.5
             )
          then
              return "Plague Leech"
