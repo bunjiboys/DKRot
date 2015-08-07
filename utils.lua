@@ -188,17 +188,26 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    function DKROT:isItemOffCD(item)
       local start, dur = GetItemCooldown(item)
+      if (not start or not dur) then
+          return false
+      end
       return (dur + start - DKROT.curtime - DKROT.GCD <= 0)
    end
 
    function DKROT:GetCD(spell)
       local start, dur = GetSpellCooldown(DKROT.spells[spell])
+      if (not start or not dur) then
+          return 9999
+      end
       return dur + start - DKROT.curtime - DKROT.GCD
    end
 
    -- Check to see if a rune is ready to be used
    function DKROT:isRuneOffCD(rune)
       local start, dur, cool = GetRuneCooldown(rune)
+      if (not start or not dur) then
+          return false
+      end
       return cool or (dur + start - DKROT.curtime - DKROT.GCD <= 0)
    end
 
@@ -546,7 +555,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local canUse = DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[curRot][spell]
 
       -- Default to using, if not set
-      if (canUse == nil or canUse) and DKROT:has(spell) then
+      if DKROT:has(spell) and (canUse == nil or canUse) then
          return true
       end
 

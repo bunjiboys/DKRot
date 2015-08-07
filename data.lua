@@ -66,6 +66,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          ["Frost Strike"] = GetSpellInfo(49143),
          ["Frozen Wake"] = GetSpellInfo(187894), -- tier18 2p crit damage buff
          ["Howling Blast"] = GetSpellInfo(49184),
+         ["Improved Frost Presence"] = GetSpellInfo(50385), -- lvl65 passive
          ["Killing Machine"] = GetSpellInfo(51124), -- lvl63
          ["Obliterate"] = GetSpellInfo(49020), -- lvl58
          ["Obliteration"] = GetSpellInfo(187893), -- tier18 2p haste buff

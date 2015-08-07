@@ -21,9 +21,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local rp = UnitPower("PLAYER")
          local oblitProc = select(7, UnitBuff("player", DKROT.spells["Obliteration"]))
          local rp = UnitPower("PLAYER")
+         local fs_rp = DKROT:has("Improved Frost Presence") and 25 or 40
     
          -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         if DKROT:CanUse("Horn of Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
             return "Horn of Winter"
          end
 
@@ -34,13 +35,17 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             end
          end
 
-         -- Plague Leech when we have two runes to return
+         -- Plague Leech when we have two runes to return, or diseases are about to fall off
          if DKROT:CanUse("Plague Leech") 
             and DKROT:isOffCD("Plague Leech") 
             and DKROT:FullyDepletedRunes() >= 2
-            and ((dFF > 0 and dBP > 0) or (DKROT:GetCD("Outbreak") < 1))
+            and (dFF > 0 and dBP > 0)
          then
-            return "Plague Leech"
+            if (dFF < 5 or dBP < 5) or (
+               DKROT:FullyDepletedRunes() >= 2 and DKROT:GetCD("Outbreak") and DKROT:CanUse("Outbreak")
+            ) then
+               return "Plague Leech"
+            end
          end
 
          -- Soul Reaper
@@ -59,7 +64,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Obliterate if Killing Machine is procced or Unholy runes are capped
-         if DKROT:isOffCD("Obliterate") and (kmProc or lunholy < 0.5) then
+         if DKROT:CanUse("Obliterate") and DKROT:isOffCD("Obliterate") and (kmProc or lunholy < 0.5) then
             return "Obliterate"
          end
 
@@ -92,12 +97,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Obliterate if runes are capped
-         if lunholy < 0.5 or lfrost < 0.5 or lblood < 0.5 then
+         if DKROT:CanUse("Obliterate") and lunholy < 0.5 or lfrost < 0.5 or lblood < 0.5 then
             return "Obliterate"
          end
 
          -- Frost Strike with KM is NOT active and RP is over 25
-         if not kmProc and rp >= 25 then
+         if not kmProc and rp >= fs_rp then
             return "Frost Strike"
          end
 
@@ -206,7 +211,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
    }
 
-   local dw_def = {
+   local dualwield = {
       Name = "Dual Wield",
       InternalName = "FROSTDWDEF",
       ToggleSpells = { "Pillar of Frost", "Plague Leech", "Soul Reaper", "Defile", "Outbreak", "Blood Tap", "Empower Rune Weapon", "Army of the Dead" },
@@ -225,9 +230,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local wakeProc = select(7, UnitBuff("player", DKROT.spells["Frozen Wake"]))
          local oblitProc = select(7, UnitBuff("player", DKROT.spells["Obliteration"]))
          local rp = UnitPower("PLAYER")
+         local fs_rp = DKROT:has("Improved Frost Presence") and 25 or 40
     
          -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         if DKROT:CanUse("Horn or Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
             return "Horn of Winter"
          end
 
@@ -235,6 +241,20 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          if DKROT:CanUse("Pillar of Frost") and DKROT:isOffCD("Pillar of Frost") then
             if DKROT:BossOrPlayer("TARGET") then
                return "Pillar of Frost"
+            end
+         end
+
+         -- Plague Leech when we have two runes to return and
+         -- Killing Machine is not up, or diseases are about to fall off
+         if DKROT:CanUse("Plague Leech") 
+            and DKROT:isOffCD("Plague Leech") 
+            and DKROT:FullyDepletedRunes() >= 2
+            and (dFF > 0 and dBP > 0)
+         then
+            if (dFF < 5 or dBP < 5) or (
+               not kmProc and DKROT:FullyDepletedRunes() >= 2 and DKROT:GetCD("Outbreak") and DKROT:CanUse("Outbreak")
+            ) then
+               return "Plague Leech"
             end
          end
 
@@ -249,7 +269,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Defile 
-         if DKROT:isOffCD("Defile") then
+         if DKROT:CanUse("Defile") and DKROT:isOffCD("Defile") then
              return "Defile"
          end
 
@@ -260,14 +280,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Obliterate if Killing machine is active and we dont have enough RP for
          -- Frost Strike, Unholy Runes are capped or Obliteration buff is missing
-         if DKROT:isOffCD("Obliterate") or DKROT:GetCD("Obliterate") < 1 then
-            if kmProc or rp < 25 or lunholy < 0.5 or (DKROT:TierBonus(DKROT.Tiers.TIER18_2p) and not oblitProc) then
+         if DKROT:CanUse("Obliterate") and DKROT:isOffCD("Obliterate") or DKROT:GetCD("Obliterate") < 1 then
+            if (kmProc and rp < fs_rp) or lunholy < 0.5 or (DKROT:TierBonus(DKROT.Tiers.TIER18_2p) and not oblitProc) then
                return "Obliterate"
             end
          end
 
          -- Frost Strike with Killing Machine and over 88 RP
-         if kmProc or rp >= 88 then
+         if kmProc and rp >= 88 then
             return "Frost Strike"
          end
 
@@ -291,23 +311,23 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Plague Strike if blood plague is missing
          if dBP == 0 and DKROT:isOffCD("Plague Strike") then
-             return "Plague Strike"
+            return "Plague Strike"
          end
 
          -- Howling Blast if we have a death or Frost rune up
          if death >= 1 or frost == 0 then
-             return "Howling Blast"
+            return "Howling Blast"
          end
 
          -- Frost Strike if we have Tier17 2p bonus and runic power is over 50
          -- and there's less than 5 seconds left on Piller of Frost CD
          if DKROT:TierBonus(DKROT.Tiers.TIER17_2p) and rp >= 50 and DKROT:GetCD("Pillar of Frost") < 5 then
-             return "Frost Strike"
+            return "Frost Strike"
          end
 
          -- Frost Strike if we have more than 25 RP
-         if rp >= 25 then
-             return "Frost Strike"
+         if rp >= fs_rp then
+            return "Frost Strike"
          end
 
          -- Empower Rune Weapon if all runes are depleted and we are out of RP
@@ -417,7 +437,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    }
 
    DKROT_RegisterRotation(DKROT.SPECS.FROST, twohand)
-   DKROT_RegisterRotation(DKROT.SPECS.FROST, dw_def)
+   DKROT_RegisterRotation(DKROT.SPECS.FROST, dualwield)
 
    -- Function to determine AOE rotation for Frost Spec
    function DKROT:FrostAOEMove()
