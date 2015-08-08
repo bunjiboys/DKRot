@@ -1,3 +1,4 @@
+-- vim: set ts=3 sw=3 foldmethod=indent:
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
 
@@ -539,9 +540,27 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       local missing = {}
       for idx, talent in pairs(active_rot.talents) do
-         if not DKROT:HasTalent(talent) then
-            local talentName = select(2, GetTalentInfoByID(DKROT.Talents[talent]))
-            table.insert(missing, talentName)
+         -- Handle multiple talents correctly
+         if type(talent) == "table" then
+            local haveTalents = false
+            local talentNames = { }
+            for subidx, subtalent in pairs(talent) do
+               local subTalentName = select(2, GetTalentInfoByID(DKROT.Talents[subtalent]))
+               table.insert(talentNames, subTalentName)
+
+               if DKROT:HasTalent(subtalent) then
+                  haveTalents = true
+               end
+            end
+
+            if not haveTalents then
+               table.insert(missing, table.concat(talentNames, " / "))
+            end
+         else
+            if not DKROT:HasTalent(talent) then
+               local talentName = select(2, GetTalentInfoByID(DKROT.Talents[talent]))
+               table.insert(missing, talentName)
+            end
          end
       end
 

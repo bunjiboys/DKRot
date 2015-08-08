@@ -107,7 +107,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Empower Rune Weapon if all runes are depleted and we are out of RP
-         if DKROT:CanUse("Empower Rune Weapon") and rp < 25 and DKROT:DepletedRunes() == 6 then
+         if DKROT:CanUse("Empower Rune Weapon") and rp < fs_rp and DKROT:DepletedRunes() == 6 then
             if DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
                return "Empower Rune Weapon"
             end
@@ -151,7 +151,9 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          -- Plague Leech with two fully depleted runes and diseases are about to run out,
          -- outbreak is off or about to come off CD, or we need a rune for KM Obliterate
          if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 then
-            if (dFF < 5 or dBP < 5) or DKROT:GetCD("Outbreak") < 1.5 or (kmProc and not DKROT:isOffCD("Obliterate")) then
+            if (dFF < 5 or dBP < 5) or (DKROT:CanUse("Outbreak") and DKROT:GetCD("Outbreak") < 1.5)
+               or (kmProc and not DKROT:isOffCD("Obliterate"))
+            then
                return "Plague Leech"
             end
          end
@@ -172,7 +174,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Obliterate when Unholy runes are capped
-         if lunholy == 0 then
+         if DKROT:CanUse("Obliterate") and lunholy == 0 then
             return "Obliterate"
          end
 
@@ -192,7 +194,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Frost Strike if we can
-         if rp >= 25 then
+         if rp >= fs_rp then
             return "Frost Strike"
          end
 
@@ -215,7 +217,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       Name = "Dual Wield",
       InternalName = "FROSTDWDEF",
       ToggleSpells = { "Pillar of Frost", "Plague Leech", "Soul Reaper", "Defile", "Outbreak", "Blood Tap", "Empower Rune Weapon", "Army of the Dead" },
-      SuggestedTalents = { "Plague Leech", "Defile", "Blood Tap" },
+      SuggestedTalents = { "Plague Leech", {"Defile", "Necrotic Plague"}, "Blood Tap" },
       DefaultRotation = false,
       MainRotation = function()
          -- Rune Info
@@ -351,9 +353,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local rimeProc = select(7, UnitBuff("player", DKROT.spells["Freezing Fog"]))
          local kmProc = select(7, UnitBuff("player", DKROT.spells["Killing Machine"]))
          local rp = UnitPower("PLAYER")
+         local fs_rp = DKROT:has("Improved Frost Presence") and 25 or 40
     
          -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         if DKROT:CanUse("Horn of Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
             return "Horn of Winter"
          end
 
@@ -365,12 +368,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Frost Strike with Killing Machine
-         if kmProc and rp >= 25 then
+         if kmProc and rp >= fs_rp then
             return "Frost Strike"
          end
 
          -- Obliterate if we have an unholy rune
-         if DKROT:isOffCD("Obliterate") then
+         if DKROT:CanUse("Obliterate") and DKROT:isOffCD("Obliterate") then
              return "Obliterate"
          end
 
@@ -380,7 +383,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Defile
-         if DKROT:isOffCD("Defile") then
+         if DKROT:CanUse("Defile") and DKROT:isOffCD("Defile") then
              return "Defile"
          end
 
@@ -410,7 +413,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Frost Strike if possible
-         if rp >= 25 then
+         if rp >= fs_rp then
              return "Frost Strike"
          end
  
@@ -425,7 +428,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Empower Rune Weapon if all runes are depleted and we are out of RP
-         if DKROT:CanUse("Empower Rune Weapon") and rp < 25 and DKROT:DepletedRunes() == 6 then
+         if DKROT:CanUse("Empower Rune Weapon") and rp < fs_rp and DKROT:DepletedRunes() == 6 then
             if DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
                return "Empower Rune Weapon"
             end
@@ -446,39 +449,40 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local unholy, lunholy, ud, lud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
       local blood, lblood = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
       local death = DKROT:DeathRunes()
+      local fs_rp = DKROT:has("Improved Frost Presence") and 25 or 40
 
       -- AOE:Howling Blast if both Frost runes and/or both Death runes are up
-      if DKROT:QuickAOESpellCheck(DKROT.spells["Howling Blast"]) and ((lfrost <= 0) or (lblood <= 0) or (lunholy <= 0 and lud)) then
+      if DKROT:QuickAOESpellCheck("Howling Blast") and ((lfrost <= 0) or (lblood <= 0) or (lunholy <= 0 and lud)) then
          return "Howling Blast"
       end
 
       -- AOE:DnD if both Unholy Runes are up
-      if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (lunholy <= 0) then
+      if DKROT:QuickAOESpellCheck("Death and Decay") and (lunholy <= 0) then
          return "Death and Decay", true
       end
 
       -- AOE:Frost Strike if RP capped
-      if DKROT:QuickAOESpellCheck(DKROT.spells["Frost Strike"]) and (UnitPower("player") > 88) then
+      if DKROT:QuickAOESpellCheck("Frost Strike") and (UnitPower("player") > 88) then
          return "Frost Strike"
       end
 
       -- AOE:Howling Blast
-      if DKROT:QuickAOESpellCheck(DKROT.spells["Howling Blast"]) and (frost <= 0 or death >= 1) then
+      if DKROT:QuickAOESpellCheck("Howling Blast") and (frost <= 0 or death >= 1) then
          return "Howling Blast"
       end
 
       -- AOE:DnD
-      if DKROT:QuickAOESpellCheck(DKROT.spells["Death and Decay"]) and (unholy <= 0) then
+      if DKROT:QuickAOESpellCheck("Death and Decay") and (unholy <= 0) then
          return "Death and Decay"
       end
 
       -- AOE:Frost Strike
-      if DKROT:QuickAOESpellCheck(DKROT.spells["Frost Strike"]) and UnitPower("player") >= 20 then
+      if DKROT:QuickAOESpellCheck("Frost Strike") and UnitPower("player") >= fs_rp then
          return "Frost Strike"
       end
 
       -- AOE:PS
-      if DKROT:QuickAOESpellCheck(DKROT.spells["Plague Strike"]) and (unholy <= 0) then
+      if DKROT:QuickAOESpellCheck("Plague Strike") and (unholy <= 0) then
          return "Plague Strike"
       end
 
