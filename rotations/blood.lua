@@ -1,3 +1,4 @@
+-- vim: set ts=3 sw=3 foldmethod=indent:
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
 
@@ -30,7 +31,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         if DKROT:CanUse("Horn of Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
             return "Horn of Winter"
          end
 
@@ -51,7 +52,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Death Strike
-         if select(1,IsUsableSpell(DKROT.spells["Death Strike"])) then
+         if DKROT:CanUse("Death Strike") and select(1,IsUsableSpell(DKROT.spells["Death Strike"])) then
             return "Death Strike"
          end
 
@@ -117,29 +118,23 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local healthPct = (UnitHealth("PLAYER") / UnitHealthMax("PLAYER")) * 100
 
          -- Death Pact
-         if DKROT:has("Death Pact") and healthPct < 50 then
-            if DKROT:isOffCD("Death Pact") then
-               return "Death Pact", true
-            end
+         if DKROT:has("Death Pact") and healthPct < 50 and DKROT:isOffCD("Death Pact") then
+            return "Death Pact", true
          end
 
          -- Bone Shield
-         if select(7, UnitBuff("player", DKROT.spells["Bone Shield"])) == nil then
-            if DKROT:isOffCD("Bone Shield") then
-               return "Bone Shield", true
-            end
+         if select(7, UnitBuff("player", DKROT.spells["Bone Shield"])) == nil and DKROT:isOffCD("Bone Shield") then
+            return "Bone Shield", true
          end
 
          -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         if DKROT:CanUse("Horn of Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
             return "Horn of Winter", true
          end
 
          -- Lichborne
-         if DKROT:CanUse("Lichborne") and UnitHealth("PLAYER") < 90 then
-            if DKROT:isOffCD("Lichborne") then
-               return "Lichborne", true
-            end
+         if DKROT:CanUse("Lichborne") and UnitHealth("PLAYER") < 90 and DKROT:isOffCD("Lichborne") then
+            return "Lichborne", true
          end
 
          -- Death Strike if we are below 60% health
@@ -171,7 +166,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Death Strike
-         if (lunholy <= 0 or lfrost <= 0) and DKROT:isOffCD("Death Strike") then
+         if DKROT:CanUse("Death Strike") and (lunholy <= 0 or lfrost <= 0) and DKROT:isOffCD("Death Strike") then
             return "Death Strike"
          end
 
@@ -228,31 +223,26 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local healthPct = (UnitHealth("PLAYER") / UnitHealthMax("PLAYER")) * 100
          local crimsonProc = select(4, UnitBuff("PLAYER", DKROT.spells["Crimson Scourge"]))
          local rp = UnitPower("PLAYER")
+         local boneShield = select(7, UnitBuff("player", DKROT.spells["Bone Shield"]))
 
          -- Death Pact
-         if DKROT:has("Death Pact") and healthPct < 50 then
-            if DKROT:isOffCD("Death Pact") then
-               return "Death Pact", true
-            end
+         if DKROT:has("Death Pact") and healthPct < 50 and DKROT:isOffCD("Death Pact") then
+            return "Death Pact", true
          end
 
          -- Bone Shield
-         if select(7, UnitBuff("player", DKROT.spells["Bone Shield"])) == nil then
-            if DKROT:isOffCD("Bone Shield") then
-               return "Bone Shield", true
-            end
+         if boneShield and DKROT:isOffCD("Bone Shield") then
+            return "Bone Shield", true
          end
 
          -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         if DKROT:CanUse("Horn of Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
             return "Horn of Winter", true
          end
 
          -- Death Strike if we are below 70% health or runes are about to cap
-         if healthPct < 70 or (lunholy <= 1 or lfrost <= 1) then
-            if DKROT:isOffCD("Death Strike") then
-               return "Death Strike"
-            end
+         if DKROT:CanUse("Death Strike") and healthPct < 70 or (lunholy <= 1 or lfrost <= 1) and DKROT:isOffCD("Death Strike") then
+            return "Death Strike"
          end
 
          -- Soul Reaper

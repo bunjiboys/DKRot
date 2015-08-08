@@ -1,3 +1,4 @@
+-- vim: set ts=3 sw=3 foldmethod=indent:
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
 
