@@ -1,3 +1,4 @@
+-- vim: set ts=3 sw=3 foldmethod=indent:
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
 
@@ -20,12 +21,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local rp = UnitPower("PLAYER")
     
          -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         if DKROT:CanUse("Horn of Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
             return "Horn of Winter"
          end
 
          -- Raise Dead
-         if UnitExists("pet") ~= true and DKROT:isOffCD("Raise Dead") then
+         if DKROT:CanUse("Raise Dead") and UnitExists("pet") ~= true and DKROT:isOffCD("Raise Dead") then
             return "Raise Dead", true
          end
 
@@ -65,17 +66,17 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Festering Strike when both blood and frost runes are capped
-         if DKROT:isOffCD("Festering Strike") and lblood == 0 and lfrost == 0 then
+         if DKROT:CanUse("Festering Strike") and DKROT:isOffCD("Festering Strike") and lblood == 0 and lfrost == 0 then
             return "Festering Strike"
          end
 
          -- Scourge Strike when Unholy runes are capped
-         if DKROT:isOffCD("Scourge Strike") and lunholy == 0 then
+         if DKROT:CanUse("Scourge Strike") and DKROT:isOffCD("Scourge Strike") and lunholy == 0 then
             return "Scourge Strike"
          end
 
          -- Dark Transformation on CD with 5 stacks of Shadow Infusion
-         if DKROT:isOffCD("Dark Transformation") and shadowInf == 5 then
+         if DKROT:CanUse("Dark Transformation") and DKROT:isOffCD("Dark Transformation") and shadowInf == 5 then
             return "Dark Transformation"
          end
 
@@ -90,12 +91,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Scourge Strike when Unholy or Death rune is recharged
-         if unholy == 0 or death >= 1 then
+         if DKROT:CanUse("Scourge Strike") and unholy == 0 or death >= 1 then
             return "Scourge Strike"
          end
 
          -- Festering Strike if we have a frost and blood rune ready
-         if blood == 0 and frost == 0 then
+         if DKROT:CanUse("Scourge Strike") and blood == 0 and frost == 0 then
             return "Festering Strike"
          end
 
@@ -151,12 +152,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             local bloodDeaths = (bd == true and lbd == true) and 2 or (bd == true or lbd == true) and 1 or 0
         
             -- Horn of Winter
-            if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+            if DKROT:CanUse("Horn of Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
                 return "Horn of Winter"
             end
 
             -- Raise Dead
-            if UnitExists("pet") ~= true and DKROT:isOffCD("Raise Dead") then
+            if DKROT:CanUse("Raise Dead") and UnitExists("pet") ~= true and DKROT:isOffCD("Raise Dead") then
                 return "Raise Dead", true
             end
 
@@ -198,12 +199,14 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             end
 
             -- Scourge Strike
-            if lunholy == 0 then
+            if DKROT:CanUse("Scourge Strike") and lunholy == 0 then
                 return "Scourge Strike"
             end
 
             -- Festering Strike if the remaining time on Necrotic Plague is less than the cooldown remaining on Unholy Blight
-            if DKROT:isOffCD("Festering Strike") and DKROT:HasTalent("Necrotic Plague") and DKROT:HasTalent("Unholy Blight") then
+            if DKROT:CanUse("Festering Strike") and DKROT:isOffCD("Festering Strike")
+                and DKROT:HasTalent("Necrotic Plague") and DKROT:HasTalent("Unholy Blight")
+            then
                 local ubcd = DKROT:GetCD("Unholy Blight")
 
                 if dFF < ubcd and ((dFF < 20) or not (bd or fd)) then
@@ -214,19 +217,19 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             end
 
             -- Dark Transformation on CD with 5 stacks of Shadow Infusion
-            if DKROT:isOffCD("Dark Transformation") and shadowInf == 5 then
+            if DKROT:CanUse("Dark Transformation") and DKROT:isOffCD("Dark Transformation") and shadowInf == 5 then
                 return "Dark Transformation"
             end
 
             -- Festering Strike and either blood and frost runes are capped
             -- and we dont waste all our death runes
-            if lblood == 0 and lfrost == 0 then
+            if DKROT:CanUse("Festering Strike") and lblood == 0 and lfrost == 0 then
                 if frostDeaths - death > 0 or bloodDeaths - death > 0 then
                     return "Festering Strike"
                 end
             end
 
-            if lblood == 0 or lfrost == 0 then
+            if DKROT:CanUse("Festering Strike") and lblood == 0 or lfrost == 0 then
                 if frostDeaths - death > 0 and bloodDeaths - death > 0 then
                     return "Festering Strike"
                 end
@@ -250,12 +253,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             end
 
             -- Scourge Strike
-            if DKROT:isOffCD("Scourge Strike") then
+            if DKROT:CanUse("Scourge Strike") and DKROT:isOffCD("Scourge Strike") then
                 return "Scourge Strike"
             end
 
             -- Festering Strike
-            if DKROT:isOffCD("Festering Strike") then
+            if DKROT:CanUse("Festering Strike") and DKROT:isOffCD("Festering Strike") then
                 return "Festering Strike"
             end
 
@@ -292,15 +295,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Unholy Blight
-      if DKROT:has("Unholy Blight") and DKROT:isOffCD("Unholy Blight") then
+      if DKROT:CanUse("Unholy Blight") and DKROT:isOffCD("Unholy Blight") then
          return "Unholy Blight"
       end
 
       -- Defile / DND
-      if DKROT:has("Defile") then
-         if DKROT:isOffCD("Defile") then
-            return "Defile", true
-         end
+      if DKROT:CanUse("Defile") and DKROT:isOffCD("Defile") then
+        return "Defile", true
       end
 
       -- Diseases
@@ -310,7 +311,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Breath of Sindragosa
-      if DKROT:has("Breath of Sindragosa")
+      if DKROT:CanUse("Breath of Sindragosa")
          and UnitPower("player") > 75
          and DKROT:isOffCD("Breath of Sindragosa")
       then
@@ -323,7 +324,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       -- Summon Gargoyle
-      if DKROT:isOffCD("Summon Gargoyle") then
+      if DKROT:CanUse("Summon Gargoyle") and DKROT:isOffCD("Summon Gargoyle") then
          return "Summon Gargoyle"
       end
 

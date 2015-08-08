@@ -822,8 +822,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    -- Returns if move is off cooldown or not
    function DKROT:QuickAOESpellCheck(move)
-      if DKROT_Settings.MoveAltAOE and GetSpellTexture(move) ~= nil then
-         if DKROT:isOffCD(move) then
+      if DKROT_Settings.MoveAltAOE and GetSpellTexture(DKROT.spells[move]) ~= nil then
+         if DKROT:CanUse(move) and DKROT:isOffCD(DKROT.spells[move]) then
             return true
          end
       end

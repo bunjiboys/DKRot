@@ -1,3 +1,4 @@
+-- vim: set ts=3 sw=3 foldmethod=indent:
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
 
@@ -188,17 +189,26 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    function DKROT:isItemOffCD(item)
       local start, dur = GetItemCooldown(item)
+      if (not start or not dur) then
+          return false
+      end
       return (dur + start - DKROT.curtime - DKROT.GCD <= 0)
    end
 
    function DKROT:GetCD(spell)
       local start, dur = GetSpellCooldown(DKROT.spells[spell])
+      if (not start or not dur) then
+          return 9999
+      end
       return dur + start - DKROT.curtime - DKROT.GCD
    end
 
    -- Check to see if a rune is ready to be used
    function DKROT:isRuneOffCD(rune)
       local start, dur, cool = GetRuneCooldown(rune)
+      if (not start or not dur) then
+          return false
+      end
       return cool or (dur + start - DKROT.curtime - DKROT.GCD <= 0)
    end
 
@@ -530,9 +540,27 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
       local missing = {}
       for idx, talent in pairs(active_rot.talents) do
-         if not DKROT:HasTalent(talent) then
-            local talentName = select(2, GetTalentInfoByID(DKROT.Talents[talent]))
-            table.insert(missing, talentName)
+         -- Handle multiple talents correctly
+         if type(talent) == "table" then
+            local haveTalents = false
+            local talentNames = { }
+            for subidx, subtalent in pairs(talent) do
+               local subTalentName = select(2, GetTalentInfoByID(DKROT.Talents[subtalent]))
+               table.insert(talentNames, subTalentName)
+
+               if DKROT:HasTalent(subtalent) then
+                  haveTalents = true
+               end
+            end
+
+            if not haveTalents then
+               table.insert(missing, table.concat(talentNames, " / "))
+            end
+         else
+            if not DKROT:HasTalent(talent) then
+               local talentName = select(2, GetTalentInfoByID(DKROT.Talents[talent]))
+               table.insert(missing, talentName)
+            end
          end
       end
 
@@ -546,7 +574,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       local canUse = DKROT_Settings.CD[DKROT.Current_Spec].RotationOptions[curRot][spell]
 
       -- Default to using, if not set
-      if (canUse == nil or canUse) and DKROT:has(spell) then
+      if DKROT:has(spell) and (canUse == nil or canUse) then
          return true
       end
 

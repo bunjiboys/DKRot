@@ -16,7 +16,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local bloodCharges = select(4, UnitBuff("player", DKROT.spells["Blood Charge"]))
 
          -- Horn of Winter
-         if DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+         if DKROT:CanUse("Horn of Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
             return "Horn of Winter"
          end
 
@@ -42,7 +42,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Death Coil if overcaped RP
-         if DKROT_Settings.CD[DKROT.Current_Spec].RP and UnitPower("player") > 80 then
+         if DKROT:has("Death Coil") and DKROT_Settings.CD[DKROT.Current_Spec].RP and UnitPower("player") > 80 then
             return "Death Coil"
          end
 
