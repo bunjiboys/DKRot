@@ -150,7 +150,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Plague Leech with two fully depleted runes and diseases are about to run out,
          -- outbreak is off or about to come off CD, or we need a rune for KM Obliterate
-         if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 then
+         if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech") and DKROT:FullyDepletedRunes() >= 2 and (dFF > 0 and dBP > 0) then
             if (dFF < 5 or dBP < 5) or (DKROT:CanUse("Outbreak") and DKROT:GetCD("Outbreak") < 1.5)
                or (kmProc and not DKROT:isOffCD("Obliterate"))
             then
@@ -179,7 +179,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Blood Tap if we have 10 or more charges
-         if DKROT:CanUse("Blood Tap") and bloodCharges >= 10 then
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 10 and DKROT:FullyDepletedRunes() >= 1 then
             return "Blood Tap"
          end
 
@@ -261,7 +261,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Blood Tap with 10 or more charges and RP over 76 or rp over 20 with KM proc
-         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (rp >= 76 or (rp >= 20 and kmProc))  then
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (rp >= 76 or (rp >= 20 and kmProc)) and DKROT:FullyDepletedRunes() >= 1 then
             return "Blood Tap"
          end
 
@@ -276,20 +276,20 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Blood Tap if needed for defile
-         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and not DKROT:isOffCD("Defile") then
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and not DKROT:isOffCD("Defile") and DKROT:FullyDepletedRunes() >= 1 then
              return "Blood Tap"
          end
 
          -- Obliterate if Killing machine is active and we dont have enough RP for
          -- Frost Strike, Unholy Runes are capped or Obliteration buff is missing
          if DKROT:CanUse("Obliterate") and DKROT:isOffCD("Obliterate") or DKROT:GetCD("Obliterate") < 1 then
-            if (kmProc and rp < fs_rp) or lunholy < 0.5 or (DKROT:TierBonus(DKROT.Tiers.TIER18_2p) and not oblitProc) then
+            if (kmProc and rp < fs_rp) or (lunholy < 0.5 and not (fd or lfd)) or (DKROT:TierBonus(DKROT.Tiers.TIER18_2p) and not oblitProc) then
                return "Obliterate"
             end
          end
 
          -- Frost Strike with Killing Machine and over 88 RP
-         if kmProc and rp >= 88 then
+         if (kmProc and rp >= 88) or rp >= 88 then
             return "Frost Strike"
          end
 
