@@ -280,17 +280,17 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
              return "Blood Tap"
          end
 
+         -- Frost Strike with Killing Machine and over 88 RP
+         if (kmProc and rp >= 88) or rp >= 88 then
+            return "Frost Strike"
+         end
+
          -- Obliterate if Killing machine is active and we dont have enough RP for
          -- Frost Strike, Unholy Runes are capped or Obliteration buff is missing
          if DKROT:CanUse("Obliterate") and DKROT:isOffCD("Obliterate") or DKROT:GetCD("Obliterate") < 1 then
             if (kmProc and rp < fs_rp) or (lunholy < 0.5 and not (fd or lfd)) or (DKROT:TierBonus(DKROT.Tiers.TIER18_2p) and not oblitProc) then
                return "Obliterate"
             end
-         end
-
-         -- Frost Strike with Killing Machine and over 88 RP
-         if (kmProc and rp >= 88) or rp >= 88 then
-            return "Frost Strike"
          end
 
          -- Howling Blast if frost and death runes are capped or Rime is procced
