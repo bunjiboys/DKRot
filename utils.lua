@@ -184,12 +184,15 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    -- Out: returns if the spell is or will be off cd in the next GCD
    function DKROT:isOffCD(spell)
       local start, dur = GetSpellCooldown(DKROT.spells[spell])
+      if not (start and dur) then
+         return false
+      end
       return (dur + start - DKROT.curtime - DKROT.GCD <= 0)
    end
 
    function DKROT:isItemOffCD(item)
       local start, dur = GetItemCooldown(item)
-      if (not start or not dur) then
+      if not (start and dur) then
           return false
       end
       return (dur + start - DKROT.curtime - DKROT.GCD <= 0)
@@ -197,7 +200,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    function DKROT:GetCD(spell)
       local start, dur = GetSpellCooldown(DKROT.spells[spell])
-      if (not start or not dur) then
+      if not (start and dur) then
           return 9999
       end
       return dur + start - DKROT.curtime - DKROT.GCD
@@ -206,7 +209,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    -- Check to see if a rune is ready to be used
    function DKROT:isRuneOffCD(rune)
       local start, dur, cool = GetRuneCooldown(rune)
-      if (not start or not dur) then
+      if not (start and dur) then
           return false
       end
       return cool or (dur + start - DKROT.curtime - DKROT.GCD <= 0)

@@ -288,7 +288,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          -- Obliterate if Killing machine is active and we dont have enough RP for
          -- Frost Strike, Unholy Runes are capped or Obliteration buff is missing
          if DKROT:CanUse("Obliterate") and DKROT:isOffCD("Obliterate") or DKROT:GetCD("Obliterate") < 1 then
-            if (kmProc and rp < fs_rp) or (lunholy < 0.5 and not (fd or lfd)) or (DKROT:TierBonus(DKROT.Tiers.TIER18_2p) and not oblitProc) then
+            if (kmProc and rp < fs_rp) or (lunholy < 0.5 and not (ud or lud)) or (DKROT:TierBonus(DKROT.Tiers.TIER18_2p) and not oblitProc and kmProc) then
                return "Obliterate"
             end
          end
