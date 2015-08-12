@@ -1,3 +1,4 @@
+-- vim: set ts=3 sw=3 foldmethod=indent:
 if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local _, DKROT = ...
    DKROT:Debug("Starting")
@@ -213,6 +214,22 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                      else
                         frame.Icon:SetVertexColor(0.5, 0.5, 0.5, 1)
                      end
+                  end
+
+               elseif trinket.type == DKROT.TrinketType.Debuff then
+                  local _, _, _, stacks, _, dur, expTime = UnitDebuff("TARGET", select(1, GetSpellInfo(trinket.spell)))
+
+                  if stacks then
+                     frame.Icon:SetTexture(select(3, GetSpellInfo(trinket.spell)))
+                     frame.Time:SetText(DKROT:formatTime(math.floor(expTime - DKROT.curtime)))
+
+                     if (stacks > 1) then
+                        frame.Stack:SetText(stacks)
+                     else
+                        frame.Stack:SetText(nil)
+                     end
+                  else
+                     frame.Icon:SetTexture(nil)
                   end
                end
             else

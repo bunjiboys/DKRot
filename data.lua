@@ -257,6 +257,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          [118884] = { spell = 176460, type = DKROT.TrinketType.OnUse, cooldown = 120 }, -- Kyb's Foolish Perseverance
          [112318] = { spell = 162915, type = DKROT.TrinketType.Stacking, duration = 20 }, -- Skull of War
          [112319] = { spell = 162917, type = DKROT.TrinketType.Stacking, duration = 20 }, -- Knight's Badge
+         [124236] = { spell = 183941, type = DKROT.TrinketType.Stacking, duration = 20 }, -- Unending Hunger
          [113645] = { spell = 177040, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Tectus' Beating Heart
          [113861] = { spell = 177053, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Evergaze Arcane Eidolon
          [113893] = { spell = 177056, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Blast Furnace Door
@@ -264,6 +265,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          [113987] = { spell = 177102, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Battering Talisman
          [116292] = { spell = 176974, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Mote of the Mountain
          [119193] = { spell = 177042, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Horn of Screaming Spirits 
+         [124241] = { spell = 183931, type = DKROT.TrinketType.RPPM, duration = 10 }, -- Anzu's Cursed Plume
+         [124238] = { spell = 184256, type = DKROT.TrinketType.Debuff, duration = 15 }, -- Empty Drinking Horn
       }
 
       DKROT:Debug("Trinkets Loaded")

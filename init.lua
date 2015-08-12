@@ -42,7 +42,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       OnUse = 1,
       Stacking = 2,
       ICD = 3,
-      RPPM = 4
+      RPPM = 4,
+      Debuff = 5
    }
 
    DKROT.Tiers = {
