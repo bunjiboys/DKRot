@@ -12,7 +12,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    ----- Locals -----
    -- Constants
-   local PLAYER_NAME, PLAYER_RACE, PLAYER_PRESENCE = UnitName("player"), select(2, UnitRace("player")), 0
+   local PLAYER_PRESENCE = 0
    local IS_BUFF = 2
    local ITEM_LOAD_THRESHOLD = .5
    local RUNE_COLOR = {
@@ -37,7 +37,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    }
 
    -- Variables
-   local loaded, mutex = false, false
+   local mutex = false
    local mousex, mousey
    local darksim = {0, 0}
    local simtime = 0
@@ -238,10 +238,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Racials
          elseif cdLoc == DKROT_OPTIONS_CDR_RACIAL then
-            local icon = DKROT:GetRangeandIcon(frame.Icon, PLAYER_RACE)
+            local icon = DKROT:GetRangeandIcon(frame.Icon, DKROT.PLAYER_RACE)
             frame.Icon:SetTexture(icon)
             if icon ~= nil then
-               start, dur, active = GetSpellCooldown(DKROT.spells[PLAYER_RACE])
+               start, dur, active = GetSpellCooldown(DKROT.spells[DKROT.PLAYER_RACE])
                local t = ceil(start + dur - DKROT.curtime)
                if active == 1 and dur > 7 then
                   if DKROT_Settings.CDS then
@@ -965,6 +965,13 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end)
       DKROT.FramePanel_OpacityOverride:SetPoint("TOPLEFT", DKROT.FramePanel_BackdropOpacity, "BOTTOMLEFT", 0, -10)
 
+      -- ActiveTarget time threshold
+      local overrideInfo = { parent = DKROT_FramePanel, value = 1.5, label = "Active Target Timeout", minValue = 1.5, maxValue = 5 }
+      DKROT.FramePanel_ActiveTargetThreshold = DKROT:BuildSliderOption(overrideInfo, function()
+         DKROT_Settings.ActiveTargetThreshold = DKROT.FramePanel_ActiveTargetThreshold:GetValue()
+      end)
+      DKROT.FramePanel_ActiveTargetThreshold:SetPoint("TOPLEFT", DKROT.FramePanel_OpacityOverride, "BOTTOMLEFT", 0, -10)
+
       DKROT.CDRPanel_RotOptions = CreateFrame("Frame", "DKROT.CDRPanel_RotOptions", DKROT_CDRPanel)
       DKROT.CDRPanel_RotOptions:SetBackdrop({
          bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -1004,7 +1011,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       DKROT:Debug("Initialize - Dropdowns Done")
 
       mutex = nil
-      loaded = true
+      DKROT.loaded = true
 
       -- Register AddonMessages for DBM pull timer support
       RegisterAddonMessagePrefix("D4")
@@ -1024,84 +1031,8 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
    -- Function to be called when events triggered
    local slottimer = 0
-   DKROT.MainFrame:SetScript("OnEvent", function(_, e, ...)
-      if e == "ADDON_LOADED" then
-         local addonName = ...
-         if addonName == "DKRot" then
-            DKROT.MainFrame:UnregisterEvent("ADDON_LOADED")
-            if DKROT_Settings ~= nil and DKROT_Settings.UpdateWarning ~= true then
-               StaticPopup_Show("DKROT_UPDATE_WARNING")
-               DKROT_Settings.UpdateWarning = true
-            end
-         end
-      end
-
-      -- Delayed addon initialization due to combat lockdown
-      if loaded then
-         if e == "COMBAT_LOG_EVENT_UNFILTERED" then
-            local _, event, _, _, casterName, _, _,targetguid, targetName, _, _, _, spellName = ...
-            if (event == "UNIT_DIED" or event == "UNIT_DESTROYED") and DKROT.DT.Unit[targetguid] ~= nil then
-               if DKROT.DT.Unit[targetguid].Frame ~= nil then
-                  DKROT.DT.Unit[targetguid].Frame:SetAlpha(0)
-                  DKROT.DT.Unit[targetguid].Frame = nil
-               end
-               DKROT.DT.Unit[targetguid] = nil
-            end
-
-            if (casterName == PLAYER_NAME) and DKROT_Settings.DT.Dots[spellName] and targetName ~= PLAYER_NAME then
-               DKROT.curtime = GetTime()
-               if (event == "SPELL_AURA_APPLIED" or event == "SPELL_AURA_REFRESH") then
-                  if DKROT.DT.Unit[targetguid] == nil then
-                     DKROT.DT.Unit[targetguid] = {}
-                     DKROT.DT.Unit[targetguid].Spells = {}
-                     DKROT.DT.Unit[targetguid].NumDots = 0
-                     DKROT.DT.Unit[targetguid].Name = select(3, string.find(targetName, "(.-)-")) or targetName
-                  end
-
-                  if DKROT.DT.Unit[targetguid].Spells[spellName] == nil then
-                     DKROT.DT.Unit[targetguid].NumDots = DKROT.DT.Unit[targetguid].NumDots + 1
-                  end
-
-                  if spellName == DKROT.spells["Death and Decay"] or spellName == DKROT.spells["Defile"] then
-                     DKROT.DT.Unit[targetguid].Spells[spellName] = select(1, GetSpellCooldown(spellName)) + 10
-                  else
-                     DKROT.DT.Unit[targetguid].Spells[spellName] = select(7, UnitDebuff("TARGET", spellName))
-                  end
-
-               elseif (event == "SPELL_AURA_REMOVED") then
-                  if DKROT.DT.Unit[targetguid] ~= nil and  DKROT.DT.Unit[targetguid][spellName] ~= nil then
-                      DKROT.DT.Unit[targetguid].Spells[spellName] = nil
-                      DKROT.DT.Unit[targetguid].NumDots = DKROT.DT.Unit[targetguid].NumDots - 1
-                  end
-               end
-            end
-
-         -- Setup variables for the TimeToDie tracker
-         elseif e == "PLAYER_ENTER_COMBAT" then
-             DKROT.TTD.Targets = {}
-             DKROT.SweepTTD = DKROT.curtime
-
-         elseif e == "PLAYER_TALENT_UPDATE" or e == "ACTIVE_TALENT_GROUP_CHANGED" then
-            DKROT:CheckSpec()
-            DKROT:OptionsRefresh()
-
-            if e == "ACTIVE_TALENT_GROUP_CHANGED" then
-               DKROT:CheckRotationTalents()
-            end
-
-         -- Handle messages from BigWigs / DBM for pull timers
-         elseif  e == "CHAT_MSG_ADDON" then
-            local prefix, message, channel, sender = ...
-            if prefix == "D4" then
-               local handler, time, name = ("\t"):split(message)
-               if handler == "PT" then
-                  DKROT.PullTimer = GetTime() + tonumber(time)
-                  DKROT:Debug("Received a DBM pull timer")
-               end
-            end
-         end
-      end
-   end)
+   DKROT.Targets = { }
+   DKROT.MainFrame:SetScript("OnEvent", DKROT.EventHandler)
 
    local function showUI()
       if UnitHasVehicleUI("player") then
@@ -1134,20 +1065,21 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    local DTupdatetimer = 0
    local DTchecktimer = 0
    local scheduledInit = false
+
    DKROT.MainFrame:SetScript("OnUpdate", function()
       DKROT.curtime = GetTime()
       -- Make sure it only updates at max, once every 0.15 sec
       if (DKROT.curtime - updatetimer >= 0.08) then
          updatetimer = DKROT.curtime
 
-         if not loaded and not mutex then
+         if not DKROT.loaded and not mutex then
             if launchtime == 0 then
                launchtime = DKROT.curtime
                DKROT:Debug("Launchtime Set")
             end
 
             DKROT:Initialize()
-         elseif loaded then
+         elseif DKROT.loaded then
             -- Check if visibility conditions are met, if so update the information in the addon
             if showUI() then
                if DKROT.MainFrame:GetAlpha() ~= 1 then
@@ -1202,6 +1134,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_FramePanel_Disease:SetChecked(DKROT_Settings.Disease)
          DKROT_FramePanel_Locked:SetChecked(DKROT_Settings.Locked)
          DKROT.FramePanel_BackdropOpacity:InitValue(DKROT_Settings.BackdropOpacity)
+         DKROT.FramePanel_ActiveTargetThreshold:InitValue(DKROT_Settings.ActiveTargetThreshold or 3)
 
          -- View Dropdown
          UIDropDownMenu_SetSelectedValue(DKROT_FramePanel_ViewDD, DKROT_Settings.VScheme)
@@ -1329,6 +1262,11 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_Settings.TTD = DKROT_FramePanel_TTD:GetChecked()
          DKROT_Settings.Disease = DKROT_FramePanel_Disease:GetChecked()
          DKROT_Settings.Locked = DKROT_FramePanel_Locked:GetChecked()
+         if DKROT.FramePanel_ActiveTargetThreshold:GetValue() >= 1 and DKROT.FramePanel_ActiveTargetThreshold:GetValue() <= 5 then
+            DKROT_Settings.ActiveTargetThreshold = DKROT.FramePanel_ActiveTargetThreshold:GetValue()
+         else
+            DKROT.FramePanel_ActiveTargetThreshold:InitValue(DKROT_Settings.ActiveTargetThreshold or 3)
+         end
 
          -- Transparency
          DKROT_Settings.BackdropOpacity = DKROT.FramePanel_BackdropOpacity:GetValue()
@@ -1420,6 +1358,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          DKROT_Settings.TTD = true
          DKROT_Settings.Disease = true
          DKROT_Settings.CD = {}
+         DKROT_Settings.ActiveTargetThreshold = 3
          DKROT_Settings.UpdateWarning = true
          DKROT:CooldownDefaults()
       end
