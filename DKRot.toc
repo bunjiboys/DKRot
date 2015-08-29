@@ -1,6 +1,6 @@
 ## Interface: 60200
 ## Author: bunjiboys (Jardo@US-Kilrogg)
-## Version: 1.2.4
+## Version: 1.3.0
 ## Title: DKRot
 ## Notes: Death Knight Rotation assistance
 ## OptionalDeps: Masque
@@ -25,6 +25,7 @@ data.lua
 utils.lua
 ui.lua
 datadumper.lua
+events.lua
 
 # Rotation files
 rotations\blank.lua

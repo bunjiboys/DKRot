@@ -250,7 +250,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
                DKROT.TimeToDie.Targets[guid] = nil
             end
          end
-         DKROT.Sweep = GetTime()
+         DKROT.TimeToDie.Sweep = GetTime()
       end
 
       if target ~= nil and UnitCanAttack("PLAYER", "TARGET") then
@@ -787,6 +787,39 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
 
       return false
+   end
+
+   function DKROT:GetActiveTargets()
+      local now = GetTime()
+
+      -- Cleanup old entries in the table
+      if (now - DKROT.ActiveTargets.Sweep) > 0.5 then
+         for guid, lastUpdate in pairs(DKROT.ActiveTargets.Targets) do
+            local tss = now - lastUpdate
+            if (now - lastUpdate) > (DKROT_Settings.ActiveTargetThreshold or 3) then
+               DKROT.ActiveTargets.Targets[guid] = nil
+            end
+         end
+
+         DKROT.ActiveTargets.Sweep = now
+      end
+
+      DKROT.ActiveTargets.LastUpdate = now
+      return tableSize(DKROT.ActiveTargets.Targets)
+   end
+
+   -- Utility function on string to check ending of string against keyword
+   function string.endswith(String, End)
+      return End == '' or string.sub(String, -string.len(End)) == End
+   end
+
+   function tableSize(t)
+       local cnt = 0
+       for obj in pairs(t) do
+           cnt = cnt + 1
+       end
+
+       return cnt
    end
 
    -- The base64 code below is courtesy of Alex Kloss (http://lua-users.org/wiki/BaseSixtyFour)

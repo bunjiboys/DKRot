@@ -222,7 +222,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       MainRotation = function()
          -- Rune Info
          local frost, lfrost, fd = DKROT:RuneCDs(DKROT.SPECS.FROST)
-         local unholy, lunholy, ud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+         local unholy, lunholy, ud, lud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
          local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
          local death, tdeath = DKROT:DeathRunes()
          local dFF, dBP = DKROT:GetDiseaseTime()
@@ -232,7 +232,10 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          local wakeProc = select(7, UnitBuff("player", DKROT.spells["Frozen Wake"]))
          local oblitProc = select(7, UnitBuff("player", DKROT.spells["Obliteration"]))
          local rp = UnitPower("PLAYER")
-         local fs_rp = DKROT:has("Improved Frost Presence") and 25 or 40
+         local fs_rp = UnitLevel("PLAYER") >= 65 and 25 or 40
+         local depRunes = DKROT:FullyDepletedRunes()
+         local activeTargets = DKROT:GetActiveTargets()
+         local t182p = DKROT:TierBonus(DKROT.Tiers.TIER18_2p)
     
          -- Horn of Winter
          if DKROT:CanUse("Horn or Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
@@ -248,25 +251,33 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 
          -- Plague Leech when we have two runes to return and
          -- Killing Machine is not up, or diseases are about to fall off
-         if DKROT:CanUse("Plague Leech") 
-            and DKROT:isOffCD("Plague Leech") 
-            and DKROT:FullyDepletedRunes() >= 2
-            and (dFF > 0 and dBP > 0)
-         then
-            if (dFF < 5 or dBP < 5) or (
-               not kmProc and DKROT:FullyDepletedRunes() >= 2 and DKROT:GetCD("Outbreak") and DKROT:CanUse("Outbreak")
-            ) then
-               return "Plague Leech"
+         if DKROT:CanUse("Plague Leech") and DKROT:isOffCD("Plague Leech") and depRunes >= 1 and (dFF > 1.5 and dBP > 1.5) then
+            if DKROT:HasTalent("Necrotic Plague") then
+               -- Don't use Plague Leech with Necrotic Plague unless its about to run out
+               -- to avoid loosing dps from removing the disease too often
+               if dFF < 5 then
+                  return "Plague Leech"
+               end
+            else
+               -- PL if we are capped on Unholy runes and KM is not active
+               if not kmProc and depRunes >= 2 then
+                  return "Plague Leech"
+               end
+
+               -- PL if diseases are about to run out
+               if (dFF < 5 or dBP < 5) then
+                  return "Plague Leech"
+               end
             end
          end
 
          -- Blood Tap with 10 or more charges and RP over 76 or rp over 20 with KM proc
-         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (rp >= 76 or (rp >= 20 and kmProc)) and DKROT:FullyDepletedRunes() >= 1 then
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and (rp >= 76 or (rp >= 20 and kmProc)) and depRunes >= 1 then
             return "Blood Tap"
          end
 
          -- Soul Reaper
-         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() and activeTargets <= 2 then
             return "Soul Reaper"
          end
 
@@ -276,7 +287,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Blood Tap if needed for defile
-         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and not DKROT:isOffCD("Defile") and DKROT:FullyDepletedRunes() >= 1 then
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and not DKROT:isOffCD("Defile") and depRunes >= 1 then
              return "Blood Tap"
          end
 
@@ -285,10 +296,24 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
             return "Frost Strike"
          end
 
+         -- DnD if we are fighting more than 3 targets
+         if activeTargets >= 3 and DKROT:CanUse("Death and Decay") and DKROT:isOffCD("Death and Decay") then
+            return "Death and Decay"
+         end
+
          -- Obliterate if Killing machine is active and we dont have enough RP for
          -- Frost Strike, Unholy Runes are capped or Obliteration buff is missing
          if DKROT:CanUse("Obliterate") and DKROT:isOffCD("Obliterate") or DKROT:GetCD("Obliterate") < 1 then
-            if (kmProc and rp < fs_rp) or (lunholy < 0.5 and not (ud or lud)) or (DKROT:TierBonus(DKROT.Tiers.TIER18_2p) and not oblitProc and kmProc) then
+            -- If Killing Machine is procced and we dont have enough RP to Frost Strike
+            if kmProc and rp < fs_rp then
+               return "Obliterate"
+
+            -- If we are about to cap our unholy runes, and they are not death runes
+            elseif lunholy < 0.5 and not (ud or lud) then
+               return "Obliterate"
+
+            -- If we need to get our Tier18 2p bonus up
+            elseif t182p and not oblitProc and kmProc then
                return "Obliterate"
             end
          end
@@ -301,7 +326,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          -- Blood Tap if we have more than 10 stacks
          if DKROT:CanUse("Blood Tap") 
             and bloodCharges >= 5 and (frost > 0 and death < 1) 
-            and DKROT:CanSoulReaper(true) and DKROT:FullyDepletedRunes() > 1
+            and DKROT:CanSoulReaper(true) and depRunes > 1
          then
              return "Blood Tap"
          end
@@ -333,7 +358,7 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
          end
 
          -- Empower Rune Weapon if all runes are depleted and we are out of RP
-         if DKROT:CanUse("Empower Rune Weapon") and rp < 25 and DKROT:DepletedRunes() == 6 then
+         if DKROT:CanUse("Empower Rune Weapon") and rp < 25 and depRunes >= 5 then
             if DKROT:isOffCD("Empower Rune Weapon") and DKROT:BossOrPlayer("TARGET") then
                return "Empower Rune Weapon"
             end

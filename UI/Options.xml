@@ -180,50 +180,7 @@
                </OnLoad>
             </Scripts>
          </Button>
-
-         <!-- Trans -->
-         <!--
-         <EditBox name="DKROT_FramePanel_NormalTrans" inherits="DKROT_EditBoxTemplate">
-            <Anchors>
-               <Anchor point="TOP" relativeTo="DKROT_FramePanel_ViewDD" relativePoint="BOTTOM" x="0" y="-5" />
-               <Anchor point="LEFT" relativeTo="DKROT_FramePanel_Locked" relativePoint="LEFT" x="10" />
-            </Anchors>
-            <Scripts>
-               <OnLoad>
-                  DKROT_FramePanel_NormalTrans_Text:SetText(DKROT_OPTIONS_FRAME_NORMALTRANS)
-               </OnLoad>
-            </Scripts>
-         </EditBox>
-         -->
-
-         <!--
-         <EditBox name="DKROT_FramePanel_Trans" inherits="DKROT_EditBoxTemplate">
-            <Anchors>
-               <Anchor point="TOP" relativeTo="DKROT_FramePanel_ViewDD" relativePoint="BOTTOM" x="0" y="-5" />
-               <Anchor point="LEFT" relativeTo="DKROT_FramePanel_Locked" relativePoint="LEFT" x="10" />
-            </Anchors>
-            <Scripts>
-               <OnLoad>
-                  DKROT_FramePanel_Trans_Text:SetText(DKROT_OPTIONS_FRAME_TRANS)
-               </OnLoad>
-            </Scripts>
-         </EditBox>
-         -->
          
-         <!-- Trans Combat -->
-         <!--
-         <EditBox name="DKROT_FramePanel_CombatTrans" inherits="DKROT_EditBoxTemplate">
-            <Anchors>
-               <Anchor point="TOPLEFT" relativeTo="DKROT_FramePanel_Trans" relativePoint="BOTTOMLEFT" x="0" y="-5" />
-            </Anchors>
-            <Scripts>
-               <OnLoad>
-                  DKROT_FramePanel_CombatTrans_Text:SetText(DKROT_OPTIONS_FRAME_COMBATTRANS)
-               </OnLoad>
-            </Scripts>
-         </EditBox>
-         -->
-
          <!-- Reset -->
          <Button name="DKROT_FramePanel_Reset" inherits="UIPanelButtonTemplate"  Text="DKROT_OPTIONS_RESET">
             <Size><AbsDimension x="120" y="22"/></Size>

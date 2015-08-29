@@ -5,9 +5,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
    DKROT.debug = false
    DKROT.font = "Interface\\AddOns\\DKRot\\resources\\font.ttf"
 
+   DKROT.loaded = false
    DKROT.curtime = 0
    DKROT.GCD = 0
    DKROT.PullTimer = 0
+   DKROT.PLAYER_NAME = UnitName("player")
+   DKROT.PLAYER_RACE = select(2, UnitRace("player"))
 
    DKROT.ThreatMode = {
       Off = 0,
@@ -92,6 +95,12 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       {},
       {},
       {},
+   }
+
+   DKROT.ActiveTargets = {
+       Sweep = 0,
+       Targets = { },
+       LastUpdate = 0
    }
 
    DKROT.TimeToDie = {

@@ -126,158 +126,173 @@ if select(2, UnitClass("player")) == "DEATHKNIGHT" then
       end
    }
 
-    local necroblight = {
-        Name = "Necrotic Blight",
-        InternalName = "SFNecroBlight",
-        ToggleSpells = { "Soul Reaper", "Death and Decay", "Summon Gargoyle", "Outbreak", "Blood Tap", "Empower Rune Weapon" },
-        SuggestedTalents = { "Necrotic Plague", "Unholy Blight" },
-        DefaultRotation = true,
-        MainRotation = function()
-            -- Rune Info
-            local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
-            local unholy, lunholy, ud, lud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
-            local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
-            local death = DKROT:DeathRunes()
-            local bloodCharges = select(4, UnitBuff("PLAYER", DKROT.spells["Blood Charge"])) or 0
-            local dFF, dBP = DKROT:GetDiseaseTime()
-            local timeToDie = DKROT:GetTimeToDie()
-            local shadowInf = select(4, UnitBuff("PET", DKROT.spells["Shadow Infusion"]))
-            local doomProc = select(4, UnitBuff("PLAYER", DKROT.spells["Sudden Doom"]))
-            local npStacks = select(4, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"])) or 0
-            local ub = select(4, UnitBuff("PLAYER", DKROT.spells["Unholy Blight"]))
-            local rp = UnitPower("PLAYER")
-            local runes = DKROT:GetRuneTotals()
-            local frostDeaths = (fd == true and lfd == true) and 2 or (fd == true or lfd == true) and 1 or 0
-            local unholyDeaths = (ud == true and lud == true) and 2 or (ud == true or lud == true) and 1 or 0
-            local bloodDeaths = (bd == true and lbd == true) and 2 or (bd == true or lbd == true) and 1 or 0
-        
-            -- Horn of Winter
-            if DKROT:CanUse("Horn of Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
-                return "Horn of Winter"
-            end
+   local necroblight = {
+      Name = "Necrotic Blight",
+      InternalName = "SFNecroBlight",
+      ToggleSpells = { "Soul Reaper", "Death and Decay", "Summon Gargoyle", "Outbreak", "Blood Tap", "Empower Rune Weapon" },
+      SuggestedTalents = { "Necrotic Plague", "Unholy Blight" },
+      DefaultRotation = true,
+      MainRotation = function()
+         -- Rune Info
+         local frost, lfrost, fd, lfd = DKROT:RuneCDs(DKROT.SPECS.FROST)
+         local unholy, lunholy, ud, lud = DKROT:RuneCDs(DKROT.SPECS.UNHOLY)
+         local blood, lblood, bd, lbd = DKROT:RuneCDs(DKROT.SPECS.BLOOD)
+         local death = DKROT:DeathRunes()
+         local bloodCharges = select(4, UnitBuff("PLAYER", DKROT.spells["Blood Charge"])) or 0
+         local dFF, dBP = DKROT:GetDiseaseTime()
+         local timeToDie = DKROT:GetTimeToDie()
+         local shadowInf = select(4, UnitBuff("PET", DKROT.spells["Shadow Infusion"]))
+         local doomProc = select(4, UnitBuff("PLAYER", DKROT.spells["Sudden Doom"]))
+         local npStacks = select(4, UnitDebuff("TARGET", DKROT.spells["Necrotic Plague"])) or 0
+         local ub = select(4, UnitBuff("PLAYER", DKROT.spells["Unholy Blight"]))
+         local rp = UnitPower("PLAYER")
+         local runes = DKROT:GetRuneTotals()
+         local frostDeaths = (fd == true and lfd == true) and 2 or (fd == true or lfd == true) and 1 or 0
+         local unholyDeaths = (ud == true and lud == true) and 2 or (ud == true or lud == true) and 1 or 0
+         local bloodDeaths = (bd == true and lbd == true) and 2 or (bd == true or lbd == true) and 1 or 0
+         local depRunes = DKROT:FullyDepletedRunes()
+         local activeTargets = DKROT:GetActiveTargets()
+         local t182p = DKROT:TierBonus(DKROT.Tiers.TIER18_2p)
+         local t184p = DKROT:TierBonus(DKROT.Tiers.TIER18_4p)
+         local dtcd = (select(7, UnitBuff("PET", "Dark Transformation")) or 0) - GetTime()
+         local poolRP = (rp < 90 and dtcd < 10) and true or false
 
-            -- Raise Dead
-            if DKROT:CanUse("Raise Dead") and UnitExists("pet") ~= true and DKROT:isOffCD("Raise Dead") then
-                return "Raise Dead", true
-            end
+         -- Horn of Winter
+         if DKROT:CanUse("Horn of Winter") and DKROT_Settings.CD[DKROT.Current_Spec].UseHoW and DKROT:UseHoW() then
+            return "Horn of Winter"
+         end
 
-            -- Soul Reaper when below or close to 45% health with improved SR, or close to 35%
-            if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
-                return "Soul Reaper"
-            end
+         -- Raise Dead
+         if UnitExists("pet") ~= true and DKROT:CanUse("Raise Dead") and DKROT:isOffCD("Raise Dead") then
+            return "Raise Dead", true
+         end
 
-            -- Blood Tap if we need a rune for Soul Reaper
-            if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and DKROT:CanSoulReaper(true) then
-                return "Blood Tap"
-            end
+         -- Dark Transformation on CD with 5 stacks of Shadow Infusion
+         if DKROT:CanUse("Dark Transformation") and DKROT:isOffCD("Dark Transformation") and shadowInf == 5 then
+            return "Dark Transformation"
+         end
 
-            -- Summon Gargoyle
-            if DKROT:CanUse("Summon Gargoyle") and DKROT:isOffCD("Summon Gargoyle") and timeToDie and timeToDie > 20 then
-                if DKROT:BossOrPlayer("TARGET") then
-                    return "Summon Gargoyle"
-                end
-            end
+         -- Death Coil if we can and Dark Transformation is ready but not active and we have Tier18 4p
+         if t184p and DKROT:isOffCD("Dark Transformation") and (rp >= 30 or doomProc) and not UnitBuff("PET", DKROT.spells["Dark Transformation"]) then
+            return "Death Coil"
+         end
 
-            -- Unholy Blight if we dont have diseases active
-            if DKROT:CanUse("Unholy Blight") and DKROT:isOffCD("Unholy Blight") and (dFF == 0 or dBP == 0) then
-                return "Unholy Blight"
-            end
-            
-            -- Outbreak if we are missing a disease
-            if DKROT:CanUse("Outbreak") and DKROT:isOffCD("Outbreak") and (dFF == 0 or dBP == 0) and ub == nil then
-                return "Outbreak"
-            end
+         -- Soul Reaper when below or close to 45% health with improved SR, or close to 35%
+         if DKROT:CanUse("Soul Reaper") and DKROT:CanSoulReaper() then
+            return "Soul Reaper"
+         end
 
-            -- Plague Strike, if we are missing diseases and Outbreak if on CD
-            if DKROT:isOffCD("Plague Strike") and (dFF == 0 or dBP == 0) and ub == nil then
-                return "Plague Strike"
+         -- Blood Tap if we need a rune for Soul Reaper
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 5 and DKROT:CanSoulReaper(true) and depRunes >= 1 then
+            return "Blood Tap"
+         end
+
+         -- Summon Gargoyle
+         if DKROT:CanUse("Summon Gargoyle") and DKROT:isOffCD("Summon Gargoyle") and timeToDie and timeToDie > 20 then
+            if DKROT:BossOrPlayer("TARGET") then
+               return "Summon Gargoyle"
             end
+         end
 
-            -- DnD
-            if DKROT:CanUse("Death and Decay") and DKROT:isOffCD("Death and Decay") and unholy == 0 then
-                return "Death and Decay", true
+         -- Unholy Blight if we dont have diseases active
+         if DKROT:CanUse("Unholy Blight") and DKROT:isOffCD("Unholy Blight") and (dFF == 0 or dBP == 0) then
+            return "Unholy Blight"
+         end
+
+         -- Outbreak if we are missing a disease
+         if DKROT:CanUse("Outbreak") and DKROT:isOffCD("Outbreak") and (dFF == 0 or dBP == 0) and ub == nil then
+            return "Outbreak"
+         end
+
+         -- Plague Strike, if we are missing diseases and Outbreak if on CD
+         if DKROT:isOffCD("Plague Strike") and (dFF == 0 or dBP == 0) and ub == nil then
+            return "Plague Strike"
+         end
+
+         -- DnD
+         if DKROT:CanUse("Death and Decay") and DKROT:isOffCD("Death and Decay") and lunholy < 1.5 and activeTargets >= 2 then
+            return "Death and Decay", true
+         end
+
+         -- Festering Strike if both Blood and Frost runes are capped
+         if DKROT:CanUse("Festering Strike") and DKROT:isOffCD("Festering Strike") and lblood < 1.5 and lfrost < 1.5 then
+            -- Avoid using death runes on festering strike
+            if bloodDeaths == 0 and frostDeaths == 0 then
+               return "Festering Strike"
             end
+         end
 
-            -- Scourge Strike
-            if DKROT:CanUse("Scourge Strike") and lunholy == 0 then
-                return "Scourge Strike"
+         -- Scourge Strike
+         if DKROT:CanUse("Scourge Strike") and lunholy < 1.5 then
+            return "Scourge Strike"
+         end
+
+         -- Festering Strike if the remaining time on Necrotic Plague is less than the cooldown remaining on Unholy Blight
+         if DKROT:CanUse("Festering Strike") and DKROT:isOffCD("Festering Strike")
+            and DKROT:HasTalent("Necrotic Plague") and DKROT:HasTalent("Unholy Blight")
+         then
+            local ubcd = DKROT:GetCD("Unholy Blight")
+
+            if dFF < ubcd and ((dFF < 20) or not (bd or fd)) then
+               if timeToDie == nil or timeToDie > dFF then
+                  return "Festering Strike"
+               end
             end
+         end
 
-            -- Festering Strike if the remaining time on Necrotic Plague is less than the cooldown remaining on Unholy Blight
-            if DKROT:CanUse("Festering Strike") and DKROT:isOffCD("Festering Strike")
-                and DKROT:HasTalent("Necrotic Plague") and DKROT:HasTalent("Unholy Blight")
-            then
-                local ubcd = DKROT:GetCD("Unholy Blight")
+         -- DnD if we have 2 or more targets
+         if DKROT:CanUse("Death and Decay") and DKROT:isOffCD("Death and Decay") and activeTargets >= 2 then
+            return "Death and Decay"
+         end
 
-                if dFF < ubcd and ((dFF < 20) or not (bd or fd)) then
-                    if timeToDie == nil or timeToDie > dFF then
-                        return "Festering Strike"
-                    end
-                end
+         -- Blood Boil if there are more than 3 targets and we have a death rune
+         if DKROT:CanUse("Blood Boil") and death >= 1 and activeTargets >= 3 then
+            return "Blood Boil"
+         end
+
+         -- Outbreak if Necrotic Plague is active with less than 15 stacks
+         if DKROT:CanUse("Outbreak") and DKROT:HasTalent("Necrotic Plague") then
+            if DKROT:isOffCD("Outbreak") and npStacks <= 14 then
+               return "Outbreak"
             end
+         end
 
-            -- Dark Transformation on CD with 5 stacks of Shadow Infusion
-            if DKROT:CanUse("Dark Transformation") and DKROT:isOffCD("Dark Transformation") and shadowInf == 5 then
-                return "Dark Transformation"
+         -- Blood Tap if we have more than 10 charges
+         if DKROT:CanUse("Blood Tap") and bloodCharges >= 10 and depRunes >= 1 then
+            return "Blood Tap"
+         end
+
+         -- Death Coil with Sudden Doom or close to RP cap (pool rp if Dark Transformation is about to come up)
+         if (doomProc or rp >= 80) and bloodCharges <= 10 and not poolRP then
+            return "Death Coil"
+         end
+
+         -- Scourge Strike
+         if DKROT:CanUse("Scourge Strike") and DKROT:isOffCD("Scourge Strike") then
+            return "Scourge Strike"
+         end
+
+         -- Festering Strike
+         if DKROT:CanUse("Festering Strike") and DKROT:isOffCD("Festering Strike") then
+            return "Festering Strike"
+         end
+
+         -- Death Coil
+         if rp >= 30 and not poolRP then
+            return "Death Coil"
+         end
+
+         -- Empower Rune Weapon
+         if DKROT:CanUse("Empower Rune Weapon") and DKROT:isOffCD("Empower Rune Weapon") and DKROT:FullyDepletedRunes() >= 3 then
+            if DKROT:BossOrPlayer("TARGET") then
+               return "Empower Rune Weapon"
             end
+         end
 
-            -- Festering Strike and either blood and frost runes are capped
-            -- and we dont waste all our death runes
-            if DKROT:CanUse("Festering Strike") and lblood == 0 and lfrost == 0 then
-                if frostDeaths - death > 0 or bloodDeaths - death > 0 then
-                    return "Festering Strike"
-                end
-            end
-
-            if DKROT:CanUse("Festering Strike") and lblood == 0 or lfrost == 0 then
-                if frostDeaths - death > 0 and bloodDeaths - death > 0 then
-                    return "Festering Strike"
-                end
-            end
-
-            -- Blood Tap if we have more than 10 charges
-            if DKROT:CanUse("Blood Tap") and bloodCharges >= 10 then
-                return "Blood Tap"
-            end
-
-            -- Outbreak if Necrotic Plague is active with less than 15 stacks
-            if DKROT:CanUse("Outbreak") and DKROT:HasTalent("Necrotic Plague") then
-                if DKROT:isOffCD("Outbreak") and npStacks <= 14 then
-                    return "Outbreak"
-                end
-            end
-
-            -- Death Coil with Sudden Doom or close to RP cap
-            if (doomProc or rp >= 80) and bloodCharges <= 10 then
-                return "Death Coil"
-            end
-
-            -- Scourge Strike
-            if DKROT:CanUse("Scourge Strike") and DKROT:isOffCD("Scourge Strike") then
-                return "Scourge Strike"
-            end
-
-            -- Festering Strike
-            if DKROT:CanUse("Festering Strike") and DKROT:isOffCD("Festering Strike") then
-                return "Festering Strike"
-            end
-
-            -- Death Coil
-            if rp >= 30 then
-                return "Death Coil"
-            end
-
-            -- Empower Rune Weapon
-            if DKROT:CanUse("Empower Rune Weapon") and DKROT:isOffCD("Empower Rune Weapon") and DKROT:FullyDepletedRunes() >= 3 then
-                if DKROT:BossOrPlayer("TARGET") then
-                    return "Empower Rune Weapon"
-                end
-            end
-
-            -- Nothing else can be done
-            return nil
-        end
-    }
+         -- Nothing else can be done
+         return nil
+      end
+   }
 
    DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, skullflower)
    DKROT_RegisterRotation(DKROT.SPECS.UNHOLY, necroblight)
